@@ -1,0 +1,32 @@
+{
+  "config": {
+    "sample_rate": 16000,
+    "duration_s": 3.0,
+    "seed": 3527,
+    "snrs_db": [
+      -5,
+      0,
+      5,
+      10
+    ],
+    "noise_names": [
+      "white",
+      "pink",
+      "hum",
+      "impulsive"
+    ],
+    "n_fft": 512,
+    "hop_length": 160,
+    "noise_estimate_s": 0.25,
+    "spectral_alpha": 1.2,
+    "spectral_floor": 0.03,
+    "wiener_floor": 0.05,
+    "wavelet": "db4",
+    "wavelet_level": 5,
+    "wavelet_mode": "soft"
+  },
+  "n_condicoes": 320,
+  "n_amostras_fala": 5,
+  "origem_fala": "Free Spoken Digit Dataset (FSDD)",
+  "ruidos": "Gerados por script: branco, rosa, hum e impulsivo."
+}

@@ -1,0 +1,5 @@
+plataforma,ram_flash,ponto_flutuante,audio_io,portabilidade,risco,recomendacao
+PC,GBs de RAM; armazenamento amplo,"Sim, alto desempenho",Bibliotecas maduras e arquivos WAV,Referencia de validacao,Baixo,Manter como ambiente de benchmark e geracao de referencia.
+Raspberry Pi,Centenas de MB a varios GB,Sim,"Linux, USB audio e I2S disponiveis",Python/C++ viavel,Medio,Primeira plataforma embarcada plausivel para tempo real.
+ESP32/ESP32-S3,Centenas de KB de SRAM; flash em MB,Limitado; exige cuidado,I2S disponivel em placas adequadas,"Requer C/C++, buffers pequenos e simplificacao",Alto,Avaliar depois de reduzir dependencias e memoria do metodo.
+Arduino Uno R3,2 KB SRAM; 32 KB flash,Sem FPU,ADC simples; sem I2S nativo,FFT/DWT para voz exige buffers e coeficientes grandes demais,Muito alto,Impraticavel para STFT/Wavelet de voz em tempo real sem simplificacoes severas ou hardware externo.
