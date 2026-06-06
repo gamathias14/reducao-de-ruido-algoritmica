@@ -6,6 +6,7 @@ Este arquivo registra pontos de parada organizados para retomada do trabalho.
 
 - Data: 2026-06-06
 - Estado: repositorio Git local inicializado e remoto configurado.
+- Commit local inicial: `c4546ee` (`docs: organizar prompts e checkpoints do projeto`)
 - Remoto: `https://github.com/gamathias14/reducao-de-ruido-algoritmica.git`
 - Identidade local Git: `Kasajizoo <augustolima04@gmail.com>`
 - Arquivos principais envolvidos:
