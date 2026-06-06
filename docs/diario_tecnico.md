@@ -141,3 +141,50 @@ Este arquivo registra como o trabalho esta sendo conduzido, nao apenas os result
 
 - `f690988` - `code: adicionar pipeline de benchmark de audio`
 - `49ebff0` - `results: gerar benchmark preliminar de audio`
+
+## 2026-06-06 - Atualizacao e verificacao do relatorio
+
+### Secoes atualizadas em `entrega3.tex`
+
+- Metodologia experimental:
+  - pipeline em PC alterado de plano futuro para implementacao realizada;
+  - descritos comando de reproducao, dados FSDD, ruidos sinteticos, SNRs e metodos.
+- Amostras, ruidos e controle de variaveis:
+  - documentado uso de fala publica pequena;
+  - explicitada limitacao de ruidos sinteticos;
+  - registrado pareamento por amostra, ruido, SNR e metodo.
+- Metricas e custo computacional:
+  - verbos ajustados para metricas ja calculadas;
+  - adicionada tabela de resultados medios;
+  - descritos RTF, latencia e memoria aproximada.
+- Referencias:
+  - adicionados FSDD, NumPy, SciPy, PyWavelets e Matplotlib.
+- Atividades realizadas e resultados:
+  - adicionadas atividades de implementacao;
+  - inseridas figuras de melhoria de SNR, RTF, forma de onda e espectrograma.
+- Cronograma:
+  - ajustado para refletir tarefas antecipadas e proximo foco em ruidos reais.
+- Riscos:
+  - adicionados riscos de ruidos sinteticos, silencio inicial e Wavelet subajustada.
+- Consideracoes finais:
+  - incluida conclusao preliminar proporcional aos dados e caminho para Raspberry Pi/ESP32/Arduino Uno R3.
+
+### Compilacao e verificacao
+
+- Comando executado:
+  - `pdflatex -interaction=nonstopmode entrega3.tex`
+- Executado duas vezes para resolver referencias cruzadas.
+- Resultado:
+  - `entrega3.pdf`, 26 paginas, gerado sem erro fatal.
+- Avisos remanescentes:
+  - `microtype` nao conseguiu aplicar patch de footnote;
+  - alguns `Underfull \hbox`, principalmente em tabelas;
+  - sem referencias indefinidas apos a segunda compilacao.
+- Verificacao visual:
+  - renderizadas paginas representativas com `pdftoppm`;
+  - verificadas visualmente tabela de parametros, tabela de resultados, figuras, cronograma e tabela de referencias/viabilidade;
+  - figuras e tabelas principais ficaram legiveis.
+
+### Commit criado
+
+- `1df8e9c` - `tex: atualizar relatorio com resultados preliminares`

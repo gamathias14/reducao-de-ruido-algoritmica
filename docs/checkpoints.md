@@ -74,3 +74,35 @@ Este arquivo registra pontos de parada organizados para retomada do trabalho.
   - atualizar `entrega3.tex` com resultados preliminares;
   - compilar e verificar PDF atualizado;
   - registrar commit especifico do relatorio atualizado.
+
+## Checkpoint 3 - Relatorio atualizado e compilado
+
+- Data: 2026-06-06
+- Estado: `entrega3.tex` atualizado com resultados preliminares e `entrega3.pdf` recompilado.
+- Commit local: `1df8e9c` (`tex: atualizar relatorio com resultados preliminares`)
+- Comandos de verificacao:
+  - `pdflatex -interaction=nonstopmode entrega3.tex`
+  - `pdflatex -interaction=nonstopmode entrega3.tex`
+  - `pdftoppm -f 7 -l 15 -png -r 120 entrega3.pdf previews\entrega3_verificacao`
+  - `pdftoppm -f 19 -l 22 -png -r 120 entrega3.pdf previews\entrega3_finalcheck`
+- Resultado da compilacao:
+  - PDF gerado com 26 paginas;
+  - sem erro fatal;
+  - sem referencias indefinidas apos recompilacao;
+  - avisos remanescentes de `Underfull \hbox` e `microtype`.
+- Secoes atualizadas:
+  - metodologia experimental;
+  - amostras, ruidos e controle de variaveis;
+  - metricas e custo computacional;
+  - referencias bibliograficas;
+  - atividades realizadas e resultados obtidos;
+  - avaliacao do andamento;
+  - cronograma;
+  - riscos;
+  - consideracoes finais.
+- Pendencias para o proximo ciclo:
+  - substituir/complementar ruidos sinteticos por DEMAND ou base ambiental real;
+  - refinar parametros Wavelet;
+  - medir latencia por blocos;
+  - preparar reproducao em outro computador;
+  - avaliar Raspberry Pi como primeira plataforma embarcada plausivel.

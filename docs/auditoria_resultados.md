@@ -93,3 +93,18 @@ Ainda nao ha resultados experimentais de benchmark para auditar. A auditoria ini
   - que os resultados representam ruido ambiental real;
   - que o pipeline esta pronto para Raspberry Pi, ESP32 ou Arduino;
   - que as metricas objetivas substituem avaliacao perceptual.
+
+## 2026-06-06 - Auditoria da atualizacao do relatorio
+
+- O relatorio foi atualizado para declarar explicitamente que os resultados sao preliminares.
+- A tabela de resultados e as figuras foram inseridas a partir dos arquivos gerados automaticamente em `resultados/`.
+- O texto diferencia resultado observado, interpretacao e limitacao:
+  - observado: STFT subtracao e STFT Wiener melhoraram SNR neste experimento;
+  - interpretacao: os baselines STFT foram mais efetivos que a Wavelet soft com os parametros atuais;
+  - limitacao: ruidos sinteticos, silencio inicial e ausencia de avaliacao perceptual formal.
+- A conclusao sobre hardware nao promete prototipo imediato:
+  - Raspberry Pi aparece como primeira plataforma plausivel;
+  - ESP32/ESP32-S3 aparece como etapa posterior;
+  - Arduino Uno R3 aparece como impraticavel para o pipeline atual.
+- O PDF foi compilado e verificado visualmente em paginas representativas.
+- Risco residual: como `entrega3.tex` usa formato/preambulo local, a reproducao completa do PDF fora deste computador pode exigir organizar tambem o preambulo e ativos graficos do modelo LaTeX.
