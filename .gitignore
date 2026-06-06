@@ -1,0 +1,50 @@
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex
+*.synctex.gz
+*.toc
+*.xdv
+*.fmt
+pdflatex*.fls
+
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Large/local audio datasets and generated benchmark outputs
+dados/raw/
+dados/external/
+datasets/
+data/raw/
+data/external/
+*.wav
+*.flac
+*.mp3
+*.ogg
+resultados/audio/
+
+# Generated previews and temporary files
+previews/
+*.tmp
+*.bak
+~$*
+
+# OS/editor metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
