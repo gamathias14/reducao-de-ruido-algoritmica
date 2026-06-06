@@ -1,0 +1,822 @@
+%&cab
+% \endofdump
+\usepackage[T1]{fontenc}
+\usepackage{needspace}
+\usepackage{multicol}
+\usepackage[section]{placeins}
+
+\renewcommand{\contentsname}{SUMÁRIO}
+\renewcommand{\refname}{REFERÊNCIAS}
+
+\newcommand{\tituloProjeto}{Redução de Ruído Local em Tempo Real para Voz Humana: Comparação entre STFT e Wavelet com Avaliação de Viabilidade Embarcada}
+\newcommand{\orientadorProjeto}{Juan Luis Poletti Soto}
+\newcommand{\alunoA}{Augusto Massayoshi Yojo de Lima}
+\newcommand{\alunoB}{Gabriel Almeida Mathias}
+\newcommand{\alunoC}{Lucas Galvão de França}
+
+\newcommand{\referencia}[1]{\noindent #1\par\vspace{0.5\baselineskip}}
+\newcommand{\secaoQuestionario}[1]{\Needspace{10\baselineskip}\vspace{0.75\baselineskip}\noindent\textbf{#1}\par\vspace{0.25\baselineskip}}
+\newcounter{pergunta}
+\newtcolorbox{blocoFormulario}[1]{
+    colback=white,
+    colframe=black!55,
+    colbacktitle=black!8,
+    coltitle=black,
+    boxrule=0.45pt,
+    arc=1.5pt,
+    left=6pt,
+    right=6pt,
+    top=5pt,
+    bottom=5pt,
+    toptitle=4pt,
+    bottomtitle=4pt,
+    lefttitle=8pt,
+    righttitle=8pt,
+    before skip=0.55\baselineskip,
+    after skip=0.55\baselineskip,
+    fonttitle=\bfseries,
+    title={#1}
+}
+\newenvironment{perguntaFormulario}[1]{%
+    \refstepcounter{pergunta}%
+    \begin{blocoFormulario}{P\thepergunta. #1}%
+}{%
+    \end{blocoFormulario}%
+}
+\newenvironment{opcoesFormulario}{%
+    \par\small\setstretch{1.05}%
+    \begin{itemize}[label=$\square$, leftmargin=1.65em, labelsep=0.45em, itemsep=0pt, topsep=0.1\baselineskip, parsep=0pt, partopsep=0pt]%
+}{%
+    \end{itemize}%
+}
+\newenvironment{opcoesFormularioDuasColunas}{%
+    \par\small\setstretch{1.08}%
+    \setlength{\columnsep}{1.9em}%
+    \begin{multicols}{2}%
+    \begin{itemize}[label=$\square$, leftmargin=1.55em, labelsep=0.45em, itemsep=0.06\baselineskip, topsep=0.18\baselineskip, parsep=0pt, partopsep=0pt]%
+}{%
+    \end{itemize}%
+    \end{multicols}%
+}
+\newcommand{\orientacaoResposta}[1]{\par\vspace{0.05\baselineskip}\noindent\textit{#1}\par\vspace{0.05\baselineskip}}
+\newcommand{\opcaoCampo}[1]{\item #1: \hspace{0.35em}\rule{0.28\linewidth}{0.4pt}}
+\newcommand{\linhaResposta}{\par\vspace{0.45\baselineskip}\noindent\rule{\linewidth}{0.4pt}}
+\newcommand{\campoCurto}[1]{\orientacaoResposta{#1}\linhaResposta}
+\newcommand{\campoAberto}[1]{\orientacaoResposta{#1}\linhaResposta\linhaResposta\linhaResposta}
+\newcommand{\usoPergunta}[1]{\par\vspace{0.25\baselineskip}\noindent\textbf{Uso esperado no projeto:} #1}
+\newcommand{\escalaCinco}[2]{%
+    \vspace{0.25\baselineskip}
+    \noindent\begingroup\small\setstretch{1.0}%
+    \setlength{\tabcolsep}{0pt}%
+    \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}>{\centering\arraybackslash}X>{\raggedleft\arraybackslash}p{0.30\linewidth}@{}}
+        #1 & $\square$~1\quad $\square$~2\quad $\square$~3\quad $\square$~4\quad $\square$~5 & #2
+    \end{tabularx}\par\endgroup
+}
+
+\begin{document}
+
+\newgeometry{left=3cm,top=3cm,right=2cm,bottom=2cm}
+\setstretch{1.5}
+\pagenumbering{gobble}
+
+\thispagestyle{empty}
+
+{\centering
+
+\large
+
+\textbf{ESCOLA POLITÉCNICA DA UNIVERSIDADE DE SÃO PAULO}
+
+\vspace{1.5\baselineskip}
+
+\def\svgwidth{4cm}\import{\detokenize{C:/Users/augus/OneDrive/Documentos/Work/logos}}{logopoli.pdf_tex}
+
+\par%
+}
+
+\vfill
+
+{\centering
+
+\begin{tabular}{lc}
+    \toprule
+    \multicolumn{1}{c}{\textbf{INTEGRANTES DO GRUPO}} & \textbf{N\textsuperscript{o} USP} \\
+    \midrule
+    AUGUSTO MASSAYOSHI YOJO DE LIMA & 12487121 \\
+    GABRIEL ALMEIDA MATHIAS & 14543284 \\
+    LUCAS GALVÃO DE FRANÇA & 4784490 \\
+    \bottomrule
+\end{tabular}
+
+\par%
+}
+
+\vfill
+
+{\centering
+
+\textbf{PTC3527 - ANTEPROJETO DE FORMATURA EM TELECOMUNICAÇÕES}
+\\
+\textbf{2\textsuperscript{o} RELATÓRIO DO ANTEPROJETO DE FORMATURA}
+\\[.75\baselineskip]
+\textbf{\large\tituloProjeto}
+\\[.75\baselineskip]
+Orientador: \orientadorProjeto
+\\
+\today
+
+\par%
+}
+
+\vfill
+
+\begin{citacaolonga}
+    Segundo relatório solicitado pelos docentes da disciplina PTC3527 para acompanhamento do anteprojeto de formatura em Telecomunicações, contemplando a reformulação do escopo, a fundamentação técnico-científica, o protocolo experimental, a atividade extensionista refinada, a avaliação do andamento e o cronograma do segundo semestre.
+\end{citacaolonga}
+
+\vfill
+
+{\centering
+\textbf{SÃO PAULO}\\
+\textbf{2026}
+\par}
+
+\clearpage
+\restoregeometry
+
+\pagenumbering{arabic}
+\tableofcontents
+\newpage
+
+\section{Identificação do projeto}
+
+O projeto de formatura \textit{\tituloProjeto} será desenvolvido na disciplina PTC3527 -- Anteprojeto de Formatura em Telecomunicações, sob orientação do professor \orientadorProjeto, pelo grupo composto por \alunoA, \alunoB\ e \alunoC. O integrante \alunoC\ foi incorporado ao grupo após a primeira apresentação, mantendo-se a continuidade do anteprojeto e ampliando a capacidade de execução técnica na etapa experimental.
+
+A proposta situa-se em processamento digital de sinais, telecomunicações e sistemas embarcados, com foco específico em redução de ruído aplicada a voz humana. Diferentemente do escopo inicialmente apresentado, que tratava genericamente de sinais unidimensionais no tempo, esta versão delimita o problema para fala contaminada por ruído acústico e avalia, em primeiro lugar, técnicas implementáveis em ambiente computacional convencional. A execução em hardware é tratada como continuidade planejada para o próximo semestre, começando preferencialmente por Raspberry Pi, com ESP32 como etapa posterior dependente da complexidade final do pipeline. O Arduino Uno R3 é considerado apenas como limitação ou possibilidade de trabalho futuro, dadas suas restrições de memória, ponto flutuante, bibliotecas e custo de implementação.
+
+\section{Contextualização da reformulação do escopo}
+
+O tema original, \textit{Revisão Sistemática da Literatura sobre Redução de Ruído de Sinais Unidimensionais no Tempo}, era tecnicamente relevante, mas amplo demais para orientar uma comparação experimental consistente. Ao incluir voz, áudio genérico, sensores, telemetria, sinais biomédicos, vibração e outras séries temporais, o projeto reunia classes de sinal com estatísticas, métricas, restrições e cenários de uso muito distintos. Essa amplitude dificultava tanto a definição de público-alvo quanto a construção de perguntas extensionistas úteis.
+
+O feedback recebido sobre o questionário anterior apontou exatamente esse problema: a formatação e várias perguntas eram razoáveis, mas o público-alvo e o instrumento sofriam do mesmo excesso de abrangência do tema. A reformulação atual responde a essa crítica ao abandonar a generalidade de ``qualquer sinal 1D'' e concentrar a análise em voz humana, comunicação em tempo real, ruído acústico, privacidade, operação local, latência e viabilidade futura em hardware embarcado.
+
+Essa mudança não representa ruptura desorganizada do anteprojeto. Trata-se de uma evolução técnica: o projeto preserva a base de processamento de sinais, a preocupação com métricas e a atividade extensionista, mas transforma a revisão bibliográfica em suporte para um protocolo experimental comparável.
+
+\begin{table}[!htbp]
+\centering
+\caption{Comparação entre o escopo anterior e o escopo reformulado.}
+\label{tab:escopo}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.4cm}XX}
+\toprule
+\textbf{Dimensão} & \textbf{Escopo anterior} & \textbf{Escopo reformulado} \\
+\midrule
+Tipo de sinal & Sinais unidimensionais no tempo em geral. & Voz humana em sinais de áudio mono, com ruído acústico aditivo. \\
+\addlinespace
+Produto técnico & Revisão sistemática e taxonomia ampla. & Pipeline experimental em PC para comparar STFT/Fourier e Wavelet, com análise de tempo real. \\
+\addlinespace
+Público-alvo & Especialistas e usuários de muitos domínios. & Usuários de comunicação por voz, pessoas expostas a ambientes ruidosos e profissionais interessados em processamento local de áudio. \\
+\addlinespace
+Questionário & Instrumento exploratório sobre ruído em sinais diversos. & Levantamento de requisitos para aplicações de voz: ruídos prioritários, latência, naturalidade, privacidade, operação offline, custo e energia. \\
+\addlinespace
+Hardware & Possível consequência futura pouco delimitada. & Continuidade planejada: Raspberry Pi primeiro, ESP32 depois, Arduino Uno R3 apenas como limitação/trabalho futuro. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\section{Resumo do projeto reformulado}
+
+O projeto reformulado tem como objetivo estudar, implementar e comparar técnicas de redução de ruído local para voz humana, com ênfase em operação de baixa latência e em futura viabilidade embarcada. Na etapa atual, será desenvolvido um pipeline em ambiente computacional convencional, como Windows ou Linux, capaz de carregar amostras de voz, selecionar ou sintetizar ruídos, gerar misturas em níveis controlados de SNR, aplicar métodos baseados em Transformada de Fourier de Curto Tempo (STFT) e Transformada Wavelet, reconstruir os sinais processados, calcular métricas objetivas e gerar gráficos comparativos.
+
+O trabalho não busca prometer remoção completa de ruído nem protótipo embarcado integral nesta fase. O objetivo é construir uma comparação reprodutível entre abordagens de processamento de sinais, avaliar seus trade-offs de qualidade, inteligibilidade, custo computacional, uso de memória e latência, e indicar qual caminho é mais promissor para uma validação em hardware no semestre seguinte.
+
+\subsection{Objetivo geral}
+
+Desenvolver e validar, em ambiente computacional convencional, um pipeline de redução de ruído para voz humana que permita comparar métodos baseados em Fourier/STFT e Wavelet quanto à preservação da fala, supressão de ruído, custo computacional, latência e viabilidade de continuidade em sistemas embarcados.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}[label=\alph*)]
+    \item reformular o problema de pesquisa para voz humana ruidosa, incorporando o feedback recebido sobre escopo e questionário;
+    \item modelar o sinal observado como fala limpa contaminada por ruído e definir critérios operacionais de redução de ruído;
+    \item implementar baselines baseados em STFT, como subtração espectral e ganho espectral inspirado em filtragem de Wiener;
+    \item implementar uma abordagem por Transformada Wavelet Discreta, com decomposição multirresolução e limiarização de coeficientes;
+    \item avaliar os métodos sob o mesmo conjunto de amostras de voz, ruídos, taxas de amostragem, durações e níveis de SNR;
+    \item calcular métricas como SNR de entrada e saída, melhoria de SNR, MSE e, quando adequado, SI-SDR, STOI ou PESQ com as devidas ressalvas;
+    \item medir tempo de processamento por quadro, fator de tempo real, latência algorítmica e uso aproximado de memória;
+    % \item refinar o questionário extensionista para que cada pergunta informe uma decisão técnica do projeto;
+    \item preparar um cronograma realista para o segundo semestre, com benchmark algorítmico antes de integração embarcada.
+\end{enumerate}
+
+\section{Problema de pesquisa e hipótese de trabalho}
+
+O sinal observado será modelado, em tempo discreto, como
+\begin{equation}
+    y[n] = x[n] + r[n],
+    \label{eq:modelo-ruidoso}
+\end{equation}
+em que \(x[n]\) representa a fala limpa, \(r[n]\) representa o ruído acústico e \(y[n]\) é a fala ruidosa disponível ao sistema. Em aplicações reais, \(x[n]\) não é observado diretamente durante a operação; ele é usado no protocolo experimental apenas quando há referência limpa para cálculo de métricas.
+
+O problema de pesquisa pode ser formulado da seguinte maneira: sob restrições de baixa latência e custo computacional moderado, quais compromissos práticos aparecem ao comparar técnicas de redução de ruído de voz baseadas em STFT/Fourier e em Wavelet?
+
+A hipótese de trabalho é que métodos baseados em STFT tendem a oferecer uma linha de base simples, interpretável e eficiente para ruídos aproximadamente estacionários ou com separação espectral razoável, enquanto métodos baseados em Wavelet podem ser promissores quando a estrutura da fala e do ruído aparece de modo mais localizado no tempo ou em escalas distintas. Essa hipótese será tratada como pergunta experimental, não como conclusão antecipada. O objetivo não é ``eliminar todo ruído'', mas estimar \(\hat{x}[n]\), uma versão processada que preserve inteligibilidade e naturalidade da fala com custo viável.
+
+\section{Fundamentação teórica e matemática}
+
+\subsection{Voz ruidosa e redução operacional de ruído}
+
+A voz humana é um sinal não estacionário, com estrutura temporal, espectral e articulatória variável ao longo de uma frase. Vogais, consoantes, pausas, fricativas e transientes ocupam regiões diferentes no tempo e na frequência. Por isso, uma técnica de redução de ruído precisa evitar dois erros opostos: deixar ruído demais, reduzindo a inteligibilidade, ou suprimir componentes relevantes da fala, gerando voz artificial, abafada ou distorcida.
+
+Neste projeto, a redução de ruído será definida operacionalmente como a construção de um estimador \(\hat{x}[n] = \mathcal{D}\{y[n]\}\), em que \(\mathcal{D}\) representa o algoritmo de denoising. A qualidade de \(\hat{x}[n]\) será avaliada por métricas objetivas, inspeção de formas de onda, espectrogramas, escuta controlada pelos autores e análise de custo computacional. A métrica central não será uma pontuação isolada, mas o conjunto de trade-offs entre supressão de ruído, preservação da fala, latência e viabilidade de implementação.
+
+\subsection{Abordagem por Fourier e STFT}
+
+Como a fala varia ao longo do tempo, a Transformada de Fourier aplicada ao sinal inteiro perde a localização temporal das componentes espectrais. A STFT contorna essa limitação dividindo o sinal em quadros curtos, multiplicados por uma janela \(w[n]\), com salto \(H\) e tamanho de FFT \(N\). Para o quadro \(m\) e o bin de frequência \(k\), define-se
+\begin{equation}
+    Y[m,k] = \sum_{n=0}^{N-1} y[n+mH]\,w[n]\,e^{-j2\pi kn/N}.
+    \label{eq:stft}
+\end{equation}
+
+Os parâmetros \(N\), \(H\), tipo de janela e sobreposição controlam o compromisso entre resolução temporal, resolução em frequência e latência. Janelas maiores melhoram a discriminação espectral, mas aumentam atraso e memória. Janelas menores reduzem latência, mas podem degradar a estimativa espectral. Para fala a 16 kHz, serão testadas janelas entre 20 ms e 32 ms, com sobreposição de 50\% a 75\%, por serem escolhas comuns em processamento de voz.
+
+A linha de base espectral será implementada inicialmente por subtração espectral. Estima-se a magnitude média do ruído \(|\hat{R}[m,k]|\), por exemplo a partir de trechos sem fala ou por média temporal suavizada, e calcula-se
+\begin{equation}
+    |\hat{X}[m,k]| = \max\left(|Y[m,k]| - \alpha |\hat{R}[m,k]|,\; \beta |Y[m,k]|\right),
+    \label{eq:subtracao}
+\end{equation}
+em que \(\alpha\) controla a agressividade da supressão e \(\beta\) define um piso espectral para reduzir artefatos. Em uma variação por ganho espectral, aplica-se
+\begin{equation}
+    \hat{X}[m,k] = G[m,k]Y[m,k],
+\end{equation}
+com \(G[m,k]\) inspirado em filtragem de Wiener, por exemplo \(G=\xi/(1+\xi)\), em que \(\xi\) é uma estimativa da SNR a priori no bin analisado. Inicialmente será preservada a fase do sinal ruidoso, aproximação comum em métodos clássicos de realce de fala.
+
+A reconstrução temporal será feita por iSTFT e overlap-add:
+\begin{equation}
+    \hat{x}[n] =
+    \frac{\sum_m \hat{x}_m[n-mH]\,w[n-mH]}
+    {\sum_m w^2[n-mH] + \varepsilon},
+    \label{eq:ola}
+\end{equation}
+em que \(\varepsilon\) evita divisão por zero em regiões de borda. Essa formulação torna a abordagem adequada a processamento por blocos e permite medir diretamente tempo por quadro e fator de tempo real.
+
+\subsection{Abordagem por Wavelet}
+
+Wavelets são relevantes para sinais não estacionários porque representam o sinal em diferentes escalas de tempo, em vez de usar apenas senos e cossenos globais. A Transformada Wavelet Discreta (DWT) decompõe o sinal em coeficientes de aproximação e detalhe. De forma conceitual,
+\begin{equation}
+    a_{J,k} = \langle y,\phi_{J,k}\rangle,\qquad
+    d_{j,k} = \langle y,\psi_{j,k}\rangle,
+    \label{eq:dwt}
+\end{equation}
+em que \(\phi_{J,k}\) representa funções de escala no nível \(J\) e \(\psi_{j,k}\) representa wavelets em diferentes níveis \(j\). Em implementação discreta, essa decomposição é obtida por bancos de filtros passa-baixas e passa-altas, seguidos de subamostragem.
+
+A hipótese operacional do denoising por wavelets é que componentes estruturais da fala tendem a se concentrar em coeficientes relevantes, enquanto ruídos de menor estrutura podem se espalhar por coeficientes menores. Assim, aplica-se limiarização aos coeficientes de detalhe. Na limiarização dura,
+\begin{equation}
+    \eta_H(d;\lambda) =
+    \begin{cases}
+        d, & |d| \geq \lambda,\\
+        0, & |d| < \lambda,
+    \end{cases}
+\end{equation}
+enquanto na limiarização suave,
+\begin{equation}
+    \eta_S(d;\lambda) =
+    \operatorname{sgn}(d)\max(|d|-\lambda,0).
+\end{equation}
+
+O limiar \(\lambda\) poderá ser definido por regra universal, por estimativa robusta do desvio padrão do ruído ou por ajuste experimental em validação. Serão avaliadas famílias como Daubechies, Symlets e Coiflets, com diferentes níveis de decomposição. A obra de Morettin sobre ondas e ondaletas será usada como base conceitual em português para amadurecer a relação entre análise de Fourier, análise de ondaletas e séries temporais; Mallat e Daubechies sustentam a formulação matemática mais geral da análise multirresolução.
+
+\subsection{Trade-offs esperados}
+
+A abordagem STFT tem como vantagem a maturidade de bibliotecas, a interpretação direta por espectrogramas, a relação clara com subtração espectral e filtragem de Wiener, e a integração natural com processamento por quadros. Seu risco principal é a criação de artefatos, especialmente ruído musical, além da dependência de estimativa adequada do ruído.
+
+A abordagem Wavelet pode preservar estruturas localizadas e transientes, com custo computacional potencialmente baixo na DWT, mas depende fortemente da escolha da wavelet, do nível de decomposição, do limiar e do tratamento de bordas. Em fala, a vantagem não deve ser presumida: ela precisa aparecer nas métricas e na análise perceptual. A comparação proposta, portanto, busca identificar em que condições cada técnica é suficiente, promissora ou inadequada.
+
+\section{Metodologia experimental proposta}
+
+\subsection{Pipeline em ambiente computacional convencional}
+
+Nesta etapa foi implementado um pipeline inicial em PC, em Python, usando NumPy, SciPy, PyWavelets, pandas e Matplotlib. A implementação ficou concentrada no pacote \texttt{benchmark\_audio/}, com execução por linha de comando, sem depender de notebook. O comando principal de reprodução é:
+
+\begin{center}
+\texttt{python -m benchmark\_audio.run\_benchmark --prepare-demo-data}
+\end{center}
+
+O pipeline implementado executa os seguintes passos:
+
+\begin{enumerate}
+    \item baixa pequenas amostras públicas de fala humana do Free Spoken Digit Dataset, quando ainda não estão presentes localmente;
+    \item padroniza os sinais para áudio mono, 16 kHz e amplitude normalizada;
+    \item monta trechos demonstrativos de 3 s por concatenação de dígitos falados, com silêncio inicial de 0,30 s para estimativa simples de ruído;
+    \item gera ruídos controlados por script: branco, rosa, hum de 60/120 Hz e impulsivo;
+    \item mistura fala e ruído em SNRs alvo de \(-5\), 0, 5 e 10 dB;
+    \item aplica, sob as mesmas misturas, baseline ruidoso, STFT por subtração espectral, STFT com ganho inspirado em Wiener e Wavelet DWT com limiarização soft;
+    \item reconstrói os sinais processados e calcula SNR, melhoria de SNR, MSE, SI-SDR, tempo de processamento, RTF, latência algorítmica e memória aproximada;
+    \item gera automaticamente tabelas CSV, figuras e exemplos curtos de áudio em \texttt{resultados/}.
+\end{enumerate}
+
+O experimento gerado possui 5 trechos de fala, 4 tipos de ruído, 4 níveis de SNR e 4 métodos, totalizando 320 linhas de métricas em \texttt{resultados/tabelas/metricas\_por\_condicao.csv}. Os resultados resumidos aparecem na Tabela~\ref{tab:resultados-preliminares}.
+
+\subsection{Amostras de voz, ruídos e níveis de SNR}
+
+Sempre que possível, serão priorizadas bases públicas e bem documentadas, evitando coleta própria de voz nesta fase. Nesta implementação preliminar, a fala humana foi obtida do Free Spoken Digit Dataset, por ser uma base pública, leve e adequada para validar o pipeline sem baixar bases grandes. Não foram coletadas vozes próprias nem dados pessoais.
+
+Os ruídos desta etapa foram sintetizados por script para garantir reprodutibilidade e execução leve: ruído branco, ruído rosa, hum de rede elétrica e ruído impulsivo. Essa decisão permite validar mistura, processamento, métricas e geração de gráficos, mas limita a validade externa. A próxima etapa deve substituir ou complementar esses ruídos por DEMAND, VoiceBank--DEMAND ou base ambiental equivalente.
+
+Os níveis de SNR de entrada usados foram \(-5\), 0, 5 e 10 dB. Para cada condição, todos os métodos processaram exatamente a mesma mistura, evitando comparação enviesada.
+
+\subsection{Controle de variáveis}
+
+As comparações foram feitas por pares: cada amostra ruidosa foi processada por todos os métodos selecionados. Foram registrados semente de geração, normalização, amostra de voz, tipo de ruído, taxa de amostragem, SNR alvo e parâmetros dos algoritmos. A semente usada foi 3527. Ainda não houve separação formal entre conjunto de validação e conjunto final; portanto, os números devem ser interpretados como benchmark preliminar de baselines, não como resultado final otimizado.
+
+\begin{table}[!htbp]
+\centering
+\caption{Parâmetros usados no benchmark preliminar.}
+\label{tab:protocolo}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm}X}
+\toprule
+\textbf{Item} & \textbf{Valor usado nesta etapa} \\
+\midrule
+Taxa de amostragem & 16 kHz. \\
+\addlinespace
+Duração dos trechos & 3 s por amostra, com normalização de amplitude antes da mistura. \\
+\addlinespace
+SNR de entrada & \(-5\), 0, 5 e 10 dB, calculados antes do processamento. \\
+\addlinespace
+STFT & Janela Hann, \(N=512\), salto de 160 amostras, equivalente a 10 ms; subtração espectral com \(\alpha=1{,}2\) e piso 0,03; ganho Wiener simples com piso 0,05. \\
+\addlinespace
+Wavelet & DWT com família \texttt{db4}, nível 5, limiarização soft e estimativa robusta de ruído por MAD. \\
+\addlinespace
+Saídas & CSVs de métricas, resumo por método/SNR, figuras de SNR e RTF, forma de onda, espectrograma e áudios curtos de demonstração. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\section{Métricas e análise de custo computacional}
+
+\subsection{Métricas de qualidade e inteligibilidade}
+
+As métricas centrais desta etapa foram simples e reprodutíveis. A SNR de entrada ou saída foi calculada, quando havia referência limpa, por
+\begin{equation}
+    \mathrm{SNR} = 10\log_{10}
+    \frac{\sum_n x^2[n]}{\sum_n (x[n]-\hat{x}[n])^2}.
+\end{equation}
+A melhoria de SNR foi calculada por
+\begin{equation}
+    \Delta\mathrm{SNR} = \mathrm{SNR}_{\mathrm{out}} - \mathrm{SNR}_{\mathrm{in}}.
+\end{equation}
+Também foi registrado o erro quadrático médio,
+\begin{equation}
+    \mathrm{MSE} = \frac{1}{N}\sum_{n=0}^{N-1}(x[n]-\hat{x}[n])^2.
+\end{equation}
+
+Também foi calculada a SI-SDR, por ser menos dependente de escala global. Para uma estimativa \(\hat{x}\), define-se uma projeção \(s_{\mathrm{alvo}} = \alpha x\), com \(\alpha = \langle \hat{x},x\rangle/\|x\|^2\), e calcula-se
+\begin{equation}
+    \mathrm{SI\text{-}SDR} =
+    10\log_{10}\frac{\|s_{\mathrm{alvo}}\|^2}{\|\hat{x}-s_{\mathrm{alvo}}\|^2}.
+\end{equation}
+
+STOI e PESQ não foram usados nesta etapa. A decisão foi manter o primeiro benchmark em métricas simples, auditáveis e sem dependências adicionais ou restrições práticas de licença. Essas métricas perceptuais continuam relevantes para etapas posteriores, mas não substituem a análise de SNR, SI-SDR, espectrogramas e escuta crítica.
+
+\begin{table}[!htbp]
+\centering
+\caption{Resultados médios preliminares por método e SNR alvo.}
+\label{tab:resultados-preliminares}
+\footnotesize
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedleft\arraybackslash}p{1.3cm}>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.9cm}>{\raggedleft\arraybackslash}p{1.9cm}>{\raggedleft\arraybackslash}p{1.8cm}>{\raggedleft\arraybackslash}p{1.2cm}}
+\toprule
+\textbf{SNR alvo} & \textbf{Método} & \textbf{SNR saída} & \textbf{Melhoria} & \textbf{SI-SDR} & \textbf{RTF} \\
+\textbf{(dB)} & & \textbf{(dB)} & \textbf{(dB)} & \textbf{(dB)} & \\
+\midrule
+-5 & Ruidoso & -5,00 & 0,00 & -5,00 & 0,0000 \\
+-5 & STFT Wiener & 2,46 & 7,46 & 1,37 & 0,0012 \\
+-5 & STFT subtração & 4,63 & 9,63 & 2,96 & 0,0021 \\
+-5 & Wavelet soft & -2,85 & 2,15 & -7,23 & 0,0003 \\
+\addlinespace
+0 & Ruidoso & 0,00 & 0,00 & -0,01 & 0,0000 \\
+0 & STFT Wiener & 6,89 & 6,89 & 6,38 & 0,0012 \\
+0 & STFT subtração & 8,42 & 8,42 & 7,76 & 0,0020 \\
+0 & Wavelet soft & 1,16 & 1,16 & -1,13 & 0,0003 \\
+\addlinespace
+5 & Ruidoso & 5,00 & 0,00 & 4,99 & 0,0000 \\
+5 & STFT Wiener & 11,22 & 6,22 & 11,01 & 0,0012 \\
+5 & STFT subtração & 12,15 & 7,15 & 12,06 & 0,0020 \\
+5 & Wavelet soft & 5,15 & 0,15 & 4,08 & 0,0003 \\
+\addlinespace
+10 & Ruidoso & 10,00 & 0,00 & 9,99 & 0,0000 \\
+10 & STFT Wiener & 15,49 & 5,49 & 15,44 & 0,0012 \\
+10 & STFT subtração & 15,89 & 5,89 & 16,12 & 0,0021 \\
+10 & Wavelet soft & 9,08 & -0,92 & 8,71 & 0,0003 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Tempo real, memória e latência}
+
+A viabilidade para tempo real foi avaliada inicialmente por:
+\begin{equation}
+    \mathrm{RTF} = \frac{T_{\mathrm{proc}}}{T_{\mathrm{audio}}},
+\end{equation}
+em que \(\mathrm{RTF}<1\) indica processamento mais rápido que o tempo do áudio. Nesta etapa foram registrados tempo total por arquivo, RTF médio por método, latência algorítmica estimada e memória aproximada. Medições por quadro, pior caso e desvio padrão devem ser refinadas na etapa de execução por blocos.
+
+A latência algorítmica foi estimada a partir do tamanho da janela, do salto e do tipo de método. Para STFT causal por blocos, janelas de 20 ms a 32 ms já impõem um piso de atraso associado ao enquadramento. Para Wavelet em blocos, a latência dependerá do tamanho do bloco, do tratamento de bordas e da necessidade de amostras futuras. A meta inicial continua sendo manter atraso total abaixo de 100 ms em PC e discutir a possibilidade de meta mais exigente, como 50 ms, apenas se os resultados forem compatíveis.
+
+O uso de memória foi aproximado pelo tamanho dos buffers de entrada e saída, matrizes de coeficientes, espectrogramas temporários, parâmetros dos algoritmos e estruturas auxiliares. No benchmark preliminar em PC, todos os métodos rodaram muito abaixo do tempo real: a STFT por subtração espectral apresentou RTF médio de aproximadamente 0,0021, a STFT Wiener aproximadamente 0,0012 e a Wavelet soft aproximadamente 0,00032. Esses valores indicam folga em PC, mas não devem ser transferidos diretamente para microcontroladores, pois bibliotecas vetorizadas e memória abundante mascaram custos de portabilidade.
+
+A análise de hardware nesta fase aponta Raspberry Pi como a primeira plataforma embarcada plausível, por manter Linux, Python/C++ e memória suficiente para depuração. ESP32/ESP32-S3 deve ser considerado apenas depois de simplificar buffers, dependências e representação numérica. O Arduino Uno R3 segue como referência de limitação severa: 2 KB de SRAM, 32 KB de flash, ausência de FPU e falta de interface de áudio adequada tornam STFT/Wavelet de voz em tempo real impraticável sem simplificações extremas ou hardware externo.
+
+\section{Referências bibliográficas e papel de cada referência}
+
+A bibliografia será usada como suporte de decisões técnicas, não como lista decorativa. Oppenheim e Schafer, Proakis e Manolakis fundamentam amostragem, DFT, FFT, janelamento e processamento digital discreto. Boll justifica a subtração espectral como baseline clássico. Ephraim e Malah sustentam a formulação estatística por amplitude espectral de curto termo. Loizou organiza a área de realce de fala, métricas e trade-offs perceptuais. Morettin, Mallat e Daubechies sustentam a análise por ondaletas e multirresolução. Donoho e Donoho--Johnstone sustentam a limiarização wavelet. Taal et al. e ITU-T P.862 fundamentam a discussão sobre métricas perceptuais, com ressalvas de uso. VoiceBank--DEMAND, DEMAND, LibriSpeech e FSDD apoiam a construção de protocolo experimental reprodutível. NumPy, SciPy, PyWavelets e Matplotlib documentam as ferramentas usadas no pipeline preliminar.
+
+\begin{table}[!htbp]
+\centering
+\caption{Função das referências no projeto reformulado.}
+\label{tab:referencias-papel}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm}X}
+\toprule
+\textbf{Referência} & \textbf{Papel no relatório e na metodologia} \\
+\midrule
+Oppenheim e Schafer; Proakis e Manolakis & Fundamentam processamento discreto, DFT, FFT, janelamento, filtragem e reconstrução. \\
+\addlinespace
+Boll; Ephraim e Malah; Loizou & Sustentam métodos espectrais clássicos de realce de fala, incluindo subtração espectral, estimadores MMSE e discussão de artefatos. \\
+\addlinespace
+Morettin; Mallat; Daubechies & Organizam a passagem de Fourier para ondaletas, análise multirresolução, escolha de bases e interpretação de coeficientes tempo-escala. \\
+\addlinespace
+Donoho; Donoho e Johnstone & Justificam denoising por limiarização hard/soft e shrinkage em coeficientes wavelet. \\
+\addlinespace
+Taal et al.; ITU-T P.862 & Orientam o uso cauteloso de STOI e PESQ como métricas perceptuais dependentes de referência limpa. \\
+\addlinespace
+VoiceBank--DEMAND, DEMAND e LibriSpeech & Apoiam a seleção de fala limpa e ruídos ambientais para misturas controladas e comparação reprodutível. \\
+\addlinespace
+FSDD & Fornece amostras públicas pequenas de fala humana para validação leve do pipeline demonstrativo. \\
+\addlinespace
+NumPy, SciPy, PyWavelets e Matplotlib & Sustentam a implementação computacional reprodutível, incluindo vetorização, STFT/iSTFT, DWT e geração automática de gráficos. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\section{Atividades realizadas e resultados obtidos nesta fase}
+
+Nesta fase, além da reformulação técnica do anteprojeto, foi implementado e executado um benchmark preliminar em PC. As atividades realizadas foram:
+
+\begin{enumerate}[label=\alph*)]
+    \item análise crítica da entrega anterior, identificando elementos a preservar: estrutura acadêmica, preocupação com métricas, cronograma, referências clássicas e atividade extensionista;
+    \item leitura da reformulação do tema, do questionário extensionista já ajustado e do dossiê técnico, filtrando o que era específico de PIBITI;
+    \item incorporação do feedback do professor, com redução do escopo para voz humana e comunicação em tempo real;
+    \item redefinição do problema de pesquisa em torno do modelo \(y[n]=x[n]+r[n]\);
+    \item seleção da comparação central do projeto: Fourier/STFT versus Wavelet;
+    \item definição de protocolo experimental inicial com amostras de voz, ruídos, níveis de SNR, métricas e análise de custo computacional;
+    \item refinamento do questionário extensionista para que cada pergunta gere informação acionável;
+    \item reorganização do cronograma para priorizar benchmark algorítmico em PC antes de qualquer integração embarcada;
+    \item criação do pacote \texttt{benchmark\_audio/}, com script de execução por linha de comando;
+    \item implementação de leitura e padronização de WAV, geração de ruídos, mistura por SNR, reconstrução e cálculo de métricas;
+    \item implementação dos baselines ruidoso, STFT por subtração espectral, STFT com ganho inspirado em Wiener e Wavelet DWT com limiarização soft;
+    \item geração de tabelas, figuras e áudios curtos de demonstração em \texttt{resultados/};
+    \item registro de diário técnico, auditoria crítica dos resultados e checkpoints versionados em Git.
+\end{enumerate}
+
+Os resultados obtidos ainda são preliminares, mas já deixam de ser apenas metodológicos. O experimento usou 5 trechos de fala humana do FSDD, 4 ruídos sintetizados, SNRs de \(-5\), 0, 5 e 10 dB e 4 métodos. O baseline ruidoso confirmou melhoria de SNR igual a zero, como controle. A STFT por subtração espectral apresentou a maior melhoria média de SNR no arranjo testado, entre 5,89 dB e 9,63 dB. A STFT Wiener também melhorou a SNR, entre 5,49 dB e 7,46 dB. A Wavelet soft foi mais rápida, mas teve ganho pequeno e inconsistente, inclusive piorando a SNR média em 0,92 dB no caso de SNR alvo de 10 dB.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/barras_melhoria_snr.png}}
+\caption{Melhoria média de SNR por método no benchmark preliminar.}
+\label{fig:melhoria-snr}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/barras_rtf.png}}
+\caption{Fator de tempo real médio por método no benchmark preliminar.}
+\label{fig:rtf}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/exemplo_formas_onda.png}}
+\caption{Exemplo de forma de onda limpa, ruidosa, processada por STFT e processada por Wavelet.}
+\label{fig:formas-onda}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/exemplo_espectrogramas.png}}
+\caption{Exemplo de espectrograma para os mesmos sinais da Figura~\ref{fig:formas-onda}.}
+\label{fig:espectrogramas}
+\end{figure}
+\FloatBarrier
+
+Os arquivos de áudio de demonstração foram salvos em \texttt{resultados/audio/}. Eles incluem a fala limpa, a mistura ruidosa e as saídas dos métodos STFT e Wavelet para uma condição representativa. Esses arquivos são úteis para apresentação, mas não substituem uma avaliação perceptual formal.
+
+\section{Avaliação do andamento e justificativa dos desvios}
+
+O cronograma anterior previa continuidade de uma revisão sistemática ampla sobre redução de ruído em sinais unidimensionais. O desvio principal foi a interrupção dessa abrangência para reformular o projeto em torno de voz humana. Esse desvio é justificado pelo feedback recebido e pela necessidade de tornar o anteprojeto mais defensável, mensurável e conectado a uma implementação realista.
+
+A mudança exigiu reescrever objetivos, público-alvo, questionário, referências e cronograma. Em compensação, reduziu riscos relevantes: evita uma revisão descritiva demais, permite comparação sob condições controladas e produz critérios objetivos para decidir a etapa embarcada. Parte da estratégia prevista para o início do segundo semestre foi antecipada: já há leitura de áudio, mistura por SNR, baselines STFT e Wavelet, métricas objetivas, gráficos e exemplos de áudio.
+
+O andamento do projeto é considerado adequado após a reformulação e o primeiro benchmark. O sucesso da próxima fase não dependerá de implementar todas as plataformas possíveis, mas de amadurecer a comparação entre STFT e Wavelet com ruídos ambientais reais, ajuste mais cuidadoso de parâmetros, escuta crítica organizada, discussão de latência e recomendação técnica fundamentada para Raspberry Pi.
+
+\section{Questionário extensionista refinado}
+
+\subsection{Público-alvo e plano de aplicação}
+
+O público-alvo passa a ser composto por pessoas afetadas por ruído em comunicação por voz: estudantes em aulas remotas, profissionais em reuniões online, usuários de chamadas de voz, pessoas que gravam áudio, trabalhadores em ambientes ruidosos, participantes de jogos online, docentes, pesquisadores e profissionais de engenharia ou tecnologia interessados em processamento local de voz.
+
+O formulário será voluntário, sem coleta obrigatória de nome, documento, endereço, voz gravada ou dado sensível. As respostas serão analisadas de forma agregada e usadas para orientar escolhas técnicas: ruídos de teste, latência-alvo, agressividade de supressão, importância de operação offline, privacidade, custo, consumo energético e acessibilidade. O questionário não substitui o benchmark experimental; ele traduz percepção de usuários em requisitos de projeto.
+
+\subsection{Questionário proposto}
+
+\setcounter{pergunta}{0}
+
+\begin{blocoFormulario}{Texto de abertura do formulário}
+\small
+Este questionário integra a atividade extensionista da disciplina PTC3527 -- Anteprojeto de Formatura em Telecomunicações, da Escola Politécnica da USP. O projeto investiga técnicas de redução de ruído local para voz humana em cenários de comunicação, com foco inicial em comparação técnica entre métodos baseados em STFT/Fourier e Wavelet. A participação é voluntária. Não é necessário informar nome, documento, endereço ou enviar gravações de voz. As respostas serão analisadas de forma agregada e usadas para orientar requisitos técnicos do projeto.
+\end{blocoFormulario}
+
+\secaoQuestionario{Bloco 1 -- Contexto de uso}
+
+\begin{perguntaFormulario}{Em quais situações o ruído mais prejudica sua comunicação por voz?}
+\orientacaoResposta{Múltipla seleção.}
+\begin{opcoesFormularioDuasColunas}
+    \item Reuniões online
+    \item Chamadas de voz
+    \item Aulas remotas
+    \item Transporte público
+    \item Ambientes industriais
+    \item Jogos online
+    \item Gravações de áudio
+    \item Ambiente de trabalho
+    \opcaoCampo{Outra}
+\end{opcoesFormularioDuasColunas}
+\usoPergunta{definir cenários prioritários de teste e exemplos de aplicação a serem discutidos no relatório.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Quais tipos de ruído mais incomodam ou prejudicam a inteligibilidade da voz?}
+\orientacaoResposta{Múltipla seleção.}
+\begin{opcoesFormularioDuasColunas}
+    \item Ventilador ou ar-condicionado
+    \item Trânsito
+    \item Vozes ao fundo
+    \item Teclado
+    \item Televisão ou música
+    \item Vento
+    \item Motor
+    \item Eco ou reverberação
+    \item Ruído branco
+    \opcaoCampo{Outro}
+\end{opcoesFormularioDuasColunas}
+\usoPergunta{priorizar ruídos em bases públicas, misturas sintéticas e gráficos comparativos.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Em qual aplicação a melhoria da voz seria mais útil para você?}
+\orientacaoResposta{Escolha única.}
+\begin{opcoesFormulario}
+    \item Comunicação ao vivo, como chamadas e reuniões
+    \item Gravação posterior, como vídeos, podcasts ou aulas
+    \item Reconhecimento automático de fala ou legendas
+    \item Monitoramento em ambiente profissional ou industrial
+    \opcaoCampo{Outra}
+\end{opcoesFormulario}
+\usoPergunta{ajustar a ênfase entre latência, qualidade final e inteligibilidade para sistemas automáticos.}
+\end{perguntaFormulario}
+
+\secaoQuestionario{Bloco 2 -- Requisitos técnicos}
+
+\begin{perguntaFormulario}{Quais características você considera mais importantes em uma solução de redução de ruído de voz?}
+\orientacaoResposta{Escolha até três opções.}
+\begin{opcoesFormularioDuasColunas}
+    \item Baixa latência
+    \item Voz natural
+    \item Máxima remoção de ruído
+    \item Funcionamento offline
+    \item Baixo consumo de bateria
+    \item Privacidade
+    \item Compatibilidade com dispositivos simples
+    \item Facilidade de uso
+    \item Estabilidade
+\end{opcoesFormularioDuasColunas}
+\usoPergunta{definir pesos qualitativos para comparar qualidade, custo computacional, privacidade e viabilidade embarcada.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Qual atraso máximo você considera aceitável em uma comunicação por voz ao vivo?}
+\orientacaoResposta{Escolha única.}
+\begin{opcoesFormulario}
+    \item Imperceptível
+    \item Até 50 ms
+    \item Até 100 ms
+    \item Mais de 100 ms
+    \item Não sei avaliar
+\end{opcoesFormulario}
+\usoPergunta{orientar tamanho de janelas, buffers, salto da STFT, tamanho de blocos Wavelet e meta de tempo real.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Você aceitaria pequena perda de naturalidade da voz em troca de maior remoção de ruído?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Não aceitaria}{Aceitaria totalmente}
+\usoPergunta{calibrar agressividade de subtração espectral, ganho espectral e limiares Wavelet.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{O que seria pior em uma solução de redução de ruído?}
+\orientacaoResposta{Escolha única.}
+\begin{opcoesFormulario}
+    \item Deixar ruído demais
+    \item Deixar a voz artificial ou metálica
+    \item Cortar partes da fala
+    \item Gerar atraso perceptível
+    \item Funcionar bem só em alguns ambientes
+\end{opcoesFormulario}
+\usoPergunta{identificar qual tipo de erro deve receber maior atenção na análise qualitativa e nos ajustes de parâmetros.}
+\end{perguntaFormulario}
+
+\secaoQuestionario{Bloco 3 -- Privacidade, acesso e energia}
+
+\begin{perguntaFormulario}{Você considera importante que a solução funcione sem internet?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Pouco importante}{Muito importante}
+\usoPergunta{justificar processamento local e avaliar a relevância de evitar dependência de nuvem.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Você se sentiria confortável enviando sua voz para processamento em nuvem?}
+\orientacaoResposta{Escolha única.}
+\begin{opcoesFormulario}
+    \item Sim
+    \item Talvez, dependendo da aplicação
+    \item Não
+\end{opcoesFormulario}
+\usoPergunta{orientar a discussão sobre privacidade, processamento local e ausência de coleta de voz no projeto.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Quais fatores poderiam dificultar o uso de uma solução desse tipo?}
+\orientacaoResposta{Múltipla seleção.}
+\begin{opcoesFormularioDuasColunas}
+    \item Hardware caro
+    \item Necessidade de internet
+    \item Configuração complicada
+    \item Alto consumo de bateria
+    \item Interface complexa
+    \item Falta de compatibilidade
+    \item Falta de documentação
+    \opcaoCampo{Outro}
+\end{opcoesFormularioDuasColunas}
+\usoPergunta{informar escolhas de hardware, simplicidade do pipeline e critérios de acessibilidade.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{O consumo de energia deveria influenciar a escolha do método de redução de ruído?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Pouco importante}{Muito importante}
+\usoPergunta{relacionar qualidade de áudio com custo computacional, uso futuro em dispositivos portáteis e análise de viabilidade embarcada.}
+\end{perguntaFormulario}
+
+\secaoQuestionario{Bloco 4 -- Pergunta aberta}
+
+\begin{perguntaFormulario}{Qual problema relacionado a ruído em voz você considera mais importante resolver?}
+\campoAberto{Resposta aberta.}
+\usoPergunta{revelar cenários não previstos e orientar a seleção final de ruídos, exemplos e limitações discutidas no relatório.}
+\end{perguntaFormulario}
+
+\section{Cronograma detalhado para o segundo semestre}
+
+O segundo semestre deve continuar organizado de forma progressiva, mas o benchmark preliminar antecipou parte das tarefas originalmente previstas para julho, agosto e setembro. A tabela~\ref{tab:cronograma-segundo-semestre} foi ajustada para consolidar o que já foi implementado e deslocar o foco seguinte para bases ambientais reais, ajuste de parâmetros e preparação de portabilidade.
+
+\begin{table}[!htbp]
+\centering
+\caption{Cronograma proposto para o segundo semestre de 2026.}
+\label{tab:cronograma-segundo-semestre}
+\small
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm}XX}
+\toprule
+\textbf{Período} & \textbf{Atividades} & \textbf{Entregas esperadas} \\
+\midrule
+Julho & Consolidar o protocolo após o benchmark preliminar, substituir ou complementar ruídos sintéticos por DEMAND/VoiceBank--DEMAND, revisar licenças e organizar execução reproduzível em outro computador. & Protocolo revisado, dados ambientais documentados e reprodução independente do benchmark. \\
+\addlinespace
+Agosto & Refinamento dos baselines STFT já implementados: estimativa de ruído mais realista, análise de ruído musical, variação de janela/salto e comparação sem silêncio inicial garantido. & Tabelas e figuras STFT revisadas, com parâmetros justificados e limitações perceptuais discutidas. \\
+\addlinespace
+Setembro & Refinamento do pipeline Wavelet já implementado: testar \texttt{sym4}, limiar hard, limiares por escala e níveis de decomposição alternativos. & Comparação Wavelet mais justa contra STFT, com análise dos casos em que o método piora a fala. \\
+\addlinespace
+Outubro & Benchmark controlado ampliado com ruídos reais, múltiplas amostras e métricas objetivas; incluir escuta crítica estruturada pelos autores. & Tabelas e gráficos finais de qualidade, tempo, espectrogramas e discussão de limitações. \\
+\addlinespace
+Novembro & Análise de tempo real e portabilidade: medir latência por bloco, memória, RTF em ambiente menos potente e planejar teste em Raspberry Pi. & Relatório de viabilidade para Raspberry Pi; ESP32 como investigação posterior; Arduino Uno R3 documentado como limitação severa. \\
+\addlinespace
+Dezembro & Consolidação da monografia final, revisão do questionário e integração das respostas na discussão, preparação da apresentação e plano de continuidade embarcada. & Versão final do relatório, apresentação e plano para Raspberry Pi; ESP32 como etapa posterior se os custos forem compatíveis. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\section{Riscos técnicos e estratégias de mitigação}
+
+\begin{table}[!htbp]
+\centering
+\caption{Riscos técnicos do projeto e mitigação.}
+\label{tab:riscos}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm}XX}
+\toprule
+\textbf{Risco} & \textbf{Impacto} & \textbf{Mitigação} \\
+\midrule
+Escopo voltar a ficar amplo & Perda de foco e dificuldade de conclusão. & Manter voz humana como único tipo de sinal e STFT/Wavelet como comparação central. \\
+\addlinespace
+Ruídos escolhidos não representarem uso real & Baixa validade externa. & Usar questionário para priorizar ruídos e combinar bases públicas com misturas controladas. \\
+\addlinespace
+Métrica objetiva não refletir percepção & Conclusões frágeis sobre qualidade. & Combinar SNR, MSE, SI-SDR, espectrogramas, escuta crítica e, quando possível, STOI/PESQ com ressalvas. \\
+\addlinespace
+STFT ou Wavelet exigir parâmetros demais & Risco de comparação injusta. & Separar conjunto de validação para ajuste e conjunto final para comparação. Registrar todos os parâmetros. \\
+\addlinespace
+Latência incompatível com tempo real & Dificuldade de continuidade embarcada. & Medir tempo por quadro desde o início e limitar janelas/blocos a valores coerentes com comunicação por voz. \\
+\addlinespace
+Hardware inflar o projeto & Atraso e promessa excessiva. & Tratar hardware como continuidade: Raspberry Pi primeiro; ESP32 somente se o método final for simples; Arduino Uno R3 apenas como limitação futura. \\
+\addlinespace
+Ruídos sintéticos induzirem conclusão forte demais & Validade externa limitada e risco de superestimar desempenho. & Repetir o benchmark com ruídos ambientais reais e explicitar que os resultados atuais são preliminares. \\
+\addlinespace
+Estimativa de ruído depender de silêncio inicial & Comparação otimista para STFT e pouco realista em fala contínua. & Testar cenários sem silêncio inicial garantido e estimadores de ruído adaptativos. \\
+\addlinespace
+Wavelet ficar subajustada & Conclusão injusta contra a abordagem Wavelet. & Testar famílias, níveis e limiares alternativos antes de concluir inadequação do método. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\begin{table}[!htbp]
+\centering
+\caption{Análise preliminar de viabilidade embarcada.}
+\label{tab:viabilidade-embarcada}
+\small
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.8cm}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{3.2cm}X}
+\toprule
+\textbf{Plataforma} & \textbf{Recursos} & \textbf{Portabilidade} & \textbf{Recomendação} \\
+\midrule
+PC & Memória e processamento abundantes; bibliotecas maduras. & Ambiente de referência em Python. & Manter como base de validação, geração de figuras e comparação objetiva. \\
+\addlinespace
+Raspberry Pi & Centenas de MB a vários GB de RAM, Linux, USB áudio e I2S. & Python/C++ viável, com boa depuração. & Primeira plataforma embarcada plausível para teste de tempo real. \\
+\addlinespace
+ESP32/ESP32-S3 & SRAM na ordem de centenas de KB e flash em MB; I2S disponível em placas adequadas. & Exige C/C++, buffers pequenos e simplificação de dependências. & Avaliar apenas depois de reduzir memória, latência e complexidade. \\
+\addlinespace
+Arduino Uno R3 & 2 KB de SRAM, 32 KB de flash, sem FPU e sem I2S nativo. & FFT/DWT para voz exige buffers e coeficientes grandes demais. & Impraticável para STFT/Wavelet de voz em tempo real sem simplificações severas ou hardware externo. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\section{Considerações finais}
+
+Este segundo relatório reformula o anteprojeto de modo a responder diretamente ao feedback recebido e acrescenta um avanço experimental concreto. O projeto deixa de ser uma revisão ampla sobre sinais unidimensionais no tempo e passa a concentrar-se em redução de ruído local para voz humana, com comparação técnica entre STFT/Fourier e Wavelet. A atividade extensionista também foi ajustada: as perguntas deixam de ser genéricas e passam a informar decisões de engenharia, como ruídos de teste, latência aceitável, equilíbrio entre remoção de ruído e naturalidade, privacidade, operação offline, custo e consumo energético.
+
+A principal entrega desta fase agora inclui um pipeline funcional em PC, resultados preliminares, arquivos de áudio processado, tabelas, gráficos e uma auditoria crítica. No experimento demonstrativo, os métodos STFT melhoraram a SNR de forma mais consistente que a Wavelet soft, enquanto todos os métodos rodaram com RTF muito inferior a 1 em PC. Essa conclusão, porém, é deliberadamente limitada: os ruídos foram sintetizados, os parâmetros ainda não foram otimizados e não houve avaliação perceptual formal.
+
+O caminho técnico mais responsável é usar o benchmark atual como base reproduzível, ampliar os dados com ruídos ambientais reais, refinar os parâmetros Wavelet e STFT, e só então migrar o método mais promissor para Raspberry Pi. ESP32/ESP32-S3 permanece como investigação posterior. O Arduino Uno R3 deve ser tratado como plataforma inadequada para o pipeline atual, salvo em versões extremamente simplificadas ou com hardware externo.
+
+\newpage
+\addcontentsline{toc}{section}{Referências}
+\begin{thebibliography}{99}
+\setstretch{1.0}
+
+\bibitem{oppenheim2010} OPPENHEIM, A. V.; SCHAFER, R. W. \textit{Discrete-time signal processing}. 3. ed. Upper Saddle River: Pearson, 2010.
+
+\bibitem{proakis2007} PROAKIS, J. G.; MANOLAKIS, D. G. \textit{Digital signal processing: principles, algorithms, and applications}. 4. ed. Upper Saddle River: Pearson/Prentice Hall, 2007.
+
+\bibitem{boll1979} BOLL, S. F. Suppression of acoustic noise in speech using spectral subtraction. \textit{IEEE Transactions on Acoustics, Speech, and Signal Processing}, v. ASSP-27, n. 2, p. 113--120, 1979. DOI: \url{https://doi.org/10.1109/TASSP.1979.1163209}.
+
+\bibitem{ephraim1984} EPHRAIM, Y.; MALAH, D. Speech enhancement using a minimum mean-square error short-time spectral amplitude estimator. \textit{IEEE Transactions on Acoustics, Speech, and Signal Processing}, v. ASSP-32, n. 6, p. 1109--1121, 1984. DOI: \url{https://doi.org/10.1109/TASSP.1984.1164453}.
+
+\bibitem{loizou2013} LOIZOU, P. C. \textit{Speech enhancement: theory and practice}. 2. ed. Boca Raton: CRC Press, 2013.
+
+\bibitem{morettin2014} MORETTIN, P. A. \textit{Ondas e ondaletas: da análise de Fourier à análise de ondaletas de séries temporais}. 2. ed. São Paulo: EDUSP, 2014.
+
+\bibitem{mallat2009} MALLAT, S. \textit{A wavelet tour of signal processing: the sparse way}. 3. ed. Amsterdam: Academic Press, 2009.
+
+\bibitem{daubechies1992} DAUBECHIES, I. \textit{Ten lectures on wavelets}. Philadelphia: Society for Industrial and Applied Mathematics, 1992.
+
+\bibitem{donoho1995} DONOHO, D. L. De-noising by soft-thresholding. \textit{IEEE Transactions on Information Theory}, v. 41, n. 3, p. 613--627, 1995. DOI: \url{https://doi.org/10.1109/18.382009}.
+
+\bibitem{donohojohnstone1994} DONOHO, D. L.; JOHNSTONE, I. M. Ideal spatial adaptation by wavelet shrinkage. \textit{Biometrika}, v. 81, n. 3, p. 425--455, 1994. DOI: \url{https://doi.org/10.1093/biomet/81.3.425}.
+
+\bibitem{taal2011} TAAL, C. H.; HENDRIKS, R. C.; HEUSDENS, R.; JENSEN, J. An algorithm for intelligibility prediction of time-frequency weighted noisy speech. \textit{IEEE Transactions on Audio, Speech, and Language Processing}, v. 19, n. 7, p. 2125--2136, 2011. DOI: \url{https://doi.org/10.1109/TASL.2011.2114881}.
+
+\bibitem{itu2001} INTERNATIONAL TELECOMMUNICATION UNION. \textit{ITU-T Recommendation P.862: Perceptual evaluation of speech quality (PESQ): an objective method for end-to-end speech quality assessment of narrow-band telephone networks and speech codecs}. Geneva: ITU, 2001.
+
+\bibitem{voicebank} VALENTINI-BOTINHAO, C. \textit{Noisy speech database for training speech enhancement algorithms and TTS models}. University of Edinburgh DataShare, 2017. DOI: \url{https://doi.org/10.7488/ds/2117}.
+
+\bibitem{demand} THIEMANN, J.; ITO, N.; VINCENT, E. The Diverse Environments Multi-channel Acoustic Noise Database (DEMAND): a database of multichannel environmental noise recordings. \textit{Proceedings of Meetings on Acoustics}, v. 19, 035081, 2013. DOI: \url{https://doi.org/10.1121/1.4799597}.
+
+\bibitem{librispeech} PANAYOTOV, V.; CHEN, G.; POVEY, D.; KHUDANPUR, S. Librispeech: an ASR corpus based on public domain audio books. In: \textit{IEEE International Conference on Acoustics, Speech and Signal Processing}. Brisbane: IEEE, 2015. p. 5206--5210. DOI: \url{https://doi.org/10.1109/ICASSP.2015.7178964}.
+
+\bibitem{fsdd} JACKSON, Z. et al. \textit{Free Spoken Digit Dataset}. GitHub repository. Disponível em: \url{https://github.com/Jakobovski/free-spoken-digit-dataset}. Acesso em: 6 jun. 2026.
+
+\bibitem{rethage2018} RETHAGE, D.; PONS, J.; SERRA, X. A WaveNet for speech denoising. In: \textit{IEEE International Conference on Acoustics, Speech and Signal Processing}. Calgary: IEEE, 2018. p. 5069--5073. DOI: \url{https://doi.org/10.1109/ICASSP.2018.8462417}.
+
+\bibitem{numpy2020} HARRIS, C. R. et al. Array programming with NumPy. \textit{Nature}, v. 585, p. 357--362, 2020. DOI: \url{https://doi.org/10.1038/s41586-020-2649-2}.
+
+\bibitem{scipy2020} VIRTANEN, P. et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. \textit{Nature Methods}, v. 17, p. 261--272, 2020. DOI: \url{https://doi.org/10.1038/s41592-019-0686-2}.
+
+\bibitem{pywavelets2019} LEE, G. R.; GOMMERS, R.; WASELEWSKI, F.; WOHLFAHRT, K.; O'LEARY, A. PyWavelets: A Python package for wavelet analysis. \textit{Journal of Open Source Software}, v. 4, n. 36, p. 1237, 2019. DOI: \url{https://doi.org/10.21105/joss.01237}.
+
+\bibitem{matplotlib2007} HUNTER, J. D. Matplotlib: A 2D graphics environment. \textit{Computing in Science \& Engineering}, v. 9, n. 3, p. 90--95, 2007. DOI: \url{https://doi.org/10.1109/MCSE.2007.55}.
+
+\end{thebibliography}
+
+\end{document}
