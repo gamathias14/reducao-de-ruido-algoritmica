@@ -188,3 +188,11 @@ Este arquivo registra como o trabalho esta sendo conduzido, nao apenas os result
 ### Commit criado
 
 - `1df8e9c` - `tex: atualizar relatorio com resultados preliminares`
+
+### GitHub
+
+- Comando executado:
+  - `git push origin main`
+- Resultado:
+  - push realizado com sucesso para `https://github.com/gamathias14/reducao-de-ruido-algoritmica.git`.
+  - intervalo enviado: `cb4f070..43fe261`.

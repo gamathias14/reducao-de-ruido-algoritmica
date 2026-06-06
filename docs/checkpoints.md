@@ -106,3 +106,15 @@ Este arquivo registra pontos de parada organizados para retomada do trabalho.
   - medir latencia por blocos;
   - preparar reproducao em outro computador;
   - avaliar Raspberry Pi como primeira plataforma embarcada plausivel.
+
+## Checkpoint 4 - Sincronizacao com GitHub
+
+- Data: 2026-06-06
+- Estado: commits locais enviados para o remoto.
+- Comando:
+  - `git push origin main`
+- Remoto:
+  - `https://github.com/gamathias14/reducao-de-ruido-algoritmica.git`
+- Resultado:
+  - push concluido com sucesso;
+  - `main` remoto atualizado de `cb4f070` para `43fe261`.
