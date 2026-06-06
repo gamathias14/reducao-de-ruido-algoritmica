@@ -25,17 +25,19 @@ __pycache__/
 venv/
 env/
 
-# Large/local audio datasets and generated benchmark outputs
+# Large/local audio datasets
 dados/raw/
 dados/external/
+dados/demo/
 datasets/
 data/raw/
 data/external/
-*.wav
 *.flac
 *.mp3
 *.ogg
-resultados/audio/
+
+# Benchmark outputs that are intentionally kept lightweight may be versioned.
+# Keep raw datasets out of the repository; commit only short demo audio if needed.
 
 # Generated previews and temporary files
 previews/
