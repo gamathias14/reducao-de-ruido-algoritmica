@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "source": "Deterministic synthetic tones plus seeded Gaussian noise.",
+  "seed": 3527,
+  "sample_rate": 16000,
+  "samples": 12000,
+  "block_ms": 20.0,
+  "numeric_tolerance_float32": 1e-06,
+  "numeric_tolerance_pcm16": 3.0517578125e-05,
+  "expected_behavior": "Decode input to float32, process blocks in order with a reset processor, and compare decoded expected WAVs within the declared PCM16 tolerance.",
+  "artifacts": {
+    "noisy_input.wav": {
+      "sha256": "4fec7eccace30cee4da9f91627f2b725aa1471e7041da9da161662fe8268fd17",
+      "bytes": 24044
+    },
+    "expected_bypass.wav": {
+      "sha256": "4fec7eccace30cee4da9f91627f2b725aa1471e7041da9da161662fe8268fd17",
+      "bytes": 24044
+    },
+    "expected_causal_subtraction.wav": {
+      "sha256": "47f70c20306c7a602d2b1bb6a320ca6451f8c4f4229e8992ca8a856fb476a3ed",
+      "bytes": 24044
+    },
+    "config.json": {
+      "sha256": "c28f9c32337b9c08cdb0237b3a8d15de15e465463ec2b0ff9c78672815ae8942",
+      "bytes": 548
+    }
+  },
+  "private_data": false
+}

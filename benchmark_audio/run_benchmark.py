@@ -16,12 +16,24 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pywt
 from scipy import signal
-from scipy.io import wavfile
+
+from .denoise import (
+    DenoiseConfig,
+    SAMPLE_RATE,
+    estimate_memory_kb,
+    make_noise,
+    mix_at_snr,
+    mse,
+    normalize_peak,
+    process_method,
+    read_wav_mono,
+    si_sdr,
+    snr_db,
+    write_wav,
+)
 
 
-SAMPLE_RATE = 16_000
 DEFAULT_DURATION = 3.0
 DEFAULT_SEED = 3527
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,33 +44,36 @@ FSDD_BASE_URL = (
 )
 DEMO_SPEAKERS = ["jackson", "nicolas", "theo", "yweweler", "george"]
 DEMO_DIGITS = list(range(10))
+BENCHMARK_METHODS = ("noisy", "stft_subtraction", "stft_wiener", "wavelet_soft")
+METHOD_ORDER = list(BENCHMARK_METHODS)
+METHOD_LABELS = {
+    "noisy": "Ruidoso",
+    "stft_subtraction": "STFT subtracao",
+    "stft_wiener": "STFT Wiener",
+    "wavelet_soft": "Wavelet soft",
+}
+EXAMPLE_SIGNAL_ORDER = ["clean", "noisy", "stft_subtraction", "stft_wiener", "wavelet_soft"]
 
 
 @dataclass(frozen=True)
-class BenchmarkConfig:
-    sample_rate: int = SAMPLE_RATE
+class BenchmarkConfig(DenoiseConfig):
     duration_s: float = DEFAULT_DURATION
     seed: int = DEFAULT_SEED
     snrs_db: tuple[int, ...] = (-5, 0, 5, 10)
     noise_names: tuple[str, ...] = ("white", "pink", "hum", "impulsive")
-    n_fft: int = 512
-    hop_length: int = 160
-    noise_estimate_s: float = 0.25
-    spectral_alpha: float = 1.2
-    spectral_floor: float = 0.03
-    wiener_floor: float = 0.05
-    wavelet: str = "db4"
-    wavelet_level: int = 5
-    wavelet_mode: str = "soft"
 
 
-def ensure_dirs(root: Path) -> dict[str, Path]:
+def ensure_dirs(root: Path, results_dir: Path | None = None) -> dict[str, Path]:
+    results_root = results_dir or root / "resultados"
+    if not results_root.is_absolute():
+        results_root = root / results_root
     paths = {
         "raw": root / "dados" / "raw" / "fsdd",
         "demo_clean": root / "dados" / "demo" / "clean",
-        "tables": root / "resultados" / "tabelas",
-        "figures": root / "resultados" / "figuras",
-        "audio": root / "resultados" / "audio",
+        "tables": results_root / "tabelas",
+        "figures": results_root / "figuras",
+        "audio": results_root / "audio",
+        "pgfplots": results_root / "pgfplots",
     }
     for path in paths.values():
         path.mkdir(parents=True, exist_ok=True)
@@ -109,218 +124,268 @@ def prepare_demo_speech(paths: dict[str, Path], config: BenchmarkConfig) -> list
     return prepared
 
 
-def normalize_peak(x: np.ndarray, peak: float = 0.95) -> np.ndarray:
-    x = np.asarray(x, dtype=np.float32)
-    max_abs = float(np.max(np.abs(x))) if x.size else 0.0
-    if max_abs < 1e-12:
-        return x.copy()
-    return (x / max_abs * peak).astype(np.float32)
+def collect_noise_files(noise_dir: Path, max_noises: int | None = None) -> list[Path]:
+    files = sorted(path for path in noise_dir.glob("*.wav") if path.is_file())
+    if max_noises is not None:
+        files = files[:max_noises]
+    if not files:
+        raise FileNotFoundError(f"Nenhum WAV de ruido encontrado em {noise_dir}")
+    return files
 
 
-def read_wav_mono(path: Path, target_sr: int) -> np.ndarray:
-    sr, data = wavfile.read(path)
-    data = np.asarray(data)
-    if data.ndim == 2:
-        data = data.mean(axis=1)
-    if np.issubdtype(data.dtype, np.integer):
-        scale = float(np.iinfo(data.dtype).max)
-        data = data.astype(np.float32) / scale
+def noise_segment_from_file(
+    noise_path: Path,
+    duration_samples: int,
+    config: BenchmarkConfig,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    noise = read_wav_mono(noise_path, config.sample_rate)
+    if len(noise) < duration_samples:
+        repeats = math.ceil(duration_samples / max(len(noise), 1))
+        noise = np.tile(noise, repeats)
+    if len(noise) > duration_samples:
+        max_start = len(noise) - duration_samples
+        start = int(rng.integers(0, max_start + 1))
+        noise = noise[start : start + duration_samples]
     else:
-        data = data.astype(np.float32)
-    if sr != target_sr:
-        gcd = math.gcd(int(sr), int(target_sr))
-        data = signal.resample_poly(data, target_sr // gcd, sr // gcd).astype(np.float32)
-    return normalize_peak(data, peak=0.95)
-
-
-def write_wav(path: Path, data: np.ndarray, sample_rate: int) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    safe = np.clip(data, -1.0, 1.0)
-    wavfile.write(path, sample_rate, (safe * 32767).astype(np.int16))
-
-
-def colored_noise(beta: float, n: int, rng: np.random.Generator) -> np.ndarray:
-    freqs = np.fft.rfftfreq(n)
-    spectrum = rng.normal(size=freqs.shape) + 1j * rng.normal(size=freqs.shape)
-    scale = np.ones_like(freqs)
-    scale[1:] = 1.0 / np.maximum(freqs[1:], 1.0 / n) ** (beta / 2.0)
-    y = np.fft.irfft(spectrum * scale, n=n)
-    return normalize_peak(y)
-
-
-def make_noise(name: str, n: int, sample_rate: int, rng: np.random.Generator) -> np.ndarray:
-    t = np.arange(n, dtype=np.float32) / sample_rate
-    if name == "white":
-        noise = rng.normal(size=n)
-    elif name == "pink":
-        noise = colored_noise(beta=1.0, n=n, rng=rng)
-    elif name == "hum":
-        noise = (
-            0.70 * np.sin(2 * np.pi * 60 * t)
-            + 0.30 * np.sin(2 * np.pi * 120 * t)
-            + 0.12 * rng.normal(size=n)
-        )
-    elif name == "impulsive":
-        noise = 0.05 * rng.normal(size=n)
-        idx = rng.choice(n, size=max(1, n // 700), replace=False)
-        width = max(8, sample_rate // 700)
-        pulse = signal.windows.hann(width * 2 + 1)
-        for start in idx:
-            lo = max(0, int(start) - width)
-            hi = min(n, int(start) + width + 1)
-            p_lo = width - (int(start) - lo)
-            p_hi = p_lo + (hi - lo)
-            noise[lo:hi] += rng.uniform(-1.0, 1.0) * pulse[p_lo:p_hi]
-    else:
-        raise ValueError(f"Noise type not supported: {name}")
+        noise = noise[:duration_samples]
     return normalize_peak(noise)
 
 
-def rms(x: np.ndarray) -> float:
-    return float(np.sqrt(np.mean(np.square(x), dtype=np.float64) + 1e-12))
+def export_summary_for_pgfplots(summary: pd.DataFrame, pgfplots_dir: Path) -> None:
+    improvement = summary.pivot(
+        index="snr_alvo_db",
+        columns="metodo",
+        values="melhoria_snr_media_db",
+    ).reindex(columns=METHOD_ORDER)
+    improvement.reset_index().to_csv(
+        pgfplots_dir / "melhoria_snr.csv",
+        index=False,
+        encoding="utf-8",
+        float_format="%.8g",
+    )
 
-
-def mix_at_snr(clean: np.ndarray, noise: np.ndarray, snr_db: float) -> tuple[np.ndarray, np.ndarray]:
-    clean_rms = rms(clean)
-    noise_rms = rms(noise)
-    target_noise_rms = clean_rms / (10 ** (snr_db / 20.0))
-    scaled_noise = noise * (target_noise_rms / max(noise_rms, 1e-12))
-    mixed = clean + scaled_noise
-    return mixed.astype(np.float32), scaled_noise.astype(np.float32)
-
-
-def snr_db(reference: np.ndarray, estimate: np.ndarray) -> float:
-    noise = reference - estimate
-    return 10.0 * math.log10(
-        (float(np.sum(reference.astype(np.float64) ** 2)) + 1e-12)
-        / (float(np.sum(noise.astype(np.float64) ** 2)) + 1e-12)
+    rtf = (
+        summary.groupby("metodo", as_index=False)
+        .agg(rtf_medio=("rtf_medio", "mean"))
+        .set_index("metodo")
+        .reindex(METHOD_ORDER)
+        .reset_index()
+    )
+    rtf["metodo_rotulo"] = rtf["metodo"].map(METHOD_LABELS)
+    rtf["rtf_medio_x1000"] = rtf["rtf_medio"] * 1000.0
+    rtf.to_csv(
+        pgfplots_dir / "rtf_por_metodo.csv",
+        index=False,
+        encoding="utf-8",
+        float_format="%.8g",
     )
 
 
-def mse(reference: np.ndarray, estimate: np.ndarray) -> float:
-    return float(np.mean((reference.astype(np.float64) - estimate.astype(np.float64)) ** 2))
+def export_waveforms_for_pgfplots(
+    example: dict[str, np.ndarray],
+    sample_rate: int,
+    pgfplots_dir: Path,
+    max_points: int = 650,
+) -> None:
+    available = [key for key in EXAMPLE_SIGNAL_ORDER if key in example]
+    if not available:
+        return
+
+    n_samples = min(len(example[key]) for key in available)
+    step = max(1, math.ceil(n_samples / max_points))
+    idx = np.arange(0, n_samples, step, dtype=int)
+    if idx[-1] != n_samples - 1:
+        idx = np.append(idx, n_samples - 1)
+
+    data: dict[str, np.ndarray] = {"tempo_s": idx / sample_rate}
+    offsets = {
+        "clean": 3.0,
+        "noisy": 1.0,
+        "stft_subtraction": -1.0,
+        "stft_wiener": -3.0,
+        "wavelet_soft": -5.0,
+    }
+    for key in available:
+        values = np.asarray(example[key][:n_samples], dtype=np.float32)[idx]
+        data[key] = values
+        data[f"{key}_empilhado"] = values + offsets[key]
+
+    pd.DataFrame(data).to_csv(
+        pgfplots_dir / "formas_onda_exemplo.csv",
+        index=False,
+        encoding="utf-8",
+        float_format="%.8g",
+    )
 
 
-def si_sdr(reference: np.ndarray, estimate: np.ndarray) -> float:
-    ref = reference.astype(np.float64) - np.mean(reference)
-    est = estimate.astype(np.float64) - np.mean(estimate)
-    scale = np.dot(est, ref) / (np.dot(ref, ref) + 1e-12)
-    target = scale * ref
-    residual = est - target
-    return 10.0 * math.log10((np.sum(target**2) + 1e-12) / (np.sum(residual**2) + 1e-12))
-
-
-def estimate_memory_kb(method: str, n_samples: int, config: BenchmarkConfig) -> float:
-    if method.startswith("stft"):
-        _, _, zxx = signal.stft(
-            np.zeros(n_samples, dtype=np.float32),
-            fs=config.sample_rate,
-            window="hann",
-            nperseg=config.n_fft,
-            noverlap=config.n_fft - config.hop_length,
-            nfft=config.n_fft,
-            boundary=None,
-            padded=False,
-        )
-        return float(zxx.nbytes * 3 / 1024.0)
-    if method.startswith("wavelet"):
-        coeffs = pywt.wavedec(np.zeros(n_samples, dtype=np.float32), config.wavelet, level=config.wavelet_level)
-        return float(sum(c.nbytes for c in coeffs) * 2 / 1024.0)
-    return float(n_samples * np.dtype(np.float32).itemsize / 1024.0)
-
-
-def stft_transform(x: np.ndarray, config: BenchmarkConfig) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    return signal.stft(
+def reduced_spectrogram(
+    x: np.ndarray,
+    sample_rate: int,
+    n_time: int = 40,
+    n_freq: int = 48,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    freqs, times, spec = signal.spectrogram(
         x,
-        fs=config.sample_rate,
+        fs=sample_rate,
         window="hann",
-        nperseg=config.n_fft,
-        noverlap=config.n_fft - config.hop_length,
-        nfft=config.n_fft,
-        boundary="zeros",
-        padded=True,
+        nperseg=512,
+        noverlap=384,
+        mode="magnitude",
+        scaling="spectrum",
+    )
+    freq_idx = np.unique(np.round(np.linspace(0, len(freqs) - 1, n_freq)).astype(int))
+    time_idx = np.unique(np.round(np.linspace(0, len(times) - 1, n_time)).astype(int))
+    selected = spec[np.ix_(freq_idx, time_idx)]
+    power_db = 20.0 * np.log10(selected + 1e-10)
+    return freqs[freq_idx], times[time_idx], power_db
+
+
+def export_spectrograms_for_pgfplots(
+    example: dict[str, np.ndarray],
+    sample_rate: int,
+    pgfplots_dir: Path,
+) -> None:
+    selected_methods = ["clean", "noisy", "stft_subtraction", "wavelet_soft"]
+    spectrograms: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+    global_peak = -np.inf
+
+    for key in selected_methods:
+        if key not in example:
+            continue
+        freqs, times, power_db = reduced_spectrogram(example[key], sample_rate)
+        spectrograms[key] = (freqs, times, power_db)
+        global_peak = max(global_peak, float(np.max(power_db)))
+
+    if not spectrograms:
+        return
+
+    db_floor = -70.0
+    mesh_cols = 0
+    mesh_rows = 0
+    manifest_rows = []
+    for key, (freqs, times, power_db) in spectrograms.items():
+        relative = np.clip(power_db - global_peak, db_floor, 0.0)
+        mesh_cols = len(times)
+        mesh_rows = len(freqs)
+        rows = []
+        for f_idx, freq_hz in enumerate(freqs):
+            for t_idx, time_s in enumerate(times):
+                rows.append(
+                    {
+                        "tempo_s": float(time_s),
+                        "freq_khz": float(freq_hz / 1000.0),
+                        "potencia_db_rel": float(relative[f_idx, t_idx]),
+                    }
+                )
+        filename = f"espectrograma_{key}.csv"
+        pd.DataFrame(rows).to_csv(
+            pgfplots_dir / filename,
+            index=False,
+            encoding="utf-8",
+            float_format="%.8g",
+        )
+        manifest_rows.append(
+            {
+                "metodo": key,
+                "metodo_rotulo": METHOD_LABELS.get(key, "Fala limpa"),
+                "arquivo": filename,
+                "n_tempos": mesh_cols,
+                "n_frequencias": mesh_rows,
+                "piso_db_rel": db_floor,
+            }
+        )
+
+    pd.DataFrame(manifest_rows).to_csv(
+        pgfplots_dir / "espectrogramas_manifesto.csv",
+        index=False,
+        encoding="utf-8",
+    )
+    (pgfplots_dir / "parametros_espectrograma.tex").write_text(
+        "\n".join(
+            [
+                f"\\newcommand{{\\pgfSpectrogramCols}}{{{mesh_cols}}}",
+                f"\\newcommand{{\\pgfSpectrogramRows}}{{{mesh_rows}}}",
+                f"\\newcommand{{\\pgfSpectrogramDbMin}}{{{int(db_floor)}}}",
+                "\\newcommand{\\pgfSpectrogramDbMax}{0}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
     )
 
 
-def istft_transform(zxx: np.ndarray, length: int, config: BenchmarkConfig) -> np.ndarray:
-    _, out = signal.istft(
-        zxx,
-        fs=config.sample_rate,
-        window="hann",
-        nperseg=config.n_fft,
-        noverlap=config.n_fft - config.hop_length,
-        nfft=config.n_fft,
-        boundary=True,
-    )
-    if len(out) < length:
-        out = np.pad(out, (0, length - len(out)))
-    return out[:length].astype(np.float32)
+def write_pgfplots_readme(pgfplots_dir: Path, config: BenchmarkConfig) -> None:
+    lines = [
+        "# Dados leves para graficos nativos em LaTeX",
+        "",
+        "Esta pasta e gerada por `python -m benchmark_audio.run_benchmark` ou pelo modo",
+        "`python -m benchmark_audio.run_benchmark --export-pgfplots-only`.",
+        "",
+        "O Python calcula metricas, sinais decimados e matrizes reduzidas; o PDF final monta os graficos com `pgfplots` e `tikzpicture`.",
+        "",
+        "Arquivos principais:",
+        "",
+        "- `melhoria_snr.csv`: barras agrupadas de melhoria media de SNR por SNR alvo e metodo.",
+        "- `rtf_por_metodo.csv`: RTF medio por metodo, tambem em escala `rtf_medio_x1000` para leitura no eixo vertical.",
+        "- `formas_onda_exemplo.csv`: exemplo temporal decimado, com sinais originais e versoes empilhadas para plotagem.",
+        "- `espectrograma_*.csv`: matrizes reduzidas de espectrograma, em dB relativo ao pico global do exemplo.",
+        "- `parametros_espectrograma.tex`: macros com dimensoes da malha usada por `matrix plot*`.",
+        "- `espectrogramas_manifesto.csv`: metadados dos espectrogramas exportados.",
+        "",
+        "Parametros do benchmark associado:",
+        "",
+        f"- taxa de amostragem: {config.sample_rate} Hz;",
+        f"- duracao: {config.duration_s:.2f} s;",
+        f"- semente: {config.seed};",
+        f"- STFT: `n_fft={config.n_fft}`, `hop_length={config.hop_length}`;",
+        f"- Wavelet: `{config.wavelet}`, nivel {config.wavelet_level}, limiarizacao `{config.wavelet_mode}`.",
+        "",
+        "Os espectrogramas sao reduzidos de proposito para manter a compilacao LaTeX confortavel.",
+        "Eles servem como visualizacao preliminar, nao como substituto dos CSVs completos de metricas.",
+        "",
+    ]
+    (pgfplots_dir / "README.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def spectral_subtraction(noisy: np.ndarray, config: BenchmarkConfig) -> np.ndarray:
-    _, times, zxx = stft_transform(noisy, config)
-    mag = np.abs(zxx)
-    phase = np.exp(1j * np.angle(zxx))
-    noise_cols = max(1, int(math.ceil(config.noise_estimate_s / (config.hop_length / config.sample_rate))))
-    noise_mag = np.mean(mag[:, :noise_cols], axis=1, keepdims=True)
-    clean_mag = np.maximum(mag - config.spectral_alpha * noise_mag, config.spectral_floor * mag)
-    return istft_transform(clean_mag * phase, len(noisy), config)
+def load_example_audio_for_pgfplots(audio_dir: Path, sample_rate: int) -> dict[str, np.ndarray]:
+    example = {}
+    for key in EXAMPLE_SIGNAL_ORDER:
+        path = audio_dir / f"exemplo_{key}.wav"
+        if path.exists():
+            example[key] = read_wav_mono(path, sample_rate)
+    return example
 
 
-def wiener_gain(noisy: np.ndarray, config: BenchmarkConfig) -> np.ndarray:
-    _, _, zxx = stft_transform(noisy, config)
-    power = np.abs(zxx) ** 2
-    noise_cols = max(1, int(math.ceil(config.noise_estimate_s / (config.hop_length / config.sample_rate))))
-    noise_power = np.mean(power[:, :noise_cols], axis=1, keepdims=True)
-    speech_power = np.maximum(power - noise_power, 0.0)
-    gain = speech_power / (speech_power + noise_power + 1e-12)
-    gain = np.maximum(gain, config.wiener_floor)
-    return istft_transform(gain * zxx, len(noisy), config)
+def export_pgfplots_assets(
+    summary: pd.DataFrame,
+    example: dict[str, np.ndarray] | None,
+    config: BenchmarkConfig,
+    paths: dict[str, Path],
+) -> None:
+    pgfplots_dir = paths["pgfplots"]
+    pgfplots_dir.mkdir(parents=True, exist_ok=True)
+    export_summary_for_pgfplots(summary, pgfplots_dir)
+    if example:
+        export_waveforms_for_pgfplots(example, config.sample_rate, pgfplots_dir)
+        export_spectrograms_for_pgfplots(example, config.sample_rate, pgfplots_dir)
+    write_pgfplots_readme(pgfplots_dir, config)
 
 
-def wavelet_denoise(noisy: np.ndarray, config: BenchmarkConfig) -> np.ndarray:
-    max_level = pywt.dwt_max_level(len(noisy), pywt.Wavelet(config.wavelet).dec_len)
-    level = min(config.wavelet_level, max_level)
-    coeffs = pywt.wavedec(noisy, config.wavelet, level=level, mode="symmetric")
-    sigma = np.median(np.abs(coeffs[-1])) / 0.6745 if coeffs[-1].size else 0.0
-    threshold = sigma * math.sqrt(2 * math.log(len(noisy)))
-    denoised_coeffs = [coeffs[0]]
-    for detail in coeffs[1:]:
-        denoised_coeffs.append(pywt.threshold(detail, threshold, mode=config.wavelet_mode))
-    out = pywt.waverec(denoised_coeffs, config.wavelet, mode="symmetric")
-    if len(out) < len(noisy):
-        out = np.pad(out, (0, len(noisy) - len(out)))
-    return out[: len(noisy)].astype(np.float32)
-
-
-def process_method(method: str, clean: np.ndarray, noisy: np.ndarray, config: BenchmarkConfig) -> tuple[np.ndarray, float]:
-    start = time.perf_counter()
-    if method == "noisy":
-        processed = noisy.copy()
-    elif method == "stft_subtraction":
-        processed = spectral_subtraction(noisy, config)
-    elif method == "stft_wiener":
-        processed = wiener_gain(noisy, config)
-    elif method == "wavelet_soft":
-        processed = wavelet_denoise(noisy, config)
-    else:
-        raise ValueError(f"Unknown method: {method}")
-    elapsed = time.perf_counter() - start
-    return np.asarray(processed, dtype=np.float32), elapsed
+def export_pgfplots_from_existing(config: BenchmarkConfig, results_dir: Path | None = None) -> None:
+    paths = ensure_dirs(ROOT, results_dir=results_dir)
+    summary_path = paths["tables"] / "resumo_por_metodo_snr.csv"
+    if not summary_path.exists():
+        raise FileNotFoundError("Resumo nao encontrado. Rode o benchmark completo primeiro.")
+    summary = pd.read_csv(summary_path)
+    example = load_example_audio_for_pgfplots(paths["audio"], config.sample_rate)
+    export_pgfplots_assets(summary, example, config, paths)
 
 
 def plot_metric_bars(summary: pd.DataFrame, figures_dir: Path) -> None:
-    method_order = ["noisy", "stft_subtraction", "stft_wiener", "wavelet_soft"]
-    labels = {
-        "noisy": "Ruidoso",
-        "stft_subtraction": "STFT subtracao",
-        "stft_wiener": "STFT Wiener",
-        "wavelet_soft": "Wavelet soft",
-    }
-
     pivot = summary.pivot(index="snr_alvo_db", columns="metodo", values="melhoria_snr_media_db")
-    pivot = pivot.reindex(columns=method_order)
-    ax = pivot.rename(columns=labels).plot(kind="bar", figsize=(9, 5))
+    pivot = pivot.reindex(columns=METHOD_ORDER)
+    ax = pivot.rename(columns=METHOD_LABELS).plot(kind="bar", figsize=(9, 5))
     ax.set_title("Melhoria media de SNR por metodo")
     ax.set_xlabel("SNR de entrada alvo (dB)")
     ax.set_ylabel("Melhoria de SNR (dB)")
@@ -331,8 +396,8 @@ def plot_metric_bars(summary: pd.DataFrame, figures_dir: Path) -> None:
     plt.close()
 
     pivot_rtf = summary.pivot(index="snr_alvo_db", columns="metodo", values="rtf_medio")
-    pivot_rtf = pivot_rtf.reindex(columns=method_order)
-    ax = pivot_rtf.rename(columns=labels).plot(kind="bar", figsize=(9, 5))
+    pivot_rtf = pivot_rtf.reindex(columns=METHOD_ORDER)
+    ax = pivot_rtf.rename(columns=METHOD_LABELS).plot(kind="bar", figsize=(9, 5))
     ax.set_title("Fator de tempo real medio por metodo")
     ax.set_xlabel("SNR de entrada alvo (dB)")
     ax.set_ylabel("RTF = tempo de processamento / duracao")
@@ -463,8 +528,14 @@ def latex_table_from_summary(summary: pd.DataFrame, path: Path) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def run_benchmark(config: BenchmarkConfig, prepare_demo_data: bool) -> None:
-    paths = ensure_dirs(ROOT)
+def run_benchmark(
+    config: BenchmarkConfig,
+    prepare_demo_data: bool,
+    noise_dir: Path | None = None,
+    max_noises: int | None = None,
+    results_dir: Path | None = None,
+) -> None:
+    paths = ensure_dirs(ROOT, results_dir=results_dir)
     if prepare_demo_data:
         speech_paths = prepare_demo_speech(paths, config)
     else:
@@ -473,8 +544,19 @@ def run_benchmark(config: BenchmarkConfig, prepare_demo_data: bool) -> None:
             raise FileNotFoundError("No demo speech found. Run with --prepare-demo-data first.")
 
     rng = np.random.default_rng(config.seed)
-    methods = ["noisy", "stft_subtraction", "stft_wiener", "wavelet_soft"]
+    methods = list(BENCHMARK_METHODS)
     duration_samples = int(config.duration_s * config.sample_rate)
+    if not config.snrs_db:
+        raise ValueError("At least one SNR value is required.")
+    if noise_dir is not None:
+        noise_items: list[str | Path] = collect_noise_files(noise_dir, max_noises=max_noises)
+    elif not config.noise_names:
+        raise ValueError("At least one noise type is required.")
+    else:
+        noise_items = list(config.noise_names)
+    first_noise_item = noise_items[0]
+    example_noise_name = first_noise_item.stem if isinstance(first_noise_item, Path) else first_noise_item
+    example_target_snr = config.snrs_db[1] if len(config.snrs_db) > 1 else config.snrs_db[0]
     rows = []
     example_signals: dict[str, np.ndarray] | None = None
     example_selected = False
@@ -485,8 +567,13 @@ def run_benchmark(config: BenchmarkConfig, prepare_demo_data: bool) -> None:
             clean = np.pad(clean, (0, duration_samples - len(clean)))
         clean = clean[:duration_samples]
         clean = normalize_peak(clean, peak=0.85)
-        for noise_name in config.noise_names:
-            base_noise = make_noise(noise_name, len(clean), config.sample_rate, rng)
+        for noise_item in noise_items:
+            if isinstance(noise_item, Path):
+                noise_name = noise_item.stem
+                base_noise = noise_segment_from_file(noise_item, len(clean), config, rng)
+            else:
+                noise_name = noise_item
+                base_noise = make_noise(noise_name, len(clean), config.sample_rate, rng)
             for target_snr in config.snrs_db:
                 noisy, scaled_noise = mix_at_snr(clean, base_noise, target_snr)
                 observed_input_snr = snr_db(clean, noisy)
@@ -494,18 +581,19 @@ def run_benchmark(config: BenchmarkConfig, prepare_demo_data: bool) -> None:
                 if (
                     not example_selected
                     and speech_path.stem == speech_paths[0].stem
-                    and noise_name == config.noise_names[0]
-                    and target_snr == config.snrs_db[1]
+                    and noise_name == example_noise_name
+                    and target_snr == example_target_snr
                 ):
                     current_example = {"clean": clean, "noisy": noisy, "noise": scaled_noise}
                 for method in methods:
-                    processed, elapsed = process_method(method, clean, noisy, config)
+                    processed, elapsed = process_method(method, noisy, config)
                     output_snr = snr_db(clean, processed)
                     duration_s = len(clean) / config.sample_rate
                     rows.append(
                         {
                             "amostra": speech_path.stem,
                             "ruido": noise_name,
+                            "grupo_ruido": noise_name.split("_", 1)[0].upper(),
                             "snr_alvo_db": target_snr,
                             "snr_entrada_observado_db": observed_input_snr,
                             "metodo": method,
@@ -544,6 +632,23 @@ def run_benchmark(config: BenchmarkConfig, prepare_demo_data: bool) -> None:
         .sort_values(["snr_alvo_db", "metodo"])
     )
     summary.to_csv(paths["tables"] / "resumo_por_metodo_snr.csv", index=False, encoding="utf-8")
+    noise_group_summary = (
+        metrics.groupby(["grupo_ruido", "metodo", "snr_alvo_db"], as_index=False)
+        .agg(
+            n_condicoes=("melhoria_snr_db", "size"),
+            snr_saida_medio_db=("snr_saida_db", "mean"),
+            melhoria_snr_media_db=("melhoria_snr_db", "mean"),
+            melhoria_snr_desvio_db=("melhoria_snr_db", "std"),
+            si_sdr_medio_db=("si_sdr_db", "mean"),
+            rtf_medio=("rtf", "mean"),
+        )
+        .sort_values(["grupo_ruido", "snr_alvo_db", "metodo"])
+    )
+    noise_group_summary.to_csv(
+        paths["tables"] / "resumo_por_grupo_ruido.csv",
+        index=False,
+        encoding="utf-8",
+    )
     latex_table_from_summary(summary, paths["tables"] / "resumo_resultados_latex.tex")
     hardware_viability_table(paths["tables"])
     plot_metric_bars(summary, paths["figures"])
@@ -554,12 +659,26 @@ def run_benchmark(config: BenchmarkConfig, prepare_demo_data: bool) -> None:
             if key in {"clean", "noisy", "stft_subtraction", "stft_wiener", "wavelet_soft"}:
                 write_wav(paths["audio"] / f"exemplo_{key}.wav", normalize_peak(data), config.sample_rate)
 
+    export_pgfplots_assets(summary, example_signals, config, paths)
+
+    noise_origin = (
+        f"Arquivos WAV locais em {noise_dir}"
+        if noise_dir is not None
+        else "Gerados por script: branco, rosa, hum e impulsivo."
+    )
     metadata = {
         "config": asdict(config),
         "n_condicoes": int(len(metrics)),
         "n_amostras_fala": int(len(speech_paths)),
         "origem_fala": "Free Spoken Digit Dataset (FSDD)",
-        "ruidos": "Gerados por script: branco, rosa, hum e impulsivo.",
+        "ruidos": noise_origin,
+        "origem_ruido": noise_origin,
+        "n_ruidos": int(len(noise_items)),
+        "ruidos_efetivos": [
+            item.stem if isinstance(item, Path) else item
+            for item in noise_items
+        ],
+        "diretorio_resultados": str(paths["tables"].parent),
     }
     (paths["tables"] / "metadata_benchmark.json").write_text(
         json.dumps(metadata, indent=2, ensure_ascii=False),
@@ -573,13 +692,38 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--duration", type=float, default=DEFAULT_DURATION, help="Duracao de cada trecho em segundos.")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Semente aleatoria.")
     parser.add_argument("--snrs", type=int, nargs="+", default=[-5, 0, 5, 10], help="SNRs de entrada em dB.")
+    parser.add_argument(
+        "--noise-dir",
+        type=Path,
+        help="Pasta opcional com WAVs de ruido real. Quando usada, substitui os ruidos sinteticos.",
+    )
+    parser.add_argument("--max-noises", type=int, help="Limita a quantidade de WAVs de ruido lidos de --noise-dir.")
+    parser.add_argument(
+        "--results-dir",
+        type=Path,
+        help="Diretorio de resultados. Padrao: resultados/. Use resultados/demand para uma rodada isolada.",
+    )
+    parser.add_argument(
+        "--export-pgfplots-only",
+        action="store_true",
+        help="Regera apenas dados leves para pgfplots a partir dos CSVs e WAVs ja existentes.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     config = BenchmarkConfig(duration_s=args.duration, seed=args.seed, snrs_db=tuple(args.snrs))
-    run_benchmark(config=config, prepare_demo_data=args.prepare_demo_data)
+    if args.export_pgfplots_only:
+        export_pgfplots_from_existing(config, results_dir=args.results_dir)
+    else:
+        run_benchmark(
+            config=config,
+            prepare_demo_data=args.prepare_demo_data,
+            noise_dir=args.noise_dir,
+            max_noises=args.max_noises,
+            results_dir=args.results_dir,
+        )
 
 
 if __name__ == "__main__":

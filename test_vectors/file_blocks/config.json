@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "block_ms": 20.0,
+  "causal_config": {
+    "sample_rate": 16000,
+    "method": "stft_subtraction",
+    "n_fft": 512,
+    "hop_length": 160,
+    "spectral_alpha": 1.5,
+    "spectral_floor": 0.02,
+    "wiener_floor": 0.05,
+    "noise_mode": "adaptive",
+    "calibration_ms": 250.0,
+    "warmup_ms": 250.0,
+    "history_ms": 500.0,
+    "noise_quantile": 0.22,
+    "energy_quantile": 0.2,
+    "speech_threshold_db": 6.0,
+    "low_energy_alpha": 0.3,
+    "speech_alpha": 0.005,
+    "epsilon": 1e-12
+  }
+}

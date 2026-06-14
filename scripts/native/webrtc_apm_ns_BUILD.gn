@@ -1,0 +1,11 @@
+import("//webrtc.gni")
+
+rtc_executable("ptc3527_webrtc_apm_ns_adapter") {
+  sources = [ "webrtc_apm_ns_adapter.cc" ]
+  deps = [
+    "//api/audio:audio_processing",
+    "//api/audio:builtin_audio_processing_builder",
+    "//api/environment",
+    "//api/environment:environment_factory",
+  ]
+}
