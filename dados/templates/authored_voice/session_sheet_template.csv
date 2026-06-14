@@ -1,0 +1,2 @@
+speaker_id,session_id,session_date,start_time,room,device,interface,driver,original_sample_rate_hz,channels,bit_depth,distance_cm,gain_setting,windows_enhancements,manufacturer_processing,authorization_level,consent_record_id,operator_code,notes
+spk01,session_a,2026-01-01,10:00,quiet room,microphone model,interface or onboard,driver name,48000,1,24,15,fixed value,disabled,disabled or describe,local_only,consent_spk01_v1,operator01,replace example values before use

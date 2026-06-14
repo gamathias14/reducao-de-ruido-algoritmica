@@ -1,0 +1,2 @@
+speaker_id,consent_record_id,authorization_level,signed_date,public_excerpt_status,revocation_status,notes
+spk01,consent_spk01_v1,local_only,2026-01-01,none,active,do not include real name or signature in this CSV

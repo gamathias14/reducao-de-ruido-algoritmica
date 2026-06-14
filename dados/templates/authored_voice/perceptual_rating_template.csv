@@ -1,0 +1,2 @@
+listener_id,trial_id,blind_label,listening_date,playback_device,volume_setting,intelligibility_1_5,naturalness_1_5,residual_noise_1_5,artifacts_1_5,preference_rank,heard_clipping_or_dropouts,notes
+lst01,trial_001,A001,2026-01-01,headphone/interface,fixed value,3,3,3,3,1,no,replace example values before use
