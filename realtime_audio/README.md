@@ -52,6 +52,22 @@ Os vetores sinteticos para futura portabilidade ficam em
 `test_vectors/file_blocks/`. Detalhes de alinhamento e reproducao estao em
 `docs/processamento_wav_blocos.md`.
 
+### Demonstracao audivel com RNNoise
+
+Para comparar diretamente um WAV ruidoso com a saida do RNNoise persistente:
+
+```powershell
+.\scripts\native\Build-RNNoiseAdapter.ps1
+python -m realtime_audio.process_wav_rnnoise `
+  --input resultados\audio\exemplo_noisy.wav `
+  --output resultados\demo_rnnoise\exemplo_rnnoise.wav
+```
+
+O comando converte a entrada para mono a 16 kHz, processa blocos causais de
+20 ms e grava tambem `exemplo_rnnoise.json`, com hashes, tempos, RTF e a
+latencia algoritmica. Essa e uma demonstracao pre-ponte: ela isola o DSP e nao
+usa o SYSVAD nem o ambiente virtualizado.
+
 ## Listar dispositivos
 
 ```powershell

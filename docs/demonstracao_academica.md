@@ -27,6 +27,28 @@ Mensagem autorizada:
 > O RNNoise foi o candidato preferido na escuta cega pré-ponte e apresentou
 > forte supressão objetiva no corpus avaliado.
 
+### Reproduzir com qualquer WAV
+
+Depois de compilar a DLL, qualquer WAV mono ou estéreo pode ser convertido
+para mono a 16 kHz e processado pelo mesmo RNNoise persistente:
+
+```powershell
+.\scripts\native\Build-RNNoiseAdapter.ps1
+python -m realtime_audio.process_wav_rnnoise `
+  --input caminho\audio_ruidoso.wav `
+  --output resultados\demo_rnnoise\audio_tratado.wav
+```
+
+O JSON criado ao lado da saída registra hashes, formato, tempos por bloco, RTF
+e latência algorítmica. Não há normalização seletiva.
+
+No exemplo público local `resultados/audio/exemplo_noisy.wav`, com
+`resultados/audio/exemplo_clean.wav` usado apenas como referência objetiva, o
+SNR passou de 2,31 dB para 7,33 dB após alinhamento do atraso causal: melhoria
+de 5,02 dB. O processamento dos 150 blocos teve RTF total 0,020 e nenhum bloco
+acima do orçamento de 20 ms. Os WAVs gerados permanecem fora do Git; o comando,
+o código e os resultados numéricos são reproduzíveis.
+
 ## Camada 2 - Microfone virtual funcional
 
 Alimentar o SYSVAD com um sinal sintético conhecido e capturá-lo em um cliente

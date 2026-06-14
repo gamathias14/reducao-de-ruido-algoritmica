@@ -404,18 +404,34 @@
 
 \begin{frame}{A validação seguinte deve ocorrer em Windows nativo}
     \kicker{Próximo passo}
-    \begin{enumerate}
-        \item bancada secundária, isolada, com imagem restaurável;
-        \item baseline HDA ou microfone físico;
-        \item instalação controlada do SYSVAD em modo de teste;
-        \item tom determinístico e captura do endpoint;
-        \item matriz pareada bypass/RNNoise;
-        \item gate de zero perda e zero \textit{underrun};
-        \item medição física de latência;
-        \item somente então fala controlada e escuta cega.
-    \end{enumerate}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \textbf{Reutilizar}
+            \begin{itemize}
+                \item RNNoise e blocos de 20 ms;
+                \item PCM v1, ponte e ring buffer;
+                \item SYSVAD, UI e analisadores;
+                \item configuração da VM no primeiro gate.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.49\textwidth}
+            \textbf{Adaptar e validar}
+            \begin{itemize}
+                \item build, assinatura, instalação e reversão;
+                \item enumeração e backend nativo;
+                \item baseline físico antes do SYSVAD;
+                \item bypass/RNNoise, zero perdas e latência física.
+            \end{itemize}
+        \end{column}
+    \end{columns}
 
-    \vspace{0.3cm}
+    \vspace{0.2cm}
+    \begin{block}{Regra de diagnóstico}
+        Sem \textit{retuning} inicial: se só o SYSVAD falhar, investigar
+        WaveRT/PortCls; se baseline e SYSVAD falharem, investigar o host.
+    \end{block}
+
+    \vspace{0.15cm}
     \centering
     {\color{alertred}\bfseries Um driver de teste pode causar tela azul: a
     bancada deve ser recuperável e não pode ser o computador principal.}

@@ -50,6 +50,7 @@ data/external/
 # Benchmark outputs that are intentionally kept lightweight may be versioned.
 # Keep raw datasets out of the repository; commit only short demo audio if needed.
 resultados/realtime/
+resultados/demo_rnnoise/
 resultados/authored_voice/audio/
 resultados/authored_voice/private/
 resultados/sysvad_checkpoint*/

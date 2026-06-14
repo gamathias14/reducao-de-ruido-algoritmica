@@ -1085,6 +1085,10 @@ Um driver de teste pode causar tela azul ou impedir a inicialização; por isso,
     \item somente então usar fala controlada e escuta cega.
 \end{enumerate}
 
+A migração não exige reimplementar a arquitetura. Devem ser reutilizados sem alteração inicial o RNNoise persistente, o framing de 20 ms, o protocolo PCM v1, a ponte usuário-driver, o ring buffer, a política de \textit{underrun}, a UI e os analisadores. As adaptações concentram-se em recompilar e assinar o SYSVAD para a bancada, instalar e reverter o pacote, enumerar dispositivos, selecionar o backend de captura e substituir a automação do VirtualBox por execução local.
+
+Para preservar a validade da comparação, a primeira rodada nativa deve manter polling, profundidades de fila, política de descarte e demais parâmetros congelados na VM. Se o baseline físico e o SYSVAD forem contínuos, a hipótese de limitação do VirtualBox/NEM ganha força. Se apenas o SYSVAD falhar, a investigação deve se concentrar em WaveRT/PortCls, timer ou callback, consumo do ring buffer e captura do endpoint. Se baseline físico e SYSVAD falharem, o foco passa a scheduler, DPC/ISR, energia, backend e drivers do host. Somente após essa classificação é permitido recalibrar filas ou períodos, sempre em ensaios pareados.
+
 \section{Avaliação do andamento e justificativa dos desvios}
 
 O cronograma anterior previa continuidade de uma revisão sistemática ampla sobre redução de ruído em sinais unidimensionais. O desvio principal foi a interrupção dessa abrangência para reformular o projeto em torno de voz humana. Esse desvio é justificado pelo feedback recebido e pela necessidade de tornar o anteprojeto mais defensável, mensurável e conectado a uma implementação realista.
@@ -1102,7 +1106,9 @@ O fechamento acadêmico encerra a investigação temporal exploratória na VM. O
     \item ampliar a avaliação perceptual com material público ou autorizado, mais ouvintes e protocolo cego;
     \item reproduzir os benchmarks públicos em outro computador a partir dos scripts, manifestos e versões registradas;
     \item preparar uma bancada Windows nativa isolada, recuperável e separada do computador principal;
+    \item portar o ambiente por reutilização do núcleo existente, limitando as adaptações iniciais a build, assinatura, instalação, enumeração e automação local;
     \item executar baseline físico antes da instalação do SYSVAD;
+    \item repetir primeiro a configuração congelada da VM, sem retuning, para localizar o gargalo por comparação;
     \item validar transporte e endpoint com sinal determinístico, exigindo zero perda e zero \textit{underrun};
     \item medir latência física ponta a ponta por loopback ou método equivalente;
     \item somente depois liberar matriz de fala controlada bypass/RNNoise e escuta cega do endpoint;

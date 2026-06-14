@@ -3,6 +3,19 @@
 Este protocolo registra o próximo passo técnico. Ele não deve ser executado no
 computador principal nem durante o fechamento acadêmico.
 
+## Escopo da migração
+
+A arquitetura não será reescrita para o Windows nativo. RNNoise, blocos de
+20 ms, PCM v1, ponte Python-driver, SYSVAD modificado, UI e analisadores serão
+reutilizados. As adaptações esperadas são de compilação, assinatura,
+instalação, enumeração de dispositivos, backend de captura, automação local e
+medição física.
+
+A primeira rodada deve preservar a configuração congelada da VM. Polling,
+profundidades de fila, política de descarte e protocolo só podem ser ajustados
+depois do baseline comparável. A matriz completa e a interpretação dos
+resultados estão em `docs/migracao_windows_nativo.md`.
+
 ## Ambiente recomendado
 
 - computador secundário ou SSD descartável;
@@ -39,6 +52,10 @@ promete risco zero.
   descontinuidades e latência;
 - preservar um snapshot lógico dos estados de segurança e boot.
 
+Esse baseline deve usar os mesmos critérios de sinal tardio e continuidade da
+VM, para permitir comparação direta sem atribuir antecipadamente a falha ao
+VirtualBox/NEM ou ao SYSVAD.
+
 ### 2. Instalação controlada
 
 - verificar hash e assinatura do pacote;
@@ -58,8 +75,13 @@ promete risco zero.
 
 - executar matriz pareada com bypass e RNNoise;
 - usar a mesma entrada, duração e ordem balanceada;
+- começar com parâmetros congelados da VM, sem retuning;
 - exigir zero perda, zero descarte e zero underrun em todas as pernas;
 - repetir o gate em sessões independentes.
+
+Se o baseline físico for contínuo e somente o SYSVAD falhar, investigar
+WaveRT/PortCls, consumo do ring buffer e captura do endpoint. Se ambos
+falharem, investigar scheduler, DPC/ISR, energia, backend e drivers do host.
 
 ### 5. Latência física
 

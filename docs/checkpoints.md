@@ -3566,3 +3566,46 @@ git submodule update --init
 - Estado final:
   clone desligado, snapshot 45, 4 vCPUs, configuracoes protegidas preservadas,
   captura padrao do host inalterada e preflight com zero falhas e avisos.
+
+## 2026-06-14 - Consolidacao da migracao para Windows nativo
+
+- Natureza: checkpoint documental pos-fechamento, sem novo ensaio de endpoint.
+- Foi explicitado que a migracao nativa nao exige reimplementar a arquitetura.
+- Componentes congelados para a primeira repeticao:
+  - RNNoise persistente;
+  - blocos de 20 ms e PCM16 mono a 16 kHz;
+  - protocolo PCM v1, IOCTLs e ring buffer;
+  - ponte Python-driver, UI e analisadores;
+  - polling, profundidades e politica de descarte usados no ultimo baseline.
+- Adaptacoes esperadas:
+  - build e empacotamento para o Windows/WDK da bancada;
+  - assinatura de teste, instalacao e reversao;
+  - enumeracao de dispositivos e backend nativo;
+  - substituicao da automacao do VirtualBox por execucao local;
+  - medicao fisica de latencia.
+- Regra metodologica:
+  **executar primeiro a configuracao congelada, sem retuning, para preservar a
+  comparacao com a VM**.
+- Interpretacao predefinida:
+  - baseline e SYSVAD continuos: evidencia favoravel a limitacao da VM;
+  - baseline continuo e SYSVAD irregular: investigar WaveRT/PortCls, ring
+    buffer e captura do endpoint;
+  - baseline e SYSVAD irregulares: investigar scheduler, DPC/ISR, energia,
+    backend e drivers do host;
+  - falha somente com RNNoise: comparar bypass/RNNoise antes de atribuir causa
+    ao DSP.
+- A demonstracao pre-ponte ganhou uma CLI para qualquer WAV:
+  `python -m realtime_audio.process_wav_rnnoise`.
+- Exemplo local:
+  - SNR de entrada: `2,31 dB`;
+  - SNR de saida alinhada: `7,33 dB`;
+  - melhoria: `5,02 dB`;
+  - RTF total: `0,020`;
+  - zero blocos acima de 20 ms.
+- Documentos atualizados:
+  - `README.md`;
+  - `docs/demonstracao_academica.md`;
+  - `docs/validacao_windows_nativo.md`;
+  - `docs/migracao_windows_nativo.md`;
+  - `entrega3.tex`;
+  - `apresentacao_fechamento.tex`.

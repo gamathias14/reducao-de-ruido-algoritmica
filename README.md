@@ -56,6 +56,22 @@ A demonstração recomendada possui três camadas independentes:
 Não se usa uma captura longa da VM como prova de tempo real ponta a ponta. Veja
 [docs/demonstracao_academica.md](docs/demonstracao_academica.md).
 
+### Testar o RNNoise com qualquer WAV
+
+```powershell
+.\scripts\native\Build-RNNoiseAdapter.ps1
+python -m realtime_audio.process_wav_rnnoise `
+  --input caminho\audio_ruidoso.wav `
+  --output resultados\demo_rnnoise\audio_tratado.wav
+```
+
+A CLI aceita WAV mono ou estéreo, converte para 16 kHz, processa blocos causais
+de 20 ms e grava um JSON de métricas. No exemplo local
+`resultados/audio/exemplo_noisy.wav`, comparado à referência
+`resultados/audio/exemplo_clean.wav`, a melhoria de SNR foi de 5,02 dB
+(2,31 dB para 7,33 dB), com RTF total 0,020 e zero blocos acima de 20 ms.
+Os arquivos de áudio são artefatos locais ignorados pelo Git.
+
 ## Reproduzir
 
 Instale as dependências:
@@ -85,6 +101,7 @@ hashes e métricas consolidadas.
 - [Arquitetura do microfone virtual](docs/virtual_mic_architecture.md)
 - [Demonstração acadêmica](docs/demonstracao_academica.md)
 - [Validação futura em Windows nativo](docs/validacao_windows_nativo.md)
+- [Migração da VM para Windows nativo](docs/migracao_windows_nativo.md)
 - [Auditoria de publicação](docs/auditoria_publicacao.md)
 - [Auditoria dos resultados](docs/auditoria_resultados.md)
 - [Histórico de checkpoints](docs/checkpoints.md)
