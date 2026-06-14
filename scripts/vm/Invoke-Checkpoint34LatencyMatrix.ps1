@@ -189,7 +189,10 @@ function New-Bundle {
     try {
         Remove-Item -LiteralPath $stagePath -Recurse -Force
     } catch {
-        Write-Warning "OneDrive manteve o staging temporariamente bloqueado."
+        Write-Warning (
+            "O sincronizador de arquivos manteve o staging " +
+            "temporariamente bloqueado."
+        )
     }
 }
 
