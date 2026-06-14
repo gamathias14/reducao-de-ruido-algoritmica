@@ -1,0 +1,5 @@
+metodo,metodo_rotulo,arquivo,n_tempos,n_frequencias,piso_db_rel
+clean,Fala limpa,espectrograma_clean.csv,40,48,-70.0
+noisy,Ruidoso,espectrograma_noisy.csv,40,48,-70.0
+stft_subtraction,STFT subtracao,espectrograma_stft_subtraction.csv,40,48,-70.0
+wavelet_soft,Wavelet soft,espectrograma_wavelet_soft.csv,40,48,-70.0

@@ -1,0 +1,29 @@
+{
+  "created_at_local": "2026-06-07 01:43:16",
+  "block_ms": 20.0,
+  "block_samples": 320,
+  "candidate_count": 21,
+  "selection_split": "validation only",
+  "selection_rule": "Among adaptive candidates: minimize SNR degradation fraction, then maximize mean SNR improvement, mean SI-SDR improvement, and finally minimize RTF.",
+  "validation_speakers": [
+    "jackson",
+    "nicolas",
+    "theo"
+  ],
+  "validation_noise_groups": [
+    "DKITCHEN",
+    "OOFFICE"
+  ],
+  "final_operational_speakers": [
+    "george",
+    "lucas",
+    "yweweler"
+  ],
+  "final_operational_noise_groups": [
+    "PCAFETER",
+    "STRAFFIC"
+  ],
+  "future_data_policy": "No authored Session B or historically blind future recording was used. The existing final operational split was evaluated only after selection.",
+  "causality": "Each output block uses estimator state from prior blocks; spectra from the current block update state only for subsequent blocks.",
+  "elapsed_s": 406.08928749999995
+}

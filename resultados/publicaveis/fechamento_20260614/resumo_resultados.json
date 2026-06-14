@@ -1,0 +1,55 @@
+{
+  "data": "2026-06-14",
+  "estagio": "prototipo_academico_integrado",
+  "produto_pronto": false,
+  "baixa_latencia_fisica_comprovada": false,
+  "dsp": {
+    "candidato_principal": "rnnoise",
+    "reserva": "omlsa_imcra",
+    "decisao": "escuta_cega_pre_ponte",
+    "rnnoise_host_30000_blocos": {
+      "p99_ms": 1.951,
+      "pior_ms": 18.2485,
+      "blocos_acima_20_ms": 0
+    },
+    "rnnoise_vm_isolado_3000_blocos": {
+      "p99_ms": 2.020685,
+      "pior_ms": 10.6906,
+      "blocos_acima_20_ms": 0
+    }
+  },
+  "transporte": {
+    "blocos_por_perna": 1000,
+    "erros_sequencia": 0,
+    "erros_crc": 0,
+    "erros_framing": 0,
+    "perdas": 0
+  },
+  "microfone_virtual": {
+    "driver": "SYSVAD modificado",
+    "protocolo": "PCM v1",
+    "formato": "PCM16 mono, 16000 Hz, 320 amostras por bloco",
+    "integracao_funcional": true,
+    "continuidade_temporal_vm": false
+  },
+  "contrafactual": {
+    "classificacao": "virtualbox_event_timing_supported",
+    "ordem": [
+      "SYSVAD A",
+      "HDA A",
+      "HDA B",
+      "SYSVAD B"
+    ],
+    "sinais_tardios": [21, 22, 23, 48],
+    "periodos_perdidos_equivalentes": [381, 1121, 248, 304],
+    "maximo_periodos": [230.21, 743.64, 82.18, 43.72],
+    "driver_correto_comprovado": false,
+    "escuta_ponta_a_ponta_liberada": false
+  },
+  "privacidade": {
+    "audio_publicado": false,
+    "binarios_publicados": false,
+    "credenciais_publicadas": false,
+    "resultados_brutos_publicados": false
+  }
+}

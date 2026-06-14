@@ -1,0 +1,5 @@
+metodo,rtf_medio,metodo_rotulo,rtf_medio_x1000
+noisy,2.2920833e-06,Ruidoso,0.0022920833
+stft_subtraction,0.0020569054,STFT subtracao,2.0569054
+stft_wiener,0.0012258096,STFT Wiener,1.2258096
+wavelet_soft,0.00032175042,Wavelet soft,0.32175042

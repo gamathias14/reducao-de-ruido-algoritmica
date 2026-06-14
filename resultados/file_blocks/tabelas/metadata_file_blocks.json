@@ -1,0 +1,51 @@
+{
+  "created_at_local": "2026-06-07 09:35:49",
+  "elapsed_s": 3.289483599997766,
+  "speech": {
+    "path": "dados\\demo\\clean_refinement\\speech_george.wav",
+    "sha256": "2424d3a27c3bc4d82f8b02768c261da48c32643228e54ce55555e7d70169c79a",
+    "source": "FSDD prepared public speech"
+  },
+  "noise": {
+    "path": "dados\\demo\\noise_demand\\pcafeter_ch01_seg01.wav",
+    "sha256": "f4513dd46eea830bca2aa532d2bef9535d191767070e5827f16c01f1b1a28731",
+    "source": "DEMAND PCAFETER prepared segment"
+  },
+  "snrs_db": [
+    -5,
+    5
+  ],
+  "block_ms": [
+    10.0,
+    20.0,
+    32.0
+  ],
+  "causal_methods": [
+    "bypass",
+    "stft_subtraction",
+    "stft_wiener"
+  ],
+  "offline_reference": "Full-file low-energy estimator with quantile 0.35; non-causal upper operational reference.",
+  "causal_config": {
+    "sample_rate": 16000,
+    "method": "stft_subtraction",
+    "n_fft": 512,
+    "hop_length": 160,
+    "spectral_alpha": 1.5,
+    "spectral_floor": 0.02,
+    "wiener_floor": 0.05,
+    "noise_mode": "adaptive",
+    "calibration_ms": 250.0,
+    "warmup_ms": 250.0,
+    "history_ms": 500.0,
+    "noise_quantile": 0.22,
+    "energy_quantile": 0.2,
+    "speech_threshold_db": 6.0,
+    "low_energy_alpha": 0.3,
+    "speech_alpha": 0.005,
+    "epsilon": 1e-12
+  },
+  "selection_policy": "Frozen PC-1 parameters; no parameter search in PC-2.",
+  "alignment_policy": "All outputs preserve the processed sample count and sample-index offset zero.",
+  "private_data": "No authored or private audio used."
+}

@@ -1,0 +1,49 @@
+{
+  "config": {
+    "sample_rate": 16000,
+    "n_fft": 512,
+    "hop_length": 160,
+    "noise_estimate_s": 0.25,
+    "spectral_alpha": 1.2,
+    "spectral_floor": 0.03,
+    "wiener_floor": 0.05,
+    "wavelet": "db4",
+    "wavelet_level": 5,
+    "wavelet_mode": "soft",
+    "duration_s": 3.0,
+    "seed": 3527,
+    "snrs_db": [
+      -5,
+      0,
+      5,
+      10
+    ],
+    "noise_names": [
+      "white",
+      "pink",
+      "hum",
+      "impulsive"
+    ]
+  },
+  "n_condicoes": 960,
+  "n_amostras_fala": 5,
+  "origem_fala": "Free Spoken Digit Dataset (FSDD)",
+  "ruidos": "Arquivos WAV locais em dados\\demo\\noise_demand",
+  "origem_ruido": "Arquivos WAV locais em dados\\demo\\noise_demand",
+  "n_ruidos": 12,
+  "ruidos_efetivos": [
+    "dkitchen_ch01_seg01",
+    "dkitchen_ch01_seg02",
+    "dkitchen_ch01_seg03",
+    "ooffice_ch01_seg01",
+    "ooffice_ch01_seg02",
+    "ooffice_ch01_seg03",
+    "pcafeter_ch01_seg01",
+    "pcafeter_ch01_seg02",
+    "pcafeter_ch01_seg03",
+    "straffic_ch01_seg01",
+    "straffic_ch01_seg02",
+    "straffic_ch01_seg03"
+  ],
+  "diretorio_resultados": "resultados/demand"
+}

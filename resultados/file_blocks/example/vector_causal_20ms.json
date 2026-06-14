@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-06-07T12:37:42.859400+00:00",
+  "command_args": [
+    "--input",
+    "test_vectors/file_blocks/noisy_input.wav",
+    "--output",
+    "resultados/file_blocks/example/vector_causal_20ms.wav",
+    "--method",
+    "stft_subtraction",
+    "--noise-mode",
+    "adaptive",
+    "--block-ms",
+    "20",
+    "--metrics-json",
+    "resultados/file_blocks/example/vector_causal_20ms.json",
+    "--blocks-csv",
+    "resultados/file_blocks/example/vector_causal_20ms.csv",
+    "--overwrite"
+  ],
+  "input": {
+    "path": "test_vectors/file_blocks/noisy_input.wav",
+    "sha256": "4fec7eccace30cee4da9f91627f2b725aa1471e7041da9da161662fe8268fd17",
+    "sample_rate": 16000,
+    "channels": 1,
+    "sample_count_per_channel": 12000,
+    "dtype": "int16",
+    "sample_width_bits": 16
+  },
+  "output": {
+    "path": "resultados/file_blocks/example/vector_causal_20ms.wav",
+    "sha256": "47f70c20306c7a602d2b1bb6a320ca6451f8c4f4229e8992ca8a856fb476a3ed",
+    "sample_rate": 16000,
+    "channels": 1,
+    "dtype": "int16",
+    "sample_width_bits": 16
+  },
+  "blocks_csv": {
+    "path": "resultados/file_blocks/example/vector_causal_20ms.csv",
+    "sha256": "a4fbf59ff6588b5d9697b5096de585eaf09bc9bc1c5ce934f619f82e0144a828",
+    "columns": [
+      "block_index",
+      "start_sample",
+      "end_sample_exclusive",
+      "block_samples",
+      "processing_ms",
+      "rtf_block",
+      "input_peak",
+      "output_peak",
+      "warming_up",
+      "estimator_ready",
+      "speech_probable",
+      "low_energy",
+      "estimator_updates",
+      "noise_power_mean",
+      "state_memory_bytes"
+    ]
+  },
+  "processing": {
+    "method": "stft_subtraction",
+    "noise_mode": "adaptive",
+    "block_ms": 20.0,
+    "block_samples": 320,
+    "processed_samples": 12000,
+    "duration_s": 0.75,
+    "length_preserved": true,
+    "file_alignment": "sample-index aligned after mono/resampling conversion; no delay samples are inserted or removed",
+    "algorithmic_latency_estimated_ms": 32.0,
+    "normalization_applied": false,
+    "input_peak": 0.453399658203125,
+    "output_peak_before_pcm_write": 0.44476318359375,
+    "input_samples_out_of_range": 0,
+    "peak_before_pcm_write": 0.44476318359375,
+    "peak_after_clip": 0.44476318359375,
+    "samples_out_of_range_before_write": 0,
+    "non_finite_samples_before_write": 0
+  },
+  "causal_config": {
+    "sample_rate": 16000,
+    "method": "stft_subtraction",
+    "n_fft": 512,
+    "hop_length": 160,
+    "spectral_alpha": 1.5,
+    "spectral_floor": 0.02,
+    "wiener_floor": 0.05,
+    "noise_mode": "adaptive",
+    "calibration_ms": 250.0,
+    "warmup_ms": 250.0,
+    "history_ms": 500.0,
+    "noise_quantile": 0.22,
+    "energy_quantile": 0.2,
+    "speech_threshold_db": 6.0,
+    "low_energy_alpha": 0.3,
+    "speech_alpha": 0.005,
+    "epsilon": 1e-12
+  },
+  "timing": {
+    "blocks": 38,
+    "processing_mean_ms": 1.5512973688218106,
+    "processing_worst_ms": 2.358300000196323,
+    "processing_std_ms": 0.583073889685733,
+    "processing_p50_ms": 1.789699999790173,
+    "processing_p95_ms": 2.2678100012853974,
+    "processing_p99_ms": 2.34916100060218,
+    "rtf_block_mean": 0.07940078949583326,
+    "rtf_block_worst": 0.13953000016044825,
+    "blocks_over_budget": 0,
+    "state_memory_max_bytes": 60900,
+    "speech_probable_fraction": 0.4473684210526316,
+    "warming_blocks": 13,
+    "processing_total_ms": 60.06650000199443,
+    "rtf_total": 0.0800886666693259
+  },
+  "environment": {
+    "python": "3.11.4",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "dependencies": {
+      "numpy": "2.4.4",
+      "scipy": "1.15.2"
+    }
+  },
+  "notes": "Tempo de arquivo mede custo computacional offline por blocos; nao inclui driver, dispositivo ou latencia fisica de audio."
+}

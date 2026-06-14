@@ -1,0 +1,36 @@
+{
+  "created_at_local": "2026-06-07 00:38:33",
+  "speech_source": "Free Spoken Digit Dataset (FSDD), human speech",
+  "noise_source": "DEMAND 16 kHz prepared snippets",
+  "initial_silence_policy": "Fixed 0.30 s prefix removed before mixtures; no guaranteed initial silence.",
+  "validation_speakers": [
+    "jackson",
+    "nicolas",
+    "theo"
+  ],
+  "final_speakers": [
+    "george",
+    "lucas",
+    "yweweler"
+  ],
+  "validation_noise_groups": [
+    "DKITCHEN",
+    "OOFFICE"
+  ],
+  "final_noise_groups": [
+    "PCAFETER",
+    "STRAFFIC"
+  ],
+  "snrs_db": [
+    -5,
+    0,
+    5,
+    10
+  ],
+  "validation_conditions": 72,
+  "final_conditions": 72,
+  "candidate_count": 144,
+  "selection_rule": "Within each family: maximize validation mean SNR improvement, then mean SI-SDR improvement, then minimize degradation fraction and RTF.",
+  "caveat": "The final operational split is not historically blind because all four environments were inspected in the earlier exploratory DEMAND round; no final-split values were used by this script to choose parameters.",
+  "elapsed_s": 93.09828190000007
+}
