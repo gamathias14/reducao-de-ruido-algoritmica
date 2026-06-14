@@ -1,0 +1,305 @@
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[12pt, a4paper]{article}
+\usepackage{tabularx}
+\usepackage[export]{adjustbox}
+\usepackage[brazil]{babel}
+\usepackage{lipsum}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[lmargin=2cm,tmargin=2cm,rmargin=2cm,bmargin=2cm]{geometry}
+
+% \makeatletter
+% \patchcmd{\pgf@circ@zigzag}{\pgfsetbeveljoin}{\pgfsetroundjoin}
+%     {\typeout{Switching to safe resistors!}}
+%     {\typeout{Patching resistors failed}}
+% \makeatother
+
+\usepackage[theorems]{tcolorbox}
+% \usepackage[most]{tcolorbox}
+
+\usepackage{cancel}
+\usepackage{amsmath}
+
+
+\definecolor{disp1}{HTML}{FFD723}
+\definecolor{disp2}{HTML}{FF00DD}
+\definecolor{disp3}{HTML}{FFD723}
+\usepackage[american]{circuitikz}
+
+\usepackage{lmodern,cmap}
+\usepackage[bottom]{footmisc}
+\usepackage{tikz, tkz-euclide}
+\usepackage{relsize}
+\usetikzlibrary{arrows, positioning}
+
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\definecolor{line}{HTML}{005f7f}
+\definecolor{disp}{HTML}{329881}
+\usetikzlibrary{bending}
+
+\makeatletter
+\ctikzset{current arrow color/.initial=black}% create key
+
+\let\old@circ@drawcurrent=\pgf@circ@drawcurrent
+\def\pgf@circ@drawcurrent{\old@circ@drawcurrent}
+
+\pgfdeclareshape{currarrow}{
+ \anchor{center}{
+  \pgfpointorigin
+ }
+ \anchor{tip}{
+  \pgfpointorigin
+  \pgf@circ@res@step = \pgf@circ@Rlen
+  \divide \pgf@circ@res@step by 16
+  \pgf@x  =\pgf@circ@res@step
+ }
+ \behindforegroundpath{
+
+  \pgfscope
+  \pgf@circ@res@step = \pgf@circ@Rlen
+  \divide \pgf@circ@res@step by 16
+
+  \pgfpathmoveto{\pgfpoint{-.7\pgf@circ@res@step}{0pt}}
+  \pgfpathlineto{\pgfpoint{-.7\pgf@circ@res@step}{-.8\pgf@circ@res@step}}
+  \pgfpathlineto{\pgfpoint{1\pgf@circ@res@step}{0pt}}
+  \pgfpathlineto{\pgfpoint{-.7\pgf@circ@res@step}{.8\pgf@circ@res@step}}
+  \pgfpathlineto{\pgfpoint{-.7\pgf@circ@res@step}{0pt}}
+  \pgfsetcolor{\pgfkeysvalueof{/tikz/circuitikz/current arrow color}}
+  \pgfusepath{draw,fill}
+
+  \endpgfscope
+
+ }
+}
+\pgfdeclareshape{flowarrow}{
+ \anchor{center}{\pgfpointorigin}
+ \anchor{tip}{
+  \pgfpointorigin
+  \pgf@circ@res@step = \pgf@circ@Rlen
+  \divide \pgf@circ@res@step by 16
+  \pgf@x  =\pgf@circ@res@step
+ }
+ \behindforegroundpath{
+  \pgfscope
+  \pgf@circ@res@step = \pgf@circ@Rlen
+  \divide \pgf@circ@res@step by 4
+  \pgfpathmoveto{\pgfpoint{-\pgf@circ@res@step}{0pt}}
+  \pgfpathlineto{\pgfpoint{\pgf@circ@res@step}{0pt}}
+  %\pgfsetcolor{\pgfkeysvalueof{/tikz/circuitikz/color}}
+  \pgfsetcolor{\pgfkeysvalueof{/tikz/circuitikz/current arrow color}}
+  \pgfusepath{draw}
+  \pgftransfoRMShift{\pgfpoint{\pgf@circ@res@step}{0pt}}
+  \pgf{currarrow}{tip}{}{}{\pgfusepath{fill}}
+  \endpgfscope
+ }
+}
+\makeatother
+
+\usepackage{multirow}
+
+\usepackage{array}
+
+\usepackage{indentfirst}
+\usepackage{xurl}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+
+\usepackage[font=footnotesize,labelfont=bf]{caption}
+
+% \usepackage{fontspec}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{nameref}
+
+\captionsetup{belowskip=3.241pt,aboveskip=3.241pt, position=top}
+
+\usepackage[titles]{tocloft}
+\usepackage{titlesec}
+
+\usepackage{microtype}
+
+\makeatletter
+\renewcommand{\@tocrmarg}{5em}
+\makeatother
+
+\usepackage{titletoc}
+% tkz-euclide ja carregado acima (linha 31); nao recarregar para evitar conflito com pgfplots
+\captionsetup{belowskip=0pt,aboveskip=0pt}
+\usepackage{tikz-3dplot}
+\usetikzlibrary{arrows}
+\usepackage{siunitx}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{newfloat}
+
+% pgfplots carregado aqui para compatibilidade com tkz-euclide
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{statistics, fillbetween}
+
+\pgfplotsset{
+	expaxis/.style={
+		grid=major,
+		grid style={gray!25},
+		tick label style={font=\footnotesize},
+		label style={font=\small},
+		legend cell align=left,
+		legend style={
+			font=\footnotesize,
+			draw=black!35,
+			fill=white,
+			fill opacity=0.92,
+			text opacity=1,
+			rounded corners=1.5pt,
+			inner xsep=5pt,
+			inner ysep=4pt,
+			row sep=1pt,
+		},
+	},
+	explegendNE/.style={
+		legend style={at={(axis description cs:0.975,0.975)},anchor=north east},
+	},
+	explegendNW/.style={
+		legend style={at={(axis description cs:0.025,0.975)},anchor=north west},
+	},
+	explegendSE/.style={
+		legend style={at={(axis description cs:0.975,0.025)},anchor=south east},
+	},
+	explegendSW/.style={
+		legend style={at={(axis description cs:0.025,0.025)},anchor=south west},
+	},
+}
+
+\usetikzlibrary{positioning}
+
+\usepackage{sectsty}
+
+
+\DeclareFloatingEnvironment[fileext=grf,placement={!htbp},
+ name=Circuito,listname={CIRCUITOS},]{circuito}
+
+
+\DeclareFloatingEnvironment[fileext=grf,placement={!htbp},name=Gráfico,listname={GRÁFICOS},]{grafico}
+
+% \sectionfont{\fontsize{12pt}{1.5}\selectfont}
+%
+% \subsectionfont{\fontsize{12pt}{1.5}\selectfont}
+%
+% \subsubsectionfont{\fontsize{12pt}{1.5}\selectfont}
+
+\newcommand{\tikzAngleOfLine}{\tikz@AngleOfLine}
+\def\tikz@AngleOfLine(#1)(#2)#3{%
+ \pgfmathanglebetweenpoints{%
+  \pgfpointanchor{#1}{center}}{%
+  \pgfpointanchor{#2}{center}}
+ \pgfmathsetmacro{#3}{\pgfmathresult}%
+}
+
+\makeatletter
+\newenvironment{system}
+{%
+\let\@ifnextchar\new@ifnextchar
+\def\arraystretch{1.2}%
+\left\lbrace
+\array{@{}l@{}}%
+}
+{%
+\endarray
+\right.\kern-\nulldelimiterspace
+}
+\makeatother
+
+\usepackage{enumitem}
+
+\setlist{nosep}
+
+\usepackage{import}
+\usepackage{xifthen}
+\usepackage{pdfpages}
+\usepackage{transparent}
+\usepackage{booktabs}
+\usepackage[onehalfspacing]{setspace}
+
+\newenvironment{citacaolonga}{\vspace{1em}\par\hfill\noindent\begin{minipage}[c]{8cm}\setstretch{1.0}\footnotesize}{\end{minipage}\vspace{.75em}}
+
+\setlength{\parindent}{1.25cm}
+
+\makeatletter
+\renewcommand\section{%
+  \@startsection{section}{1}
+                {\z@}%
+                {1em}%
+                {1em}
+                {\Large\bfseries}%
+}
+
+\makeatletter
+\renewcommand\subsection{%
+  \@startsection{subsection}{2}{\z@}{1em}%
+  {1em}{\normalfont\large\bfseries}
+  }
+\makeatother
+
+\makeatletter
+\renewcommand\subsubsection{%
+  \@startsection{subsubsection}{3}{\z@}{1em}%
+  {1em}{\normalfont}
+  }
+\makeatother
+
+\usepackage{listings}
+
+\definecolor{background}{RGB}{46, 52, 64}
+\definecolor{string}{RGB}{255, 127, 0}
+\definecolor{comment}{RGB}{95, 95, 128}
+\definecolor{normal}{RGB}{248, 248, 242}
+\definecolor{identifier}{RGB}{166, 226, 46}
+\definecolor{bblue}{RGB}{0, 141, 254}
+
+% \renewcommand{\rmdefault}{cmbr}
+
+\lstset{
+ % language=c,                			% choose the language of the code
+ % numbers=left,                   		% where to put the line-numbers
+ stepnumber=1,                   		% the step between two line-numbers.
+ numbersep=5pt,                  		% how far the line-numbers are from the code
+ numberstyle=\color{fundd}\footnotesize\bfseries\ttfamily, 		% choose the background color. You must add \usepackage{color}
+ showspaces=false,               		% show spaces adding particular underscores
+ showstringspaces=false,         		% underline spaces within strings
+ showtabs=false,                 		% show tabs within strings adding particular underscores
+ tabsize=2,             		% sets default tabsize to 2 spaces
+ % backgroundcolor=\color{black!10},
+ captionpos=t,                   		% sets the caption-position to bottom
+ breaklines=true,                		% sets automatic line breaking
+ breakatwhitespace=false,         		% sets if automatic breaks should only happen at whitespace
+ inputencoding=utf8,
+ escapechar={|},
+ % title=\lstname,                 		% show the filename of files included with \lstinputlisting;
+ basicstyle=\color{fundd}\ttfamily,					% sets font style for the code
+ keywordstyle=\color{bblue}\bfseries\ttfamily,	% sets color for keywords
+ stringstyle=\color{magenta}\bfseries\ttfamily,		% sets color for strings
+ commentstyle=\color{comment!75}\ttfamily,	% sets color for comments
+ emph={},
+ % frame=tlbr,
+ % frame=lr,
+ % framesep=8pt,
+ % framerule=0pt,
+ emphstyle=\color{identifier}\ttfamily,
+language=c,   % R code
+literate=
+{á}{{\'a}}1
+{à}{{\`a}}1
+{ã}{{\~a}}1
+{é}{{\'e}}1
+{ê}{{\^e}}1
+{í}{{\'i}}1
+{ó}{{\'o}}1
+{õ}{{\~o}}1
+{ú}{{\'u}}1
+{ü}{{\"u}}1
+{ç}{{\c{c}}}1
+}
+
+\renewcommand\bfdefault{b}

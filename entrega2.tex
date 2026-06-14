@@ -1,0 +1,664 @@
+%&cab
+% \endofdump
+\usepackage[T1]{fontenc}
+\usepackage{needspace}
+\usepackage{multicol}
+
+\renewcommand{\contentsname}{SUMÁRIO}
+\renewcommand{\refname}{REFERÊNCIAS}
+
+\newcommand{\tituloProjeto}{Revisão Sistemática da Literatura sobre Redução de Ruído de Sinais Unidimensionais no Tempo}
+\newcommand{\orientadorProjeto}{Juan Luis Poletti Soto}
+\newcommand{\alunoA}{Augusto Massayoshi Yojo de Lima}
+\newcommand{\alunoB}{Gabriel Almeida Mathias}
+
+\newcommand{\referencia}[1]{\noindent #1\par\vspace{0.5\baselineskip}}
+\newcommand{\tipoResposta}[1]{\par\noindent\textit{Tipo de resposta:} #1}
+\newcommand{\secaoQuestionario}[1]{\Needspace{10\baselineskip}\vspace{0.75\baselineskip}\noindent\textbf{#1}\par\vspace{0.25\baselineskip}}
+\newcounter{pergunta}
+\newtcolorbox{blocoFormulario}[1]{
+    colback=white,
+    colframe=black!55,
+    colbacktitle=black!8,
+    coltitle=black,
+    boxrule=0.45pt,
+    arc=1.5pt,
+    left=6pt,
+    right=6pt,
+    top=5pt,
+    bottom=5pt,
+    toptitle=4pt,
+    bottomtitle=4pt,
+    lefttitle=8pt,
+    righttitle=8pt,
+    before skip=0.55\baselineskip,
+    after skip=0.55\baselineskip,
+    fonttitle=\bfseries,
+    title={#1}
+}
+\newenvironment{perguntaFormulario}[1]{%
+    \refstepcounter{pergunta}%
+    \begin{blocoFormulario}{P\thepergunta. #1}%
+}{%
+    \end{blocoFormulario}%
+}
+\newenvironment{opcoesFormulario}{%
+    \par\small\setstretch{1.05}%
+    \begin{itemize}[label=$\square$, leftmargin=1.65em, labelsep=0.45em, itemsep=0pt, topsep=0.1\baselineskip, parsep=0pt, partopsep=0pt]%
+}{%
+    \end{itemize}%
+}
+\newenvironment{opcoesFormularioDuasColunas}{%
+    \par\small\setstretch{1.08}%
+    \setlength{\columnsep}{1.9em}%
+    \begin{multicols}{2}%
+    \begin{itemize}[label=$\square$, leftmargin=1.55em, labelsep=0.45em, itemsep=0.06\baselineskip, topsep=0.18\baselineskip, parsep=0pt, partopsep=0pt]%
+}{%
+    \end{itemize}%
+    \end{multicols}%
+}
+\newenvironment{opcoesFormularioDuasColunasCompactas}{%
+    \par\footnotesize\setstretch{1.0}%
+    \setlength{\columnsep}{1.6em}%
+    \begin{multicols}{2}%
+    \begin{itemize}[label=$\square$, leftmargin=1.5em, labelsep=0.4em, itemsep=0pt, topsep=0.05\baselineskip, parsep=0pt, partopsep=0pt]%
+}{%
+    \end{itemize}%
+    \end{multicols}%
+}
+\newcommand{\orientacaoResposta}[1]{\par\vspace{0.05\baselineskip}\noindent\textit{#1}\par\vspace{0.05\baselineskip}}
+\newcommand{\opcaoCampo}[1]{\item #1: \hspace{0.35em}\rule{0.28\linewidth}{0.4pt}}
+\newcommand{\linhaResposta}{\par\vspace{0.45\baselineskip}\noindent\rule{\linewidth}{0.4pt}}
+\newcommand{\campoCurto}[1]{\orientacaoResposta{#1}\linhaResposta}
+\newcommand{\campoAberto}[1]{\orientacaoResposta{#1}\linhaResposta\linhaResposta\linhaResposta\linhaResposta}
+\newcommand{\escalaCinco}[2]{%
+    \vspace{0.25\baselineskip}
+    \noindent\begingroup\small\setstretch{1.0}%
+    \setlength{\tabcolsep}{0pt}%
+    \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}>{\centering\arraybackslash}X>{\raggedleft\arraybackslash}p{0.30\linewidth}@{}}
+        #1 & $\square$~1\quad $\square$~2\quad $\square$~3\quad $\square$~4\quad $\square$~5 & #2
+    \end{tabularx}\par\endgroup
+}
+\newcommand{\escalaCincoCompacta}[2]{%
+    \vspace{0.15\baselineskip}
+    \noindent\begingroup\footnotesize\setstretch{1.0}%
+    \setlength{\tabcolsep}{0pt}%
+    \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}>{\centering\arraybackslash}X>{\raggedleft\arraybackslash}p{0.30\linewidth}@{}}
+        #1 & $\square$~1\quad $\square$~2\quad $\square$~3\quad $\square$~4\quad $\square$~5 & #2
+    \end{tabularx}\par\endgroup
+}
+
+\begin{document}
+
+\newgeometry{left=3cm,top=3cm,right=2cm,bottom=2cm}
+\setstretch{1.5}
+\pagenumbering{gobble}
+
+\thispagestyle{empty}
+
+{\centering
+
+\large
+
+\textbf{ESCOLA POLITÉCNICA DA UNIVERSIDADE DE SÃO PAULO}
+
+\vspace{1.5\baselineskip}
+
+\includegraphics[width=4cm]{figuras/logopoli.pdf}
+
+\par%
+}
+
+\vfill
+
+{\centering
+
+\begin{tabular}{lc}
+    \toprule
+    \multicolumn{1}{c}{\textbf{INTEGRANTES DO GRUPO}} & \textbf{Nº USP} \\
+    \midrule
+    AUGUSTO MASSAYOSHI YOJO DE LIMA & 12487121 \\
+    GABRIEL ALMEIDA MATHIAS & 14543284 \\
+    \bottomrule
+\end{tabular}
+
+\par%
+}
+
+\vfill
+
+{\centering
+
+\textbf{PTC3527 - ANTEPROJETO DE FORMATURA EM TELECOMUNICAÇÕES}
+\\
+\textbf{1\textsuperscript{o} RELATÓRIO DO ANTEPROJETO DE FORMATURA}
+\\[.75\baselineskip]
+\textbf{\large\tituloProjeto}
+\\[.75\baselineskip]
+Orientador: \orientadorProjeto
+\\
+\today
+
+\par%
+}
+
+\vfill
+
+\begin{citacaolonga}
+    Primeiro relatório solicitado pelos docentes da disciplina PTC3527 para acompanhamento do anteprojeto de formatura em Telecomunicações, incluindo objetivos, referências bibliográficas, cronograma, atividades realizadas e questionário extensionista.
+\end{citacaolonga}
+
+\vfill
+
+{\centering
+\textbf{SÃO PAULO}\\
+\textbf{2026}
+\par}
+
+\clearpage
+
+\pagenumbering{arabic}
+\tableofcontents
+\newpage
+
+\section{Identificação do projeto}
+
+O projeto de formatura \textit{\tituloProjeto} será desenvolvido na disciplina PTC3527 -- Anteprojeto de Formatura em Telecomunicações, sob orientação do professor \orientadorProjeto, pelo grupo composto por \alunoA\ e \alunoB.
+
+O tema situa-se em processamento de sinais e telecomunicações, com foco em redução de ruído em sinais temporais unidimensionais, como voz, áudio, telemetria, sensores, vibração, instrumentação e sinais biomédicos. Sua escolha decorre da relevância prática de separar informação útil de perturbações em sistemas de aquisição, transmissão, armazenamento e análise de dados temporais.
+
+\section{Resumo e objetivos do projeto}
+
+\subsection{Resumo}
+
+Este projeto realiza uma revisão sistemática da literatura sobre técnicas de redução de ruído em sinais unidimensionais no tempo, abrangendo domínios como processamento de voz e sinais telemétricos, com abordagens clássicas e de aprendizado de máquina. A partir desse levantamento, pretende-se organizar e categorizar as principais metodologias existentes, identificando características, limitações, hipóteses de funcionamento, métricas de avaliação e cenários de aplicação.
+
+O trabalho busca consolidar um repertório teórico estruturado para apoiar a análise e o desenvolvimento de soluções na área e servir como ponto de partida para estudos futuros. Em alinhamento com a disciplina, será conduzida uma atividade extensionista com elaboração e aplicação de questionário ao público-alvo, a fim de identificar demandas reais relacionadas à redução de ruído em sinais unidimensionais no tempo.
+
+Com base no levantamento bibliográfico e no feedback obtido, pretende-se direcionar a aplicação ou adaptação de técnicas existentes para construir uma solução fundamentada no estado da arte. Dessa forma, o projeto integra revisão teórica, análise estruturada e aplicação orientada por necessidades reais, conforme prevê a disciplina para o anteprojeto de formatura em telecomunicações.
+
+\subsection{Problema de pesquisa}
+
+Sinais unidimensionais adquiridos em ambientes reais frequentemente são degradados por ruídos aditivos, interferências impulsivas, artefatos de medição, limitações de sensores, ruído de quantização, perturbações de canal e variações de fundo. Em muitos casos, esses ruídos reduzem a inteligibilidade, prejudicam a estimação de parâmetros, degradam a classificação automática ou dificultam a interpretação humana do sinal.
+
+Apesar da existência de ampla literatura sobre filtros lineares, métodos espectrais, decomposições tempo-frequência, técnicas adaptativas e modelos baseados em aprendizado profundo, a escolha de uma técnica de redução de ruído depende fortemente do tipo de sinal, das características estatísticas do ruído, das restrições de tempo real, da disponibilidade de dados rotulados e do compromisso aceitável entre supressão de ruído e preservação da informação útil. Assim, o problema central do projeto é organizar o conhecimento disponível de modo comparável e aplicável, reduzindo a distância entre literatura acadêmica e decisão técnica em projetos de engenharia.
+
+\subsection{Objetivo geral}
+
+Realizar uma revisão sistemática da literatura sobre redução de ruído de sinais unidimensionais no tempo e, a partir dela, propor uma taxonomia crítica das principais famílias de métodos, seus requisitos, limitações, métricas de avaliação e contextos de aplicação.
+
+\subsection{Questões norteadoras}
+
+\begin{enumerate}[label=Q\arabic*.]
+    \item Quais são as principais famílias de métodos utilizadas para redução de ruído em sinais unidimensionais no tempo?
+    \item Em quais condições cada família de métodos tende a ser mais adequada?
+    \item Quais métricas objetivas e subjetivas são mais utilizadas para avaliar desempenho?
+    \item Quais limitações aparecem com maior frequência em aplicações reais, especialmente em sinais de voz, telemetria e sensores?
+    \item Como requisitos sociais, éticos, de acessibilidade e de sustentabilidade devem influenciar a seleção de uma solução técnica?
+\end{enumerate}
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}[label=\alph*)]
+    \item Definir um protocolo de revisão sistemática com bases de busca, palavras-chave, critérios de inclusão, critérios de exclusão e campos de extração de dados.
+    \item Identificar e classificar técnicas clássicas de redução de ruído, como subtração espectral, filtragem de Wiener, estimadores MMSE, filtros adaptativos e métodos baseados em transformadas.
+    \item Mapear técnicas modernas, especialmente métodos baseados em aprendizado de máquina, autoencoders, redes convolucionais, redes recorrentes e arquiteturas fim-a-fim.
+    \item Comparar os métodos quanto a domínio de aplicação, hipóteses sobre ruído, necessidade de treinamento, custo computacional, interpretabilidade, métricas utilizadas e disponibilidade de dados.
+    \item Levantar, por meio de questionário extensionista, percepções do público-alvo sobre impacto social, acessibilidade, sustentabilidade e aspectos éticos associados a soluções de redução de ruído.
+    \item Produzir uma síntese que oriente a escolha ou adaptação de técnicas para aplicações reais em telecomunicações, processamento de voz, telemetria e instrumentação.
+\end{enumerate}
+
+\section{Metodologia planejada}
+
+A revisão será conduzida como revisão sistemática de literatura, inspirada por diretrizes de transparência e rastreabilidade utilizadas em revisões sistemáticas, especialmente PRISMA 2020 e orientações de Kitchenham e Charters para revisões em áreas de engenharia e computação. O objetivo não é apenas acumular referências, mas registrar de forma explícita como os artigos foram encontrados, selecionados, avaliados e sintetizados.
+
+\subsection{Bases e estratégias de busca}
+
+Serão utilizadas, prioritariamente, bases acadêmicas com forte presença em engenharia elétrica, telecomunicações, processamento de sinais e computação aplicada: IEEE Xplore, ACM Digital Library, ScienceDirect, SpringerLink, Scopus, Web of Science, Google Scholar e arXiv, quando pertinente para pré-publicações relevantes.
+
+\newpage
+
+A string de busca inicial será adaptada para cada base a partir da seguinte estrutura:
+
+\begin{quote}
+\small\ttfamily\setstretch{1.0}
+("denoising" OR "noise reduction" OR "speech enhancement"\\
+OR "signal enhancement")\\
+AND ("1D signal" OR "time series" OR "temporal signal"\\
+OR "speech" OR "audio" OR "telemetry" OR "sensor")\\
+AND ("wavelet" OR "Wiener" OR "spectral subtraction"\\
+OR "adaptive filter" OR "deep learning" OR "autoencoder"\\
+OR "neural network")
+\end{quote}
+
+Também serão usadas buscas complementares por encadeamento de referências, isto é, análise de artigos citados por trabalhos fundamentais e de trabalhos mais recentes que citam essas referências.
+
+\subsection{Critérios de inclusão e exclusão}
+
+\begin{table}[!htbp]
+\centering
+\caption{Critérios preliminares de seleção dos estudos.}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.6cm}X}
+\toprule
+\textbf{Tipo} & \textbf{Critério} \\
+\midrule
+Inclusão & Trabalhos que proponham, comparem ou revisem técnicas de redução de ruído aplicáveis a sinais unidimensionais no tempo. \\
+Inclusão & Estudos que apresentem métricas de avaliação, experimentos, bases de dados, análise teórica ou comparação com métodos de referência. \\
+Inclusão & Trabalhos relacionados a sinais de voz, áudio, sensores, telemetria, vibração, instrumentação ou sinais biomédicos temporais. \\
+Exclusão & Trabalhos restritos exclusivamente a imagens, vídeo ou sinais multidimensionais sem adaptação clara para sinais temporais unidimensionais. \\
+Exclusão & Estudos sem descrição suficiente do método, sem resultados de avaliação ou sem relação direta com redução de ruído. \\
+Exclusão & Duplicatas, resumos sem artigo completo e materiais sem rastreabilidade bibliográfica adequada. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Campos de extração}
+
+Para cada trabalho selecionado, pretende-se registrar: referência completa, ano, domínio de aplicação, tipo de sinal, tipo de ruído, método empregado, necessidade de dados limpos para treinamento, métricas reportadas, bases de dados utilizadas, custo computacional, capacidade de operação em tempo real, disponibilidade de código ou dados, limitações declaradas e possíveis implicações sociais, éticas, de acessibilidade e sustentabilidade.
+
+\section{Lista de principais referências bibliográficas}
+
+\begin{flushleft}
+\setstretch{1.0}
+
+\referencia{BOLL, S. F. Suppression of acoustic noise in speech using spectral subtraction. \textit{IEEE Transactions on Acoustics, Speech, and Signal Processing}, v. ASSP-27, n. 2, p. 113--120, 1979. DOI: \url{https://doi.org/10.1109/TASSP.1979.1163209}.}
+
+\referencia{DONOHO, D. L. De-noising by soft-thresholding. \textit{IEEE Transactions on Information Theory}, v. 41, n. 3, p. 613--627, 1995. DOI: \url{https://doi.org/10.1109/18.382009}.}
+
+\referencia{DRAGOMIRETSKIY, K.; ZOSSO, D. Variational mode decomposition. \textit{IEEE Transactions on Signal Processing}, v. 62, n. 3, p. 531--544, 2014. DOI: \url{https://doi.org/10.1109/TSP.2013.2288675}.}
+
+\referencia{EPHRAIM, Y.; MALAH, D. Speech enhancement using a minimum mean-square error short-time spectral amplitude estimator. \textit{IEEE Transactions on Acoustics, Speech, and Signal Processing}, v. ASSP-32, n. 6, p. 1109--1121, 1984. DOI: \url{https://doi.org/10.1109/TASSP.1984.1164453}.}
+
+\referencia{HUANG, N. E. et al. The empirical mode decomposition and the Hilbert spectrum for nonlinear and non-stationary time series analysis. \textit{Proceedings of the Royal Society A}, v. 454, n. 1971, p. 903--995, 1998. DOI: \url{https://doi.org/10.1098/rspa.1998.0193}.}
+
+\referencia{KITCHENHAM, B.; CHARTERS, S. \textit{Guidelines for performing systematic literature reviews in software engineering}. Keele: Keele University; Durham: University of Durham, 2007. Technical Report EBSE-2007-01.}
+
+\referencia{MALLAT, S. \textit{A wavelet tour of signal processing: the sparse way}. 3. ed. Amsterdam: Academic Press, 2009.}
+
+\referencia{PAGE, M. J. et al. The PRISMA 2020 statement: an updated guideline for reporting systematic reviews. \textit{BMJ}, v. 372, n. 71, 2021. DOI: \url{https://doi.org/10.1136/bmj.n71}.}
+
+\referencia{RETHAGE, D.; PONS, J.; SERRA, X. A WaveNet for speech denoising. In: \textit{IEEE International Conference on Acoustics, Speech and Signal Processing}. Calgary: IEEE, 2018. p. 5069--5073. DOI: \url{https://doi.org/10.1109/ICASSP.2018.8462417}.}
+
+\referencia{SELESNICK, I. W.; BARANIUK, R. G.; KINGSBURY, N. G. The dual-tree complex wavelet transform. \textit{IEEE Signal Processing Magazine}, v. 22, n. 6, p. 123--151, 2005. DOI: \url{https://doi.org/10.1109/MSP.2005.1550194}.}
+
+\referencia{VINCENT, P. et al. Stacked denoising autoencoders: learning useful representations in a deep network with a local denoising criterion. \textit{Journal of Machine Learning Research}, v. 11, p. 3371--3408, 2010.}
+
+\referencia{XU, Y.; DU, J.; DAI, L.-R.; LEE, C.-H. A regression approach to speech enhancement based on deep neural networks. \textit{IEEE/ACM Transactions on Audio, Speech, and Language Processing}, v. 23, n. 1, p. 7--19, 2015. DOI: \url{https://doi.org/10.1109/TASLP.2014.2364452}.}
+
+\end{flushleft}
+
+\section{Resumo do conteúdo das referências bibliográficas}
+
+As referências iniciais foram escolhidas para cobrir tanto fundamentos clássicos quanto abordagens modernas de redução de ruído. O conjunto ainda será refinado durante a revisão sistemática, mas já oferece uma base representativa para comparação entre métodos no domínio do tempo, da frequência, tempo-frequência e aprendizado de máquina.
+
+\begin{table}[!htbp]
+\centering
+\caption{Síntese preliminar das referências e contribuição para o projeto.}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.8cm}X}
+\toprule
+\textbf{Referência} & \textbf{Contribuição para o anteprojeto} \\
+\midrule
+Boll (1979) & Apresenta a subtração espectral como técnica clássica para supressão de ruído em fala. Serve como base para discutir métodos simples, interpretáveis e de baixo custo, bem como artefatos introduzidos por estimativas espectrais imperfeitas. \\
+\addlinespace
+Ephraim e Malah (1984) & Propõe estimador MMSE para amplitude espectral de curto termo. É referência central para métodos estatísticos de realce de fala e para comparação com filtragem de Wiener e subtração espectral. \\
+\addlinespace
+Donoho (1995), Mallat (2009) e Selesnick, Baraniuk e Kingsbury (2005) & Fundamentam métodos baseados em wavelets, limiarização e representações multiescala. São relevantes para sinais não estacionários e para cenários nos quais o ruído e a informação útil ocupam escalas diferentes. \\
+\addlinespace
+Huang et al. (1998) e Dragomiretskiy e Zosso (2014) & Introduzem decomposições adaptativas, como EMD e VMD, úteis para sinais não lineares ou não estacionários. Permitem comparar abordagens baseadas em modos intrínsecos com métodos baseados em transformadas fixas. \\
+\addlinespace
+Vincent et al. (2010), Xu et al. (2015) e Rethage, Pons e Serra (2018) & Representam a evolução para modelos de aprendizado profundo, incluindo autoencoders, redes profundas de regressão e arquiteturas fim-a-fim. Essas referências ajudam a analisar desempenho, dependência de dados, generalização e custo computacional. \\
+\addlinespace
+Kitchenham e Charters (2007) e Page et al. (2021) & Apoiam a estrutura metodológica da revisão sistemática, especialmente em relação a planejamento, critérios de seleção, rastreabilidade, transparência e relato dos resultados. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+
+\subsection{Síntese analítica das referências iniciais}
+
+A tabela anterior cumpre a função de apresentar uma visão panorâmica das contribuições de cada obra, mas a escolha dessas referências também precisa ser entendida como uma primeira organização conceitual do campo. Elas foram selecionadas para compor um percurso que começa em métodos clássicos de realce de fala, passa por formulações estatísticas e transformadas multiescala, incorpora decomposições adaptativas para sinais não estacionários, chega a modelos de aprendizado profundo e, por fim, apoia a própria forma de conduzir a revisão sistemática. Assim, o conjunto não pretende encerrar a revisão bibliográfica, mas criar um núcleo inicial suficientemente sólido para orientar as buscas, os critérios de comparação e a matriz de extração de dados.
+
+\noindent\textbf{Boll (1979).} O trabalho de Boll é uma das referências clássicas para a técnica de subtração espectral aplicada à supressão de ruído acústico em fala. A ideia central consiste em estimar o espectro médio do ruído, em geral a partir de trechos sem fala, e subtrair essa estimativa do espectro do sinal ruidoso, preservando a fase do sinal observado na reconstrução temporal. A importância desse artigo para o anteprojeto está no fato de ele representar uma família de métodos simples, interpretáveis e computacionalmente pouco exigentes, que continuam sendo usados como linha de base em estudos de realce de fala. Ao mesmo tempo, a técnica explicita dificuldades que atravessam todo o problema de redução de ruído: dependência de uma boa estimativa do ruído, sensibilidade a ruídos não estacionários e possibilidade de introdução de artefatos perceptivos, como o chamado ruído musical. Por isso, Boll (1979) ajuda a formular perguntas comparativas sobre custo computacional, robustez e qualidade perceptual.
+
+\noindent\textbf{Ephraim e Malah (1984).} Ephraim e Malah avançam em relação a abordagens mais diretas, como a subtração espectral, ao propor um estimador de amplitude espectral de curto termo baseado no critério de mínimo erro quadrático médio. O artigo parte de uma modelagem estatística do sinal de fala e do ruído no domínio da Transformada de Fourier de Curto Tempo, explorando a relevância perceptual da amplitude espectral para o realce de fala. Sua contribuição é importante porque estabelece uma ponte entre métodos puramente heurísticos e métodos probabilísticos, permitindo discutir hipóteses sobre distribuição do sinal, estimação de relação sinal-ruído e compromisso entre supressão do ruído e distorção da fala. Para o projeto, essa referência será útil como base para comparar técnicas estatísticas clássicas com métodos posteriores baseados em aprendizado de máquina, especialmente no que se refere à interpretabilidade, necessidade de hipóteses explícitas e desempenho em diferentes condições de ruído.
+
+\noindent\textbf{Donoho (1995).} O artigo de Donoho introduz uma formulação fundamental para remoção de ruído por limiarização suave de coeficientes, especialmente no contexto de representações esparsas por wavelets. A contribuição central está em mostrar que, quando um sinal possui representação concentrada em poucos coeficientes relevantes e o ruído se espalha por muitos coeficientes pequenos, a aplicação de um limiar pode reduzir ruído preservando componentes estruturais do sinal. Essa referência é importante para o anteprojeto porque desloca a discussão da simples filtragem em frequência para a ideia de esparsidade, regularização e seleção de coeficientes significativos. Em sinais temporais unidimensionais, essa perspectiva é especialmente útil quando eventos transitórios, bordas, pulsos ou padrões localizados precisam ser preservados durante a remoção de ruído. O trabalho também fornece uma base conceitual para avaliar métodos que dependem da escolha de limiar, da natureza do ruído e da adequação da representação usada.
+
+\noindent\textbf{Mallat (2009).} A obra de Mallat oferece uma base abrangente para análise multirresolução, transformadas wavelet, representações esparsas e métodos modernos de processamento de sinais. Diferentemente de artigos focados em uma técnica específica, o livro organiza o arcabouço matemático que permite compreender por que certas transformadas são adequadas para sinais não estacionários ou com estruturas localizadas no tempo. Para este projeto, Mallat (2009) tem papel de referência estruturante: ele apoia a leitura crítica de artigos que utilizam wavelets, bancos de filtros, decomposições em escalas e limiarização de coeficientes. Também ajuda a distinguir quando uma técnica atua por separação espectral, por separação em escala, por compactação de energia ou por imposição de esparsidade. Essa distinção será importante na taxonomia pretendida, pois métodos com nomes parecidos podem depender de hipóteses muito diferentes sobre o sinal e sobre o ruído.
+
+\noindent\textbf{Selesnick, Baraniuk e Kingsbury (2005).} Este artigo apresenta a Transformada Wavelet Complexa de Árvore Dupla, uma extensão das wavelets discretas projetada para reduzir limitações conhecidas, como sensibilidade a deslocamentos temporais e baixa seletividade de fase. Embora a técnica seja frequentemente discutida também em aplicações multidimensionais, seus fundamentos são relevantes para sinais unidimensionais porque tratam da construção de representações mais estáveis e informativas no domínio tempo-escala. Para a revisão sistemática, essa referência ajuda a refinar a categoria de métodos baseados em wavelets: nem toda abordagem multiescala possui a mesma robustez a deslocamentos, a mesma redundância ou o mesmo custo computacional. A obra será usada para analisar técnicas que buscam melhorar a preservação de detalhes temporais durante a supressão de ruído, especialmente em sinais nos quais pequenas variações de fase ou de alinhamento podem afetar a interpretação.
+
+\noindent\textbf{Huang et al. (1998).} Huang e colaboradores propõem a Decomposição Empírica em Modos e o espectro de Hilbert como uma alternativa adaptativa para análise de séries temporais não lineares e não estacionárias. Em vez de decompor o sinal em bases fixas, como senos, cossenos ou wavelets previamente escolhidas, a EMD procura extrair funções de modo intrínseco diretamente dos dados. Essa característica torna a referência particularmente importante para o projeto, pois muitos sinais temporais reais, como voz, vibração, telemetria e medições de sensores, não se ajustam bem a hipóteses de estacionariedade. Ao mesmo tempo, o método exige atenção a limitações como mistura de modos, sensibilidade a ruído e critérios de parada do processo de peneiramento. Assim, Huang et al. (1998) será útil tanto para mapear métodos adaptativos quanto para discutir seus riscos metodológicos quando usados em redução de ruído.
+
+\noindent\textbf{Dragomiretskiy e Zosso (2014).} A Decomposição Variacional em Modos surge como uma formulação mais explícita e otimizada para decompor um sinal em modos de banda limitada. Diferentemente da EMD, que é mais algorítmica e empírica, a VMD define um problema variacional e busca simultaneamente os modos e suas frequências centrais. Essa referência é importante porque permite comparar duas formas de decomposição adaptativa: uma orientada por um procedimento de extração a partir dos dados e outra baseada em uma formulação de otimização. Para o anteprojeto, a VMD será considerada relevante em cenários nos quais o ruído e a informação útil aparecem em componentes oscilatórias parcialmente separáveis, mas em condições não estacionárias. O artigo também antecipa critérios que deverão aparecer na matriz comparativa, como escolha do número de modos, sensibilidade a parâmetros, custo computacional e interpretabilidade dos componentes extraídos.
+
+\noindent\textbf{Vincent et al. (2010).} O trabalho sobre autoencoders denoising empilhados é uma referência importante para compreender a transição entre técnicas clássicas de processamento de sinais e abordagens de aprendizado de representações. A proposta consiste em treinar redes para reconstruir entradas originais a partir de versões corrompidas, fazendo com que o modelo aprenda representações internas robustas a perturbações. Embora o artigo não seja restrito a sinais temporais unidimensionais nem a telecomunicações, ele fornece um princípio de aprendizado diretamente conectado ao problema de redução de ruído: aprender uma transformação que preserve estrutura relevante e descarte variações indesejadas. Para o projeto, essa referência será usada para fundamentar a categoria de métodos baseados em autoencoders, discutir dependência de dados de treinamento, risco de sobreajuste e diferença entre remoção de ruído como pré-processamento e remoção de ruído como objetivo de aprendizado.
+
+\noindent\textbf{Xu et al. (2015).} Xu, Du, Dai e Lee aplicam redes neurais profundas ao realce de fala por meio de uma abordagem de regressão, na qual o modelo aprende a mapear características de fala ruidosa para uma representação mais próxima da fala limpa. O artigo é relevante porque exemplifica uma mudança importante na área: em vez de modelar explicitamente o ruído por hipóteses estatísticas simplificadas, passa-se a aprender a transformação a partir de dados. Essa mudança traz ganhos potenciais de desempenho, mas também introduz novas dependências, como disponibilidade de bases de treinamento, correspondência entre ruídos de treino e de teste, escolha de atributos de entrada e custo computacional. No anteprojeto, essa referência ajudará a comparar métodos clássicos e métodos supervisionados, destacando que desempenho médio elevado não necessariamente implica melhor aplicabilidade em ambientes reais com ruídos desconhecidos ou recursos limitados.
+
+\noindent\textbf{Rethage, Pons e Serra (2018).} O artigo sobre WaveNet para \textit{speech denoising} representa uma linha de modelos neurais fim-a-fim aplicados diretamente à forma de onda. A importância dessa referência está em aproximar o problema de redução de ruído de arquiteturas profundas capazes de modelar dependências temporais complexas, sem depender necessariamente de uma representação espectral pré-definida como etapa central. Para o projeto, ela será útil para discutir vantagens e limitações de métodos que operam no domínio temporal bruto: potencial de capturar estruturas finas do sinal, mas também maior exigência computacional, maior necessidade de dados e menor interpretabilidade em comparação com métodos clássicos. Essa referência também ajuda a formular uma pergunta crítica da revisão: em quais cenários o aumento de complexidade de modelos profundos é justificado por ganhos práticos de qualidade, robustez ou aplicabilidade?
+
+\noindent\textbf{Kitchenham e Charters (2007).} As diretrizes de Kitchenham e Charters foram incluídas não como referência técnica de redução de ruído, mas como base metodológica para a condução da revisão sistemática. Elas orientam a definição de perguntas de pesquisa, estratégia de busca, critérios de inclusão e exclusão, extração de dados e síntese das evidências. Para o anteprojeto, sua importância está em evitar que a revisão se torne apenas uma revisão narrativa sem rastreabilidade. A partir dessa referência, o grupo poderá justificar por que determinadas bases foram escolhidas, como os artigos serão filtrados e quais informações serão registradas para permitir comparação entre métodos. Isso fortalece o caráter científico do trabalho e reduz o risco de viés na seleção de estudos.
+
+\noindent\textbf{Page et al. (2021).} A declaração PRISMA 2020 complementa Kitchenham e Charters ao fornecer recomendações atuais para transparência no relato de revisões sistemáticas. Embora tenha origem fortemente associada à área da saúde, seus princípios são transferíveis para revisões em engenharia quando se busca explicitar o fluxo de identificação, triagem, elegibilidade e inclusão de estudos. Para este projeto, PRISMA será útil na organização do protocolo, na documentação das etapas de busca e na apresentação final dos resultados, especialmente por meio de critérios claros e de um fluxo auditável de seleção. Sua inclusão mostra que a revisão não será conduzida apenas pela conveniência das referências encontradas, mas por um procedimento explícito que poderá ser examinado, criticado e reproduzido.
+
+Em conjunto, essas referências iniciais oferecem uma base equilibrada entre métodos interpretáveis e métodos orientados por dados. Boll, Ephraim e Malah representam a tradição de realce de fala no domínio espectral; Donoho, Mallat e Selesnick, Baraniuk e Kingsbury sustentam a análise multiescala e esparsa; Huang et al. e Dragomiretskiy e Zosso introduzem decomposições adaptativas para sinais não estacionários; Vincent et al., Xu et al. e Rethage, Pons e Serra abrem a frente de aprendizado profundo; Kitchenham e Charters e Page et al. estruturam a revisão como procedimento sistemático. Essa organização será usada para guiar as próximas buscas, ampliar a literatura com estudos recentes e construir uma matriz comparativa que considere não apenas desempenho, mas também hipóteses, custo, robustez, interpretabilidade e adequação a aplicações reais em telecomunicações e processamento de sinais.
+
+\newpage
+
+\section{Cronograma detalhado dos resultados do \texorpdfstring{1\textsuperscript{o}}{1o} semestre}
+
+O cronograma do primeiro semestre foi organizado considerando os marcos da disciplina: definição do projeto, entrega do primeiro relatório, primeira apresentação oral, desenvolvimento do levantamento bibliográfico, atividade extensionista e preparação para o relatório e apresentação de julho.
+
+\begin{table}[!htbp]
+\centering
+\caption{Cronograma previsto para o 1\textsuperscript{o} semestre de 2026.}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm}X>{\raggedright\arraybackslash}p{4.2cm}}
+\toprule
+\textbf{Período} & \textbf{Atividades} & \textbf{Resultado esperado} \\
+\midrule
+Abril & Definição do tema, orientador, integrantes, escopo preliminar e resumo do projeto. & Entrega de definição do projeto e consolidação do problema de pesquisa. \\
+\addlinespace
+Fim de abril e início de maio & Elaboração do primeiro relatório, seleção inicial de referências, definição de objetivos e construção do questionário extensionista. & Relatório com referências iniciais, metodologia planejada, cronograma e questionário pronto para aplicação. \\
+\addlinespace
+Maio & Apresentação oral de 5 minutos, ajustes no questionário após feedback, aplicação piloto ao público-alvo e início da busca sistemática. & Questionário revisado, primeiras respostas coletadas e protocolo de busca validado. \\
+\addlinespace
+Junho & Execução das buscas, remoção de duplicatas, triagem por título e resumo, leitura exploratória e preenchimento inicial da matriz de extração. & Lista preliminar de estudos selecionados e categorização por família de métodos. \\
+\addlinespace
+Fim de junho & Leitura de estudos prioritários, extração de métricas, domínios de aplicação, limitações e requisitos técnicos. & Matriz comparativa inicial e identificação de lacunas da literatura. \\
+\addlinespace
+Início de julho & Consolidação dos resultados parciais, análise das respostas ao questionário e preparação do segundo relatório e da segunda apresentação. & Avaliação do andamento do projeto, justificativa de desvios e cronograma detalhado para o segundo semestre. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+
+\section{Atividades realizadas e resultados obtidos nesta fase}
+
+Até esta etapa do anteprojeto, foram realizadas as seguintes atividades:
+
+\begin{enumerate}[label=\alph*)]
+    \item definição do tema, do título, do orientador e da composição do grupo;
+    \item elaboração do resumo inicial do projeto, com delimitação do foco em sinais unidimensionais no tempo;
+    \item identificação preliminar de famílias de técnicas relevantes: métodos espectrais, filtros estatísticos, métodos baseados em wavelets, decomposições adaptativas e aprendizado profundo;
+    \item seleção inicial de referências bibliográficas fundamentais para orientar o protocolo de revisão;
+    \item definição preliminar das questões de pesquisa e dos campos de extração a serem utilizados na matriz comparativa;
+    \item elaboração do questionário extensionista, explicitamente organizado em torno dos quatro tópicos indicados pela disciplina: benefício social, acessibilidade, sustentabilidade e desdobramentos éticos.
+\end{enumerate}
+
+Como resultado, o projeto avançou de uma formulação ampla sobre redução de ruído para um plano de revisão estruturado, com objetivos específicos, critérios de seleção, fontes de busca e instrumento de interação com o público-alvo. A principal decisão técnica desta fase foi tratar a revisão não apenas como levantamento bibliográfico, mas como uma comparação orientada por aplicação, isto é, capaz de apoiar a escolha de métodos em cenários reais.
+
+\newpage
+
+\section{Atividades previstas para o \texorpdfstring{2\textsuperscript{o}}{2o} semestre}
+
+No segundo semestre, durante a continuidade do trabalho de formatura, as atividades previstas são:
+
+\begin{enumerate}[label=\alph*)]
+    \item concluir a seleção final dos estudos e documentar o fluxo de inclusão e exclusão;
+    \item finalizar a matriz comparativa das técnicas de redução de ruído;
+    \item aprofundar a análise dos métodos mais promissores para sinais de voz, telemetria e sensores;
+    \item definir um conjunto de critérios práticos para escolha de técnicas, considerando desempenho, custo computacional, dados disponíveis, interpretabilidade e restrições de uso;
+    \item implementar ou adaptar experimentos de referência, quando possível, para comparar métodos representativos em bases públicas ou sinais sintéticos controlados;
+    \item incorporar as respostas do questionário à discussão de requisitos sociais, acessibilidade, sustentabilidade e ética;
+    \item redigir a monografia final e preparar a apresentação conclusiva do trabalho.
+\end{enumerate}
+
+Espera-se que, ao final do segundo semestre, o grupo entregue uma síntese técnica organizada, reprodutível e útil para orientar aplicações de redução de ruído em sinais temporais unidimensionais, acompanhada de reflexão crítica sobre impactos sociais e limitações práticas.
+
+\newpage
+
+\section{Atividade extensionista}
+
+\subsection{Público-alvo}
+
+O público-alvo do projeto é composto por pessoas que lidam direta ou indiretamente com sinais temporais sujeitos a ruído, incluindo estudantes, pesquisadores, docentes, profissionais de engenharia, profissionais de tecnologia, usuários de sistemas de comunicação por voz, pessoas que trabalham com telemetria, instrumentação, sensores, áudio, processamento de sinais ou análise de dados temporais.
+
+Como o projeto tem caráter de revisão sistemática e não se restringe a um único produto final, o público-alvo foi definido de modo a incluir tanto especialistas capazes de avaliar requisitos técnicos quanto usuários afetados por degradação de sinais, por exemplo em chamadas de voz, medições ruidosas ou sistemas de monitoramento.
+
+\subsection{Plano de aplicação}
+
+O questionário será aplicado por formulário eletrônico, com participação voluntária, sem coleta obrigatória de nome, documento, endereço ou qualquer dado sensível. A primeira versão será enviada a pelo menos uma pessoa do público-alvo, conforme exigido pela atividade extensionista, e preferencialmente a um conjunto mais amplo de respondentes para aumentar a diversidade das percepções coletadas.
+
+Para favorecer maior adesão e reduzir fadiga dos participantes, o instrumento foi limitado a 16 perguntas, com predominância de escalas e múltipla seleção. Essa versão reduzida mantém perguntas diretamente ligadas aos quatro eixos exigidos pela atividade extensionista: benefício social, acessibilidade, sustentabilidade e desdobramentos éticos.
+
+As respostas serão analisadas de forma agregada. O objetivo não é avaliar individualmente os participantes, mas identificar necessidades, preocupações e critérios de projeto que possam realimentar a revisão e a eventual seleção de técnicas. Caso alguma resposta indique risco ético, barreira de acesso ou requisito não contemplado, o escopo do projeto poderá ser ajustado para incorporar esse ponto à análise.
+
+\newpage
+
+\subsection{Questionário a ser apresentado ao público}
+
+\setcounter{pergunta}{0}
+
+\begin{blocoFormulario}{Texto de abertura do formulário}
+\small
+Este questionário integra a atividade extensionista da disciplina PTC3527 -- Anteprojeto de Formatura em Telecomunicações, da Escola Politécnica da USP. O projeto investiga técnicas de redução de ruído em sinais unidimensionais no tempo, como voz, áudio, telemetria e sinais de sensores.
+
+A participação é voluntária, sem coleta obrigatória de dados pessoais sensíveis. As respostas serão analisadas de forma agregada. Use as caixas de marcação nas perguntas de escolha e os campos livres nas perguntas abertas. Tempo estimado: 6 a 8 minutos.
+\end{blocoFormulario}
+
+\secaoQuestionario{Seção 1 -- Perfil e contato com o problema}
+
+\begin{perguntaFormulario}{Qual alternativa melhor descreve seu perfil?}
+\orientacaoResposta{Escolha única.}
+\begin{opcoesFormularioDuasColunasCompactas}
+    \item Estudante
+    \item Docente ou pesquisador(a)
+    \item Profissional de engenharia
+    \item Profissional de tecnologia ou dados
+    \item Usuário(a) de sistemas de voz ou áudio
+    \opcaoCampo{Outro}
+\end{opcoesFormularioDuasColunasCompactas}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Em quais áreas ou contextos o ruído aparece com mais frequência para você?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunasCompactas}
+    \item Telecomunicações
+    \item Processamento de sinais
+    \item Áudio ou voz
+    \item Instrumentação ou sensores
+    \item Telemetria ou IoT
+    \item Saúde ou sinais biomédicos
+    \item Ciência de dados
+    \item Chamadas de voz
+    \item Medições laboratoriais
+    \item Dados industriais
+    \item Não se aplica
+    \opcaoCampo{Outra área ou contexto}
+\end{opcoesFormularioDuasColunasCompactas}
+\campoCurto{Se quiser, detalhe seu contexto principal.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Com que frequência o ruído prejudica sinais, medições ou comunicações no seu contexto?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCincoCompacta{Nunca}{Muito frequentemente}
+\end{perguntaFormulario}
+
+\newpage
+
+\secaoQuestionario{Seção 2 -- Relevância e critérios de projeto}
+
+\begin{perguntaFormulario}{Na sua experiência, qual é o impacto do ruído sobre a interpretação ou uso de sinais temporais?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Impacto desprezível}{Impacto crítico}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Que consequências práticas o ruído pode causar no seu contexto?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Perda de inteligibilidade
+    \item Erro de medição
+    \item Decisão técnica incorreta
+    \item Retrabalho
+    \item Perda de produtividade
+    \item Exclusão de usuários
+    \item Custo financeiro
+    \item Risco à segurança
+    \opcaoCampo{Outra consequência}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Para você, uma boa solução de redução de ruído deve priorizar quais critérios?}
+\orientacaoResposta{Múltipla seleção; selecione até três critérios prioritários.}
+\begin{opcoesFormularioDuasColunas}
+    \item Qualidade do sinal
+    \item Preservação da informação original
+    \item Baixo custo
+    \item Funcionamento em tempo real
+    \item Facilidade de uso
+    \item Privacidade
+    \item Explicabilidade
+    \item Baixo consumo computacional
+    \item Robustez a diferentes tipos de ruído
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\newpage
+
+\secaoQuestionario{Seção 3 -- Benefício social}
+
+\begin{perguntaFormulario}{Em quais situações uma solução de redução de ruído poderia gerar maior benefício social?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Comunicação por voz
+    \item Acessibilidade auditiva
+    \item Monitoramento de saúde
+    \item Segurança do trabalho
+    \item Manutenção de infraestrutura
+    \item Educação remota
+    \item Atendimento público
+    \item Monitoramento ambiental
+    \opcaoCampo{Outra situação}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Cite um caso em que o ruído prejudicou comunicação, medição ou decisão, ou um grupo que poderia se beneficiar da solução.}
+\campoAberto{Resposta aberta/dissertativa.}
+\end{perguntaFormulario}
+
+\newpage
+
+\secaoQuestionario{Seção 4 -- Acessibilidade e inclusão}
+
+\begin{perguntaFormulario}{Quais barreiras poderiam dificultar o uso de uma solução de redução de ruído?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Custo
+    \item Necessidade de computador potente
+    \item Necessidade de internet
+    \item Conhecimento técnico
+    \item Interface complexa
+    \item Idioma
+    \item Falta de documentação
+    \item Dependência de dados rotulados
+    \opcaoCampo{Outra barreira}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Que características tornariam a solução mais acessível e inclusiva para o seu contexto?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Baixo custo
+    \item Funcionamento em equipamentos simples
+    \item Operação offline
+    \item Código aberto
+    \item Documentação em português
+    \item Interface simples
+    \item Parâmetros automáticos
+    \item Tutorial curto
+    \item Compatibilidade com celulares
+    \item Explicação dos resultados
+    \opcaoCampo{Outra característica}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\newpage
+
+\secaoQuestionario{Seção 5 -- Sustentabilidade}
+
+\begin{perguntaFormulario}{O consumo de energia ou a necessidade de hardware especializado deveria influenciar a escolha da técnica de redução de ruído?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Não deveria influenciar}{Deveria influenciar muito}
+\campoCurto{Justificativa opcional.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Que aspectos de sustentabilidade deveriam ser considerados ao comparar técnicas de redução de ruído?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Consumo energético
+    \item Necessidade de hardware especializado
+    \item Manutenção
+    \item Vida útil da solução
+    \item Uso de serviços em nuvem
+    \item Retrabalho e medições repetidas
+    \item Descarte de equipamentos
+    \item Desigualdade de acesso
+    \opcaoCampo{Outro aspecto}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\newpage
+
+\secaoQuestionario{Seção 6 -- Ética, privacidade e riscos}
+
+\begin{perguntaFormulario}{Que tipos de dados sensíveis ou preocupações de privacidade podem aparecer em aplicações de redução de ruído no seu contexto?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Voz de pessoas
+    \item Dados de saúde
+    \item Localização
+    \item Dados industriais
+    \item Dados educacionais
+    \item Dados de clientes
+    \item Gravações sem consentimento
+    \item Envio de dados para nuvem
+    \item Nenhum no meu contexto
+    \opcaoCampo{Outra preocupação}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Uma técnica de redução de ruído pode distorcer informações importantes do sinal. Quão preocupante isso é no seu contexto?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Pouco preocupante}{Muito preocupante}
+\campoCurto{Exemplo opcional.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Que riscos éticos devem ser evitados em uma solução desse tipo?}
+\orientacaoResposta{Múltipla seleção; marque todas as opções aplicáveis.}
+\begin{opcoesFormularioDuasColunas}
+    \item Remover informação relevante
+    \item Criar falsa confiança no sinal processado
+    \item Favorecer alguns tipos de voz ou sinal
+    \item Processar dados sem consentimento
+    \item Usar dados sensíveis para treinamento
+    \item Dificultar auditoria
+    \opcaoCampo{Outro risco}
+\end{opcoesFormularioDuasColunas}
+\end{perguntaFormulario}
+
+\newpage
+
+\secaoQuestionario{Seção 7 -- Encerramento}
+
+\begin{perguntaFormulario}{Que requisito, aplicação, problema ou preocupação você considera indispensável para que este projeto leve em conta?}
+\campoAberto{Resposta aberta/dissertativa.}
+\end{perguntaFormulario}
+
+\newpage
+
+\subsection{Uso esperado das respostas}
+
+As respostas serão usadas para verificar se a revisão contempla problemas percebidos como relevantes pelo público-alvo. Em particular, pretende-se observar: quais aplicações são mais citadas, quais barreiras de acesso aparecem com maior frequência, como custo computacional, consumo de energia e acessibilidade aparecem na priorização dos respondentes, quais preocupações éticas são recorrentes e quais requisitos práticos devem ser incorporados à matriz comparativa dos métodos.
+
+Esse retorno poderá levar a ajustes no escopo do projeto, por exemplo maior atenção a métodos de baixo custo, inclusão de critérios de privacidade, priorização de técnicas interpretáveis ou comparação entre métodos que funcionem sem grande volume de dados de treinamento. Assim, a atividade extensionista não será tratada como etapa isolada, mas como mecanismo de realimentação do anteprojeto.
+
+\section{Considerações finais}
+
+Esta entrega consolida a definição inicial do projeto em um plano de trabalho mais detalhado. O relatório apresenta o problema, os objetivos, a estratégia de revisão, a base bibliográfica preliminar, o cronograma de desenvolvimento, as atividades já realizadas, as atividades previstas para o segundo semestre e o questionário extensionista exigido pela disciplina.
+
+O principal resultado desta fase é a organização do projeto em torno de uma pergunta técnica e socialmente contextualizada: como selecionar ou adaptar técnicas de redução de ruído em sinais temporais unidimensionais considerando não apenas desempenho, mas também aplicabilidade, acessibilidade, sustentabilidade e ética. Essa formulação deverá guiar as próximas etapas do trabalho.
+
+\end{document}

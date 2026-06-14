@@ -73,6 +73,27 @@
     \end{tabularx}\par\endgroup
 }
 
+\usepgfplotslibrary{groupplots}
+\input{resultados/pgfplots/parametros_espectrograma.tex}
+\providecolor{fundd}{RGB}{20,20,20}
+
+\makeatletter
+\@ifundefined{listofcodigo}{%
+    \DeclareFloatingEnvironment[fileext=cod,placement={!htbp},name=Código,listname={CÓDIGOS},]{codigo}%
+}{}
+\makeatother
+
+\newlength{\myfiglabelwd}
+\settowidth{\myfiglabelwd}{Figura~10\hspace{0.75em}}
+\setlength{\cftfignumwidth}{\myfiglabelwd}
+\newlength{\mytablabelwd}
+\settowidth{\mytablabelwd}{Tabela~10\hspace{0.75em}}
+\setlength{\cfttabnumwidth}{\mytablabelwd}
+\newlength{\mygraficolabelwd}
+\settowidth{\mygraficolabelwd}{Gráfico~10\hspace{0.75em}}
+\newlength{\mycodigolabelwd}
+\settowidth{\mycodigolabelwd}{Código~10\hspace{0.75em}}
+
 \begin{document}
 
 \newgeometry{left=3cm,top=3cm,right=2cm,bottom=2cm}
@@ -89,7 +110,7 @@
 
 \vspace{1.5\baselineskip}
 
-\def\svgwidth{4cm}\import{\detokenize{C:/Users/augus/OneDrive/Documentos/Work/logos}}{logopoli.pdf_tex}
+\includegraphics[width=4cm]{figuras/logopoli.pdf}
 
 \par%
 }
@@ -117,13 +138,13 @@
 
 \textbf{PTC3527 - ANTEPROJETO DE FORMATURA EM TELECOMUNICAÇÕES}
 \\
-\textbf{2\textsuperscript{o} RELATÓRIO DO ANTEPROJETO DE FORMATURA}
+\textbf{RELATÓRIO DE FECHAMENTO ACADÊMICO DO ANTEPROJETO}
 \\[.75\baselineskip]
 \textbf{\large\tituloProjeto}
 \\[.75\baselineskip]
 Orientador: \orientadorProjeto
 \\
-\today
+14 de junho de 2026
 
 \par%
 }
@@ -131,7 +152,7 @@ Orientador: \orientadorProjeto
 \vfill
 
 \begin{citacaolonga}
-    Segundo relatório solicitado pelos docentes da disciplina PTC3527 para acompanhamento do anteprojeto de formatura em Telecomunicações, contemplando a reformulação do escopo, a fundamentação técnico-científica, o protocolo experimental, a atividade extensionista refinada, a avaliação do andamento e o cronograma do segundo semestre.
+    Relatório de fechamento acadêmico da disciplina PTC3527, consolidando a evolução do benchmark algorítmico, a seleção perceptual do RNNoise, a integração com microfone virtual no Windows, os limites temporais encontrados no ambiente virtualizado e o protocolo de validação futura em Windows nativo.
 \end{citacaolonga}
 
 \vfill
@@ -146,7 +167,40 @@ Orientador: \orientadorProjeto
 
 \pagenumbering{arabic}
 \tableofcontents
-\newpage
+\clearpage
+
+\thispagestyle{empty}
+\addcontentsline{toc}{section}{Índice de Ilustrações}
+{\centering
+\Large
+\textbf{ÍNDICE DE ILUSTRAÇÕES}
+\par}
+
+{%
+\renewcommand{\numberline}[1]{\makebox[\cftfignumwidth][l]{Figura~#1}}%
+\renewcommand{\listfigurename}{\large Figuras}
+\listoffigures%
+}
+
+{%
+\renewcommand{\numberline}[1]{\makebox[\cfttabnumwidth][l]{Tabela~#1}}%
+\renewcommand{\listtablename}{\large Tabelas}
+\listoftables%
+}
+
+{%
+\renewcommand{\numberline}[1]{\makebox[\mygraficolabelwd][l]{Gráfico~#1}}%
+\renewcommand{\listgraficoname}{\large Gráficos}
+\listofgrafico%
+}
+
+{%
+\renewcommand{\numberline}[1]{\makebox[\mycodigolabelwd][l]{Código~#1}}%
+\renewcommand{\listcodigoname}{\large Códigos}
+\listofcodigo%
+}
+
+\clearpage
 
 \section{Identificação do projeto}
 
@@ -295,7 +349,7 @@ A abordagem Wavelet pode preservar estruturas localizadas e transientes, com cus
 
 \subsection{Pipeline em ambiente computacional convencional}
 
-Nesta etapa foi implementado um pipeline inicial em PC, em Python, usando NumPy, SciPy, PyWavelets, pandas e Matplotlib. A implementação ficou concentrada no pacote \texttt{benchmark\_audio/}, com execução por linha de comando, sem depender de notebook. O comando principal de reprodução é:
+Nesta etapa foi implementado um pipeline inicial em PC, em Python, usando NumPy, SciPy, PyWavelets, pandas e Matplotlib para cálculo, diagnóstico e geração de arquivos intermediários. A visualização final dos resultados no PDF, porém, passou a ser montada nativamente no LaTeX com \texttt{pgfplots} a partir de dados tabulados leves. A implementação ficou concentrada no pacote \texttt{benchmark\_audio/}, com execução por linha de comando, sem depender de notebook. O comando principal de reprodução é:
 
 \begin{center}
 \texttt{python -m benchmark\_audio.run\_benchmark --prepare-demo-data}
@@ -311,22 +365,50 @@ O pipeline implementado executa os seguintes passos:
     \item mistura fala e ruído em SNRs alvo de \(-5\), 0, 5 e 10 dB;
     \item aplica, sob as mesmas misturas, baseline ruidoso, STFT por subtração espectral, STFT com ganho inspirado em Wiener e Wavelet DWT com limiarização soft;
     \item reconstrói os sinais processados e calcula SNR, melhoria de SNR, MSE, SI-SDR, tempo de processamento, RTF, latência algorítmica e memória aproximada;
-    \item gera automaticamente tabelas CSV, figuras e exemplos curtos de áudio em \texttt{resultados/}.
+    \item gera automaticamente tabelas CSV, séries leves para \texttt{pgfplots}, figuras diagnósticas e exemplos curtos de áudio em \texttt{resultados/}.
 \end{enumerate}
 
-O experimento gerado possui 5 trechos de fala, 4 tipos de ruído, 4 níveis de SNR e 4 métodos, totalizando 320 linhas de métricas em \texttt{resultados/tabelas/metricas\_por\_condicao.csv}. Os resultados resumidos aparecem na Tabela~\ref{tab:resultados-preliminares}.
+O experimento sintético possui 5 trechos de fala, 4 tipos de ruído, 4 níveis de SNR e 4 métodos, totalizando 320 linhas de métricas em \texttt{resultados/tabelas/metricas\_por\_condicao.csv}. Os resultados resumidos aparecem na Tabela~\ref{tab:resultados-preliminares}. Na continuação, foi executada uma segunda matriz isolada com 12 trechos de ruído ambiental da base DEMAND, totalizando 960 linhas em \texttt{resultados/demand/tabelas/metricas\_por\_condicao.csv}. Após os benchmarks offline, também foi criado um protótipo de linha de comando em \texttt{realtime\_audio/} para medir processamento por blocos no Windows. Essa segunda etapa não substitui o benchmark pareado de qualidade, pois não há referência limpa durante a captura real; sua função é verificar estabilidade, custo por bloco, latência reportada pelo sistema de áudio e funcionamento demonstrável do caminho captura-processa-reproduz.
 
 \subsection{Amostras de voz, ruídos e níveis de SNR}
 
 Sempre que possível, serão priorizadas bases públicas e bem documentadas, evitando coleta própria de voz nesta fase. Nesta implementação preliminar, a fala humana foi obtida do Free Spoken Digit Dataset, por ser uma base pública, leve e adequada para validar o pipeline sem baixar bases grandes. Não foram coletadas vozes próprias nem dados pessoais.
 
-Os ruídos desta etapa foram sintetizados por script para garantir reprodutibilidade e execução leve: ruído branco, ruído rosa, hum de rede elétrica e ruído impulsivo. Essa decisão permite validar mistura, processamento, métricas e geração de gráficos, mas limita a validade externa. A próxima etapa deve substituir ou complementar esses ruídos por DEMAND, VoiceBank--DEMAND ou base ambiental equivalente.
+Na primeira rodada, os ruídos foram sintetizados por script para garantir reprodutibilidade e execução leve: ruído branco, ruído rosa, hum de rede elétrica e ruído impulsivo. Essa decisão permitiu validar mistura, processamento, métricas e geração de gráficos, mas limitava a validade externa.
+
+Para ampliar o protocolo, foi criado o preparador \path{benchmark_audio/prepare_environmental_noise.py}. Foram selecionados quatro ambientes DEMAND a 16 kHz: cozinha (\texttt{DKITCHEN}), escritório (\texttt{OOFFICE}), cafeteria (\texttt{PCAFETER}) e tráfego (\texttt{STRAFFIC}). De cada ambiente foram extraídos três segmentos não sobrepostos de 3 s do primeiro canal, totalizando 12 ruídos. Os arquivos brutos permaneceram fora do Git; origem, DOI, tamanho, MD5 e observação de licença foram registrados em manifesto. A rodada ambiental foi salva separadamente em \texttt{resultados/demand/}, evitando sobrescrever o benchmark sintético.
 
 Os níveis de SNR de entrada usados foram \(-5\), 0, 5 e 10 dB. Para cada condição, todos os métodos processaram exatamente a mesma mistura, evitando comparação enviesada.
 
 \subsection{Controle de variáveis}
 
-As comparações foram feitas por pares: cada amostra ruidosa foi processada por todos os métodos selecionados. Foram registrados semente de geração, normalização, amostra de voz, tipo de ruído, taxa de amostragem, SNR alvo e parâmetros dos algoritmos. A semente usada foi 3527. Ainda não houve separação formal entre conjunto de validação e conjunto final; portanto, os números devem ser interpretados como benchmark preliminar de baselines, não como resultado final otimizado.
+As comparações foram feitas por pares: cada amostra ruidosa foi processada por todos os métodos selecionados. Foram registrados semente de geração, normalização, amostra de voz, tipo de ruído, taxa de amostragem, SNR alvo e parâmetros dos algoritmos. A semente usada foi 3527. As rodadas sintética e DEMAND exploratória não tiveram separação formal; essa limitação foi corrigida no refinamento descrito a seguir.
+
+\subsection{Refinamento com validação e conjunto final operacional}
+
+Foi criado o executor \path{benchmark_audio/run_refinement.py}. Para não alterar retrospectivamente o benchmark histórico, os seis falantes usados nesta etapa foram preparados em \path{dados/demo/clean_refinement/}. O prefixo fixo de 0,30 s foi removido antes das misturas, eliminando o silêncio inicial garantido.
+
+A validação usou os falantes \texttt{jackson}, \texttt{nicolas} e \texttt{theo}, combinados com \texttt{DKITCHEN} e \texttt{OOFFICE}. O conjunto final operacional usou \texttt{george}, \texttt{lucas} e \texttt{yweweler}, combinados com \texttt{PCAFETER} e \texttt{STRAFFIC}. Cada divisão contém 72 condições: 3 falantes, 6 segmentos de ruído e 4 SNRs.
+
+Foram avaliadas 144 configurações apenas na validação: 48 de subtração espectral, 24 Wiener e 72 Wavelet. Para STFT, foram comparadas janelas de 256/512 amostras, estimativa inicial e seleção offline de quadros de baixa energia, quantis, pisos e agressividades. Para Wavelet, foram testadas \texttt{db4}, \texttt{sym4} e \texttt{coif1}, níveis 3/5, limiares soft/hard, globais/por escala e fatores 0,50/0,75/1,00. Em cada família, a escolha maximizou a melhoria média de SNR na validação; SI-SDR, fração de degradação e RTF foram usados como desempate.
+
+O conjunto final não foi usado pelo script para escolher parâmetros. Entretanto, ele não é historicamente cego, pois os quatro ambientes já haviam sido inspecionados na rodada DEMAND exploratória. Por isso, a expressão ``conjunto final operacional'' é mais adequada que ``teste cego''.
+
+\subsection{Conversão para estimador causal}
+
+Após o refinamento offline, foi criado o núcleo \path{benchmark_audio/causal.py}, com estado explícito, reinicializável e independente de dispositivo. A API \texttt{process\_block()} é a mesma usada pela captura Windows e pelo futuro processador de arquivos. Cada bloco de saída usa somente o estado acumulado até o bloco anterior; o espectro do bloco atual atualiza o estimador apenas para blocos posteriores.
+
+Foram avaliadas 20 configurações adaptativas e uma calibração curta usando somente as 72 condições de validação. O estimador adaptativo combina quantil rolante por bin, quantil de energia global, atualização exponencial rápida em baixa energia e atualização lenta durante fala provável. A regra de seleção minimizou primeiro a fração de degradação de SNR e depois maximizou as melhorias médias de SNR e SI-SDR.
+
+A configuração congelada usa \(N=512\), salto de 160 amostras, blocos de 20 ms, aquecimento de 250 ms, histórico causal de 500 ms, quantil espectral 0,22, quantil de energia 0,20, limiar de fala de 6 dB, fator exponencial 0,30 em baixa energia e 0,005 durante fala provável. A divisão final operacional foi processada somente depois dessa escolha; nenhuma gravação autoral futura foi usada.
+
+\subsection{Processamento reproduzível de arquivos em blocos}
+
+A etapa seguinte criou a CLI \path{realtime_audio/process_wav_blocks.py}, que processa WAVs sem dispositivo de áudio e instancia diretamente o mesmo \texttt{CausalSTFTProcessor} usado pela captura Windows. A entrada é convertida para mono a 16 kHz sem normalização automática; blocos de 10, 20 ou 32 ms são enviados em ordem, e o último bloco usa apenas as amostras existentes. A saída preserva exatamente o número de amostras após a conversão e mantém alinhamento por índice, sem inserir silêncio para representar atraso.
+
+Cada execução gera WAV PCM16, CSV por bloco e JSON com configuração, hashes SHA-256, formato original, picos, clipping, média, desvio, p50, p95, p99, pior caso, RTF e memória de estado. A estimativa de 32 ms associada à janela STFT é registrada separadamente: ela não representa deslocamento do arquivo, latência de driver, latência de dispositivo ou \textit{round-trip} físico. O bypass é numericamente neutro antes da quantização, e a limitação à faixa \([-1,1]\) ocorre somente na escrita PCM.
+
+Para verificar o efeito operacional do particionamento sem reabrir a seleção de parâmetros, foi executada uma matriz com uma fala pública FSDD, um trecho de cafeteria do DEMAND, SNRs de \(-5\) e 5 dB, os três tamanhos de bloco, bypass, subtração causal, Wiener causal e a referência offline de baixa energia. Também foram gerados vetores sintéticos curtos com configuração, resultados esperados, tolerâncias e SHA-256 para a futura transição ao Raspberry Pi.
 
 \begin{table}[!htbp]
 \centering
@@ -346,7 +428,7 @@ STFT & Janela Hann, \(N=512\), salto de 160 amostras, equivalente a 10 ms; subtr
 \addlinespace
 Wavelet & DWT com família \texttt{db4}, nível 5, limiarização soft e estimativa robusta de ruído por MAD. \\
 \addlinespace
-Saídas & CSVs de métricas, resumo por método/SNR, figuras de SNR e RTF, forma de onda, espectrograma e áudios curtos de demonstração. \\
+Saídas & Benchmark sintético em \texttt{resultados/}; rodada ambiental em \texttt{resultados/demand/}; refinamento em \texttt{resultados/demand\_refinement/}; estimador causal em \texttt{resultados/causal\_estimator/}; arquivos em blocos em \texttt{resultados/file\_blocks/}; CSVs, JSONs, figuras, áudios curtos e logs de tempo real. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -376,7 +458,7 @@ Também foi calculada a SI-SDR, por ser menos dependente de escala global. Para 
     10\log_{10}\frac{\|s_{\mathrm{alvo}}\|^2}{\|\hat{x}-s_{\mathrm{alvo}}\|^2}.
 \end{equation}
 
-STOI e PESQ não foram usados nesta etapa. A decisão foi manter o primeiro benchmark em métricas simples, auditáveis e sem dependências adicionais ou restrições práticas de licença. Essas métricas perceptuais continuam relevantes para etapas posteriores, mas não substituem a análise de SNR, SI-SDR, espectrogramas e escuta crítica.
+STOI não foi usado no primeiro benchmark, mas passou a integrar o harness de literatura com a versão \texttt{pystoi 0.4.1}. A divergência entre SNR, SI-SDR, STOI, preservação de envelope e percepção foi mantida visível: nenhuma métrica isolada determinou a seleção. PESQ não foi incorporado, em razão das restrições práticas de uso e licença. A decisão final combinou métricas pareadas, custo, causalidade, memória, latência e escuta controlada.
 
 \begin{table}[!htbp]
 \centering
@@ -413,23 +495,202 @@ STOI e PESQ não foram usados nesta etapa. A decisão foi manter o primeiro benc
 \end{table}
 \FloatBarrier
 
+\begin{table}[!htbp]
+\centering
+\caption[Melhoria média de SNR com ruídos DEMAND]{Melhoria média de SNR na rodada ambiental DEMAND, agregada sobre 5 trechos de fala e 12 segmentos de ruído. Fonte: \texttt{resultados/demand/tabelas/resumo\_por\_metodo\_snr.csv}.}
+\label{tab:resultados-demand}
+\small
+\begin{tabular}{rrrr}
+\toprule
+\textbf{SNR alvo (dB)} & \textbf{STFT subtração (dB)} & \textbf{STFT Wiener (dB)} & \textbf{Wavelet soft (dB)} \\
+\midrule
+-5 & 7,69 & 4,62 & 0,28 \\
+0 & 7,31 & 4,50 & 0,14 \\
+5 & 6,82 & 4,33 & -0,05 \\
+10 & 6,21 & 4,07 & -0,38 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+Na rodada DEMAND, a subtração espectral manteve a maior melhoria média de SNR, seguida pelo ganho Wiener. Entretanto, a magnitude variou entre ambientes. Agregando os quatro níveis de SNR, a melhoria da subtração espectral foi aproximadamente 10,00 dB em cozinha, 8,45 dB em escritório, 4,11 dB em cafeteria e 5,47 dB em tráfego. A Wavelet soft ficou próxima de zero no agregado e alternou pequenos ganhos e perdas. Esses resultados reforçam apenas o comportamento dos parâmetros atuais; não demonstram superioridade geral de STFT, pois os segmentos pertencem a um único canal por ambiente, a fala ainda contém silêncio inicial favorável à estimativa de ruído e não houve separação entre validação e teste final.
+
+\begin{table}[!htbp]
+\centering
+\caption[Refinamento no conjunto final operacional]{Comparação agregada no conjunto final operacional, sem silêncio inicial garantido. Degradação: fração de condições com melhoria de SNR negativa. Fonte: elaboração própria.}
+\label{tab:resultados-refinamento}
+\footnotesize
+\begin{tabularx}{\textwidth}{Xrrrr}
+\toprule
+\textbf{Configuração} & \(\boldsymbol{\Delta}\)\textbf{SNR (dB)} & \(\boldsymbol{\Delta}\)\textbf{SI-SDR (dB)} & \textbf{Degradação} & \textbf{RTF} \\
+\midrule
+STFT subtração, estimativa inicial & 1,82 & -0,16 & 33,3\% & 0,00424 \\
+STFT subtração, baixa energia & 4,85 & 3,72 & 0,0\% & 0,00426 \\
+STFT Wiener, estimativa inicial & 1,30 & -0,40 & 27,8\% & 0,00232 \\
+STFT Wiener, baixa energia & 2,92 & 2,25 & 0,0\% & 0,00238 \\
+Wavelet \texttt{db4}, nível 5, soft & 0,32 & -0,46 & 19,4\% & 0,00087 \\
+Wavelet \texttt{sym4}, nível 3, hard & 0,03 & 0,01 & 11,1\% & 0,00058 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+Na validação, foram escolhidos \(N=512\), salto 160, quantil de baixa energia 0,35, \(\alpha=1{,}5\) e piso 0,02 para subtração espectral; o Wiener manteve \(N=512\), salto 160, quantil 0,35 e piso 0,05. A Wavelet escolhida foi \texttt{sym4}, nível 3, limiar hard global e fator 0,50.
+
+Sem silêncio inicial, a estimativa pelos primeiros 0,25 s perdeu robustez, principalmente em SNR de entrada alta: no conjunto final, a subtração padrão piorou a SNR média em 2,45 dB nas condições de 10 dB. A seleção offline de quadros de menor energia eliminou degradações de SNR nas 72 condições finais e melhorou também a SI-SDR. A Wavelet refinada reduziu a fração de degradação e neutralizou a perda média de SI-SDR, mas sua melhoria de SNR ficou praticamente nula. A estimativa de baixa energia continua sendo uma referência não causal; sua aproximação causal é comparada a seguir.
+
+\begin{table}[!htbp]
+\centering
+\caption[Comparação do estimador causal]{Comparação no conjunto final operacional. O modo de baixa energia examina o arquivo completo e funciona apenas como limite superior operacional. Fonte: elaboração própria.}
+\label{tab:resultados-causal}
+\footnotesize
+\begin{tabularx}{\textwidth}{Xrrr}
+\toprule
+\textbf{Configuração} & \(\boldsymbol{\Delta}\)\textbf{SNR (dB)} & \(\boldsymbol{\Delta}\)\textbf{SI-SDR (dB)} & \textbf{Degradação} \\
+\midrule
+Bypass & 0,00 & 0,00 & 0,0\% \\
+Subtração, calibração causal & 0,96 & -2,38 & 33,3\% \\
+Subtração, estimativa inicial antiga & 1,82 & -0,16 & 33,3\% \\
+Subtração, adaptativa causal & 3,76 & 2,65 & 0,0\% \\
+Subtração, baixa energia offline & 4,85 & 3,72 & 0,0\% \\
+Wiener, adaptativo causal & 1,68 & 1,35 & 0,0\% \\
+Wiener, baixa energia offline & 2,92 & 2,25 & 0,0\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+A subtração causal recuperou a maior parte do ganho do estimador offline e não degradou nenhuma das 72 condições finais. A calibração curta foi instável sem silêncio inicial, com perda média de SI-SDR e degradação em um terço das condições. O Wiener causal também evitou degradações, mas ficou abaixo da subtração. O estado persistente máximo medido foi 60.900 bytes, aproximadamente 59,5 KiB, sem contar o interpretador Python e temporários internos das bibliotecas.
+
+\begin{table}[!htbp]
+\centering
+\caption[Processamento causal de arquivo por tamanho de bloco]{Matriz PC-2 com uma fala FSDD, ruído DEMAND de cafeteria e SNRs de \(-5\) e 5 dB. Tempos são de arquivo em blocos e não incluem dispositivo. Fonte: \texttt{resultados/file\_blocks/tabelas/comparison\_summary.csv}.}
+\label{tab:file-blocks}
+\footnotesize
+\begin{tabularx}{\textwidth}{Xrrrrr}
+\toprule
+\textbf{Método} & \textbf{Bloco} & \(\boldsymbol{\Delta}\)\textbf{SNR} & \(\boldsymbol{\Delta}\)\textbf{SI-SDR} & \textbf{RTF} & \textbf{p99} \\
+& \textbf{(ms)} & \textbf{(dB)} & \textbf{(dB)} & & \textbf{(ms)} \\
+\midrule
+Subtração causal & 10 & 3,36 & 1,22 & 0,111 & 2,12 \\
+Subtração causal & 20 & 3,27 & 1,27 & 0,081 & 2,76 \\
+Subtração causal & 32 & 3,25 & 1,35 & 0,068 & 3,41 \\
+Wiener causal & 10 & 1,54 & 0,74 & 0,107 & 2,49 \\
+Wiener causal & 20 & 1,33 & 0,67 & 0,078 & 2,40 \\
+Wiener causal & 32 & 1,27 & 0,68 & 0,069 & 3,66 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+Na mesma amostra, as referências não causais de baixa energia obtiveram 4,31 dB de melhoria de SNR e 2,14 dB de SI-SDR para subtração, e 2,85 dB e 1,68 dB para Wiener. Todos os comprimentos foram preservados, o deslocamento por índice foi zero, nenhum bloco excedeu seu orçamento e o estado causal máximo permaneceu em 60.900 bytes. Blocos de 10 ms tiveram leve vantagem de SNR; 32 ms reduziram o RTF e tiveram leve vantagem de SI-SDR na subtração. A matriz é pequena e serve para equivalência e operação, não para nova escolha algorítmica.
+
 \subsection{Tempo real, memória e latência}
 
 A viabilidade para tempo real foi avaliada inicialmente por:
 \begin{equation}
     \mathrm{RTF} = \frac{T_{\mathrm{proc}}}{T_{\mathrm{audio}}},
 \end{equation}
-em que \(\mathrm{RTF}<1\) indica processamento mais rápido que o tempo do áudio. Nesta etapa foram registrados tempo total por arquivo, RTF médio por método, latência algorítmica estimada e memória aproximada. Medições por quadro, pior caso e desvio padrão devem ser refinadas na etapa de execução por blocos.
+em que \(\mathrm{RTF}<1\) indica processamento mais rápido que o tempo do áudio. No benchmark offline foram registrados tempo total por arquivo, RTF médio por método, latência algorítmica estimada e memória aproximada. A CLI de arquivo em blocos mede a mesma chamada causal sem driver e não deve ser interpretada como captura física. Na continuação da fase, o protótipo em \texttt{realtime\_audio/windows\_realtime.py} passou a medir cada bloco de áudio capturado pelo Windows, registrando média, pior caso, desvio padrão, RTF por bloco e eventos reportados pelo \textit{stream}.
 
 A latência algorítmica foi estimada a partir do tamanho da janela, do salto e do tipo de método. Para STFT causal por blocos, janelas de 20 ms a 32 ms já impõem um piso de atraso associado ao enquadramento. Para Wavelet em blocos, a latência dependerá do tamanho do bloco, do tratamento de bordas e da necessidade de amostras futuras. A meta inicial continua sendo manter atraso total abaixo de 100 ms em PC e discutir a possibilidade de meta mais exigente, como 50 ms, apenas se os resultados forem compatíveis.
 
 O uso de memória foi aproximado pelo tamanho dos buffers de entrada e saída, matrizes de coeficientes, espectrogramas temporários, parâmetros dos algoritmos e estruturas auxiliares. No benchmark preliminar em PC, todos os métodos rodaram muito abaixo do tempo real: a STFT por subtração espectral apresentou RTF médio de aproximadamente 0,0021, a STFT Wiener aproximadamente 0,0012 e a Wavelet soft aproximadamente 0,00032. Esses valores indicam folga em PC, mas não devem ser transferidos diretamente para microcontroladores, pois bibliotecas vetorizadas e memória abundante mascaram custos de portabilidade.
 
+No processamento causal em blocos de 20 ms, a subtração apresentou RTF médio 0,068 e p99 médio de 3,08 ms no conjunto final operacional; o pior bloco foi 13,31 ms. Na execução em lote da validação apareceu um pico isolado de 104,12 ms, embora o p99 médio tenha sido 3,74 ms e o RTF médio 0,078. Esse pico é registrado como jitter do processo Python/sistema e motivou uma validação Windows prolongada do núcleo causal congelado. Em autoteste sintético posterior de 1 s, a média foi 1,58 ms, o p99 4,01 ms e o pior bloco 4,62 ms, sem exceder o orçamento de 20 ms.
+
+Em captura real sem reprodução, foram executados testes de 30 s no Windows, com áudio mono a 16 kHz, blocos de 20 ms e sem salvamento de WAV de voz. A entrada padrão foi \texttt{SteelSeries Sonar - Microphone} via MME. A Tabela~\ref{tab:realtime-input-only} resume apenas as linhas de 30 s da tabela \texttt{resultados/tabelas/realtime\_windows\_input\_only.csv}; duas medições curtas anteriores de 3 s permaneceram no CSV apenas como histórico de validação.
+
+\begin{table}[!htbp]
+\centering
+\caption{Medições Windows input-only de 30 s, sem salvar WAV.}
+\label{tab:realtime-input-only}
+\footnotesize
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.2cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.45cm}}
+\toprule
+\textbf{Método} & \textbf{Blocos} & \textbf{Média} & \textbf{Pior} & \textbf{Desvio} & \textbf{RTF médio} & \textbf{Lat. total} \\
+& & \textbf{(ms)} & \textbf{(ms)} & \textbf{(ms)} & & \textbf{(ms)} \\
+\midrule
+\texttt{bypass} & 1498 & 0,031 & 0,134 & 0,024 & 0,00157 & 40 \\
+\texttt{stft\_subtraction} & 1498 & 0,471 & 1,929 & 0,175 & 0,0236 & 72 \\
+\texttt{stft\_wiener} & 1498 & 0,412 & 1,423 & 0,175 & 0,0206 & 72 \\
+\texttt{wavelet\_soft} & 1498 & 0,258 & 14,749 & 0,394 & 0,0129 & 60 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Nos quatro métodos da Tabela~\ref{tab:realtime-input-only}, \texttt{status\_counts} ficou vazio, isto é, não houve evento de erro de captura reportado pelo \textit{stream} durante os 30 s. O pior caso de \texttt{wavelet\_soft} foi bem mais alto que sua média, mas ainda inferior ao orçamento de 20 ms por bloco. Durante essa rodada, o PyWavelets emitiu um aviso numérico de limiarização soft; a checagem dos CSVs por bloco não encontrou \texttt{NaN} nem infinito, mas o aviso deve ser investigado antes de conclusões finais sobre Wavelet em streaming.
+
+Após a decisão técnica, a implementação PC escolhida foi exercitada em rodadas de 600 s com \texttt{stft\_subtraction}, \texttt{noise-mode adaptive}, bloco de 20 ms e parâmetros congelados. A Tabela~\ref{tab:realtime-longrun} resume os artefatos de \texttt{resultados/windows\_realtime\_longrun/}. A primeira rodada foi sintética, sem dispositivo físico; a segunda usou o \texttt{Microfone (USB Audio Device)} via MME, em modo \texttt{--input-only} e sem salvar áudio de microfone.
+
+\begin{table}[!htbp]
+\centering
+\caption[Validação Windows prolongada da STFT causal]{Validação Windows prolongada da subtração STFT causal adaptativa em rodadas de 600 s. Em ambas, nenhum bloco excedeu o orçamento externo de 20 ms e \texttt{status\_counts} ficou vazio. Fonte: JSONs de \texttt{resultados/windows\_realtime\_longrun/}.}
+\label{tab:realtime-longrun}
+\footnotesize
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.25cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.15cm}}
+\toprule
+\textbf{Rodada} & \textbf{Blocos} & \textbf{Média} & \textbf{p95} & \textbf{p99} & \textbf{Pior} & \textbf{RTF médio} & \textbf{>\,20 ms} \\
+& & \textbf{(ms)} & \textbf{(ms)} & \textbf{(ms)} & \textbf{(ms)} & & \\
+\midrule
+Self-test sintético & 30000 & 0,987 & 1,271 & 1,594 & 4,127 & 0,049 & 0 \\
+Input-only USB/MME & 29998 & 1,280 & 2,205 & 3,904 & 6,799 & 0,064 & 0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A rodada prolongada resolve a pendência operacional do pico isolado observado em arquivo: no PC testado, o núcleo STFT causal sustentou dez minutos sintéticos e dez minutos de captura física de entrada com folga em relação ao orçamento por bloco. A latência total de 72 ms registrada no JSON da rodada física soma 32 ms de latência algorítmica estimada e 40 ms de entrada reportada pelo driver; esse valor não é \textit{round-trip} físico, pois a validação foi \texttt{input-only} e não mediu reprodução, loopback ou latência de saída. O Bluetooth não foi usado como evidência de baixa latência.
+
+Também foi executado um teste duplex curto, isto é, com captura, processamento e reprodução local. A saída foi fixada no fone Bluetooth \texttt{HUAWEI FreeBuds SE 2}, índice 7 via MME, e a entrada no índice 1. O teste durou 5 s por método, sem salvar WAV. A Tabela~\ref{tab:realtime-duplex} resume \texttt{resultados/tabelas/realtime\_windows\_duplex.csv}.
+
+\begin{table}[!htbp]
+\centering
+\caption{Teste duplex curto no Windows com fone Bluetooth, sem salvar WAV.}
+\label{tab:realtime-duplex}
+\footnotesize
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.2cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.45cm}>{\raggedleft\arraybackslash}p{1.55cm}}
+\toprule
+\textbf{Método} & \textbf{Blocos} & \textbf{Média} & \textbf{Pior} & \textbf{RTF médio} & \textbf{Lat. total} \\
+& & \textbf{(ms)} & \textbf{(ms)} & & \textbf{(ms)} \\
+\midrule
+\texttt{bypass} & 248 & 0,032 & 0,107 & 0,00162 & 240 \\
+\texttt{stft\_subtraction} & 248 & 0,472 & 1,463 & 0,0236 & 272 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+O teste duplex curto também terminou sem eventos em \texttt{status\_counts}. O usuário repetiu a captura localmente com o fone Bluetooth e informou que a execução ocorreu bem, sem relato de eco, realimentação ou desconforto. Ainda assim, a latência total estimada ficou dominada pela saída Bluetooth, que reportou 200 ms; portanto, o resultado deve ser lido como validação funcional curta da CLI, não como demonstração de baixa latência perceptual. Uma demonstração mais exigente deve usar saída cabeada ou outro dispositivo de menor atraso e, idealmente, medição física de \textit{round-trip}.
+
+Essa demonstração mais exigente foi então repetida com fone cabeado/controlado, usando \texttt{Microfone (USB Audio Device), MME} no índice 2 e \texttt{Alto-falantes (AB13X USB Audio), MME} no índice 8. O usuário manteve o volume em 20/100 e confirmou retorno audível no fone cabeado, sem eco ou desconforto nas rodadas curtas. A Tabela~\ref{tab:realtime-wired} resume as execuções válidas com \texttt{stft\_subtraction}; tentativas com WASAPI e WDM-KS, embora tivessem menor latência declarada, não abriram \textit{stream} duplex a 16 kHz neste PC.
+
+\begin{table}[!htbp]
+\centering
+\caption[Full-duplex cabeado no Windows]{Full-duplex cabeado/controlado no Windows com a STFT causal adaptativa congelada, sem salvar WAV. Fonte: \texttt{resultados/tabelas/realtime\_windows\_wired.csv}.}
+\label{tab:realtime-wired}
+\footnotesize
+\setstretch{1.05}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedleft\arraybackslash}p{1.25cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.35cm}>{\raggedleft\arraybackslash}p{1.15cm}}
+\toprule
+\textbf{Rodada} & \textbf{Blocos} & \textbf{Média} & \textbf{p99} & \textbf{Pior} & \textbf{RTF médio} & \textbf{>\,20 ms} \\
+& & \textbf{(ms)} & \textbf{(ms)} & \textbf{(ms)} & & \\
+\midrule
+STFT cabeada, 5 s & 248 & 1,265 & 3,284 & 3,941 & 0,063 & 0 \\
+STFT cabeada, 30 s & 1498 & 1,239 & 2,688 & 4,811 & 0,062 & 0 \\
+STFT cabeada, 600 s & 29998 & 1,259 & 3,283 & 7,301 & 0,063 & 0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A rodada cabeada de 600 s terminou com \texttt{status\_counts} vazio, estado máximo de 60.900 bytes e nenhum bloco acima de 20 ms. Portanto, ela substitui a demonstração Bluetooth como evidência funcional de captura-processamento-reprodução com saída controlada. Ainda assim, a saída MME cabeada reportou 200 ms de latência de saída; o total estimado de 272 ms no JSON soma essa latência de I/O reportada e 32 ms algorítmicos, não sendo uma medição física de \textit{round-trip}.
+
 A análise de hardware nesta fase aponta Raspberry Pi como a primeira plataforma embarcada plausível, por manter Linux, Python/C++ e memória suficiente para depuração. ESP32/ESP32-S3 deve ser considerado apenas depois de simplificar buffers, dependências e representação numérica. O Arduino Uno R3 segue como referência de limitação severa: 2 KB de SRAM, 32 KB de flash, ausência de FPU e falta de interface de áudio adequada tornam STFT/Wavelet de voz em tempo real impraticável sem simplificações extremas ou hardware externo.
 
 \section{Referências bibliográficas e papel de cada referência}
 
-A bibliografia será usada como suporte de decisões técnicas, não como lista decorativa. Oppenheim e Schafer, Proakis e Manolakis fundamentam amostragem, DFT, FFT, janelamento e processamento digital discreto. Boll justifica a subtração espectral como baseline clássico. Ephraim e Malah sustentam a formulação estatística por amplitude espectral de curto termo. Loizou organiza a área de realce de fala, métricas e trade-offs perceptuais. Morettin, Mallat e Daubechies sustentam a análise por ondaletas e multirresolução. Donoho e Donoho--Johnstone sustentam a limiarização wavelet. Taal et al. e ITU-T P.862 fundamentam a discussão sobre métricas perceptuais, com ressalvas de uso. VoiceBank--DEMAND, DEMAND, LibriSpeech e FSDD apoiam a construção de protocolo experimental reprodutível. NumPy, SciPy, PyWavelets e Matplotlib documentam as ferramentas usadas no pipeline preliminar.
+A bibliografia será usada como suporte de decisões técnicas, não como lista decorativa. Oppenheim e Schafer, Proakis e Manolakis fundamentam amostragem, DFT, FFT, janelamento e processamento digital discreto. Boll justifica a subtração espectral como baseline clássico. Ephraim e Malah sustentam a formulação estatística por amplitude espectral de curto termo. Loizou organiza a área de realce de fala, métricas e trade-offs perceptuais. Morettin, Mallat e Daubechies sustentam a análise por ondaletas e multirresolução. Donoho e Donoho--Johnstone sustentam a limiarização wavelet. Taal et al. e ITU-T P.862 fundamentam a discussão sobre métricas perceptuais, com ressalvas de uso. VoiceBank--DEMAND, DEMAND, LibriSpeech e FSDD apoiam a construção de protocolo experimental reprodutível. NumPy, SciPy, PyWavelets e Matplotlib documentam as ferramentas usadas no pipeline preliminar; \texttt{pgfplots} fica como camada de visualização vetorial no documento final.
 
 \begin{table}[!htbp]
 \centering
@@ -453,7 +714,7 @@ VoiceBank--DEMAND, DEMAND e LibriSpeech & Apoiam a seleção de fala limpa e ru�
 \addlinespace
 FSDD & Fornece amostras públicas pequenas de fala humana para validação leve do pipeline demonstrativo. \\
 \addlinespace
-NumPy, SciPy, PyWavelets e Matplotlib & Sustentam a implementação computacional reprodutível, incluindo vetorização, STFT/iSTFT, DWT e geração automática de gráficos. \\
+NumPy, SciPy, PyWavelets, Matplotlib e \texttt{pgfplots} & Sustentam a implementação computacional reprodutível, incluindo vetorização, STFT/iSTFT, DWT, geração de dados intermediários e visualização vetorial no LaTeX. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -475,50 +736,378 @@ Nesta fase, além da reformulação técnica do anteprojeto, foi implementado e 
     \item criação do pacote \texttt{benchmark\_audio/}, com script de execução por linha de comando;
     \item implementação de leitura e padronização de WAV, geração de ruídos, mistura por SNR, reconstrução e cálculo de métricas;
     \item implementação dos baselines ruidoso, STFT por subtração espectral, STFT com ganho inspirado em Wiener e Wavelet DWT com limiarização soft;
-    \item geração de tabelas, figuras e áudios curtos de demonstração em \texttt{resultados/};
+    \item geração de tabelas, séries \texttt{pgfplots}, figuras diagnósticas e áudios curtos de demonstração em \texttt{resultados/};
+    \item criação do preparador DEMAND, com manifesto de origem, DOI, licença, tamanhos e MD5, mantendo os arquivos brutos fora do Git;
+    \item execução de uma rodada ambiental isolada com 12 segmentos de cozinha, escritório, cafeteria e tráfego, gerando 960 linhas de métricas em \texttt{resultados/demand/};
+    \item ampliação da fala para seis falantes FSDD no refinamento, preservando o conjunto histórico de cinco falantes em pasta separada;
+    \item criação de divisão entre validação e conjunto final operacional, com falantes e ambientes distintos;
+    \item avaliação de 144 configurações STFT/Wavelet sem silêncio inicial garantido e seleção de parâmetros apenas na validação;
+    \item separação de um núcleo reutilizável em \texttt{benchmark\_audio/denoise.py}, usado tanto pelo benchmark offline quanto pelo protótipo em tempo real;
+    \item implementação de estimador causal em \texttt{benchmark\_audio/causal.py}, com quantil rolante por bin, decisão de baixa energia, atualização lenta durante fala e estado reinicializável;
+    \item avaliação de 20 configurações causais adaptativas e uma calibração curta somente na validação, seguida de comparação congelada no conjunto final operacional;
+    \item criação da CLI de WAV em blocos, com conversão mono/16 kHz sem normalização, preservação de comprimento, CSV por bloco, JSON por execução e recusa de sobrescrita silenciosa;
+    \item execução da matriz PC-2 em 10, 20 e 32 ms e geração de vetores sintéticos versionáveis com resultados esperados e SHA-256;
+    \item criação da CLI \texttt{realtime\_audio/windows\_realtime.py}, com autoteste sintético, modo seguro \texttt{--input-only}, medição por bloco e teste duplex curto;
+    \item execução de medições reais no Windows: quatro métodos em input-only por 30 s, dois métodos em duplex curto com fone Bluetooth, validação prolongada de 600 s da STFT causal adaptativa em self-test e input-only, e demonstração full-duplex cabeada de 600 s;
     \item registro de diário técnico, auditoria crítica dos resultados e checkpoints versionados em Git.
 \end{enumerate}
 
-Os resultados obtidos ainda são preliminares, mas já deixam de ser apenas metodológicos. O experimento usou 5 trechos de fala humana do FSDD, 4 ruídos sintetizados, SNRs de \(-5\), 0, 5 e 10 dB e 4 métodos. O baseline ruidoso confirmou melhoria de SNR igual a zero, como controle. A STFT por subtração espectral apresentou a maior melhoria média de SNR no arranjo testado, entre 5,89 dB e 9,63 dB. A STFT Wiener também melhorou a SNR, entre 5,49 dB e 7,46 dB. A Wavelet soft foi mais rápida, mas teve ganho pequeno e inconsistente, inclusive piorando a SNR média em 0,92 dB no caso de SNR alvo de 10 dB.
+Os resultados obtidos ainda são preliminares, mas já deixam de ser apenas metodológicos. O experimento sintético usou 5 trechos de fala humana do FSDD, 4 ruídos sintetizados, SNRs de \(-5\), 0, 5 e 10 dB e 4 métodos. O baseline ruidoso confirmou melhoria de SNR igual a zero, como controle. A STFT por subtração espectral apresentou a maior melhoria média de SNR no arranjo testado, entre 5,89 dB e 9,63 dB. A STFT Wiener também melhorou a SNR, entre 5,49 dB e 7,46 dB. A Wavelet soft foi mais rápida, mas teve ganho pequeno e inconsistente, inclusive piorando a SNR média em 0,92 dB no caso de SNR alvo de 10 dB.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/barras_melhoria_snr.png}}
-\caption{Melhoria média de SNR por método no benchmark preliminar.}
-\label{fig:melhoria-snr}
-\end{figure}
+Na rodada ambiental DEMAND, a STFT por subtração espectral obteve melhoria média entre 6,21 dB e 7,69 dB conforme a SNR alvo, enquanto a STFT Wiener ficou entre 4,07 dB e 4,62 dB. A Wavelet soft variou de ganho de 0,28 dB a perda de 0,38 dB. A dispersão por ambiente foi relevante: cozinha e escritório favoreceram mais os baselines STFT que cafeteria e tráfego. Portanto, a nova rodada aumenta a validade externa em relação aos ruídos sintetizados, mas também mostra que o tipo de ruído altera substancialmente a magnitude do ganho.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/barras_rtf.png}}
-\caption{Fator de tempo real médio por método no benchmark preliminar.}
-\label{fig:rtf}
-\end{figure}
+No refinamento sem silêncio inicial, os parâmetros padrão de STFT perderam desempenho e apresentaram melhoria negativa de SI-SDR no agregado final. A estimativa offline por quadros de baixa energia elevou a melhoria média para 4,85 dB na subtração e 2,92 dB no Wiener, sem degradação de SNR nas 72 condições finais. Entre 72 configurações Wavelet, \texttt{sym4}, nível 3 e limiar hard reduzido foi a mais equilibrada na validação; no conjunto final, porém, permaneceu praticamente neutra em SNR e SI-SDR. O resultado indica que o refinamento reduziu dano, mas não aproximou a Wavelet da supressão obtida pelas STFTs.
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/exemplo_formas_onda.png}}
-\caption{Exemplo de forma de onda limpa, ruidosa, processada por STFT e processada por Wavelet.}
-\label{fig:formas-onda}
-\end{figure}
+Na etapa causal, a subtração adaptativa obteve 3,76 dB de melhoria de SNR e 2,65 dB de SI-SDR no conjunto final operacional, sem degradações. A calibração causal curta ficou em 0,96 dB de SNR, perdeu 2,38 dB de SI-SDR e degradou um terço das condições. O Wiener causal atingiu 1,68 dB e 1,35 dB, respectivamente, também sem degradações. Assim, a aproximação causal reduziu a distância para o limite offline sem depender de silêncio inicial fixo.
 
-\begin{figure}[!htbp]
+No processamento reproduzível de arquivo, o mesmo núcleo preservou comprimento e alinhamento nos três tamanhos de bloco. A subtração causal variou de 3,25 a 3,36 dB de melhoria de SNR, e o Wiener de 1,27 a 1,54 dB. Nenhum bloco excedeu o orçamento. A execução CLI versionada reproduziu exatamente o SHA-256 do vetor causal esperado, confirmando equivalência entre helper, CLI e núcleo.
+
+As medições em tempo real acrescentam uma conclusão de natureza diferente: elas não medem melhoria de SNR, mas indicam que o custo computacional por bloco ainda fica com folga no notebook Windows. Em input-only de 30 s, os métodos STFT e Wavelet permaneceram abaixo de RTF 1 em todos os blocos observados, sem eventos de erro de captura reportados. Depois, a STFT causal adaptativa congelada sustentou 600 s em self-test e 600 s de captura física input-only, com zero blocos acima de 20 ms; no caso físico, o pior bloco foi 6,799 ms e o RTF médio foi 0,064. No caminho full-duplex cabeado, a mesma STFT sustentou 600 s com pior bloco de 7,301 ms, RTF médio de 0,063, zero blocos acima de 20 ms e \texttt{status\_counts} vazio. A limitação principal observada deixou de ser Bluetooth, mas a saída MME cabeada ainda reportou 200 ms de latência de saída, logo a rodada não é prova de baixa latência física ponta a ponta.
+
+\begin{grafico}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{\detokenize{resultados/figuras/exemplo_espectrogramas.png}}
-\caption{Exemplo de espectrograma para os mesmos sinais da Figura~\ref{fig:formas-onda}.}
-\label{fig:espectrogramas}
-\end{figure}
+\begin{tikzpicture}
+\begin{axis}[
+    expaxis,
+    width=\textwidth,
+    height=0.46\textwidth,
+    ybar,
+    bar width=6pt,
+    symbolic x coords={-5,0,5,10},
+    xtick=data,
+    xlabel={SNR alvo de entrada (dB)},
+    ylabel={Melhoria média de SNR (dB)},
+    ymin=-1.5,
+    ymax=10.5,
+    enlarge x limits=0.18,
+    legend columns=2,
+    legend style={at={(0.5,-0.22)},anchor=north},
+    area legend,
+]
+\addplot+[draw=black!55,fill=black!20] table[x=snr_alvo_db,y=noisy,col sep=comma]{resultados/pgfplots/melhoria_snr.csv};
+\addplot+[draw=blue!55!black,fill=blue!35] table[x=snr_alvo_db,y=stft_subtraction,col sep=comma]{resultados/pgfplots/melhoria_snr.csv};
+\addplot+[draw=teal!55!black,fill=teal!35] table[x=snr_alvo_db,y=stft_wiener,col sep=comma]{resultados/pgfplots/melhoria_snr.csv};
+\addplot+[draw=orange!70!black,fill=orange!45] table[x=snr_alvo_db,y=wavelet_soft,col sep=comma]{resultados/pgfplots/melhoria_snr.csv};
+\legend{Ruidoso,STFT subtração,STFT Wiener,Wavelet soft}
+\end{axis}
+\end{tikzpicture}
+\caption[Melhoria média de SNR por método]{Melhoria média de SNR por método no benchmark preliminar. Os dados vêm de \texttt{resultados/tabelas/resumo\_por\_metodo\_snr.csv} e foram exportados por \texttt{benchmark\_audio/run\_benchmark.py} para \texttt{resultados/pgfplots/melhoria\_snr.csv}. O resultado é preliminar e usa fala FSDD, ruídos sintetizados e SNRs alvo de \(-5\), 0, 5 e 10 dB.}
+\label{graf:melhoria-snr}
+\end{grafico}
+
+\begin{grafico}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    expaxis,
+    width=\textwidth,
+    height=0.42\textwidth,
+    ybar,
+    bar width=18pt,
+    symbolic x coords={noisy,stft_subtraction,stft_wiener,wavelet_soft},
+    xtick=data,
+    xticklabels={Ruidoso,{STFT\\subtração},{STFT\\Wiener},{Wavelet\\soft}},
+    tick label style={font=\footnotesize,align=center},
+    xlabel={Método},
+    ylabel={RTF médio \((\times 10^{-3})\)},
+    ymin=0,
+    ymax=2.35,
+    enlarge x limits=0.18,
+]
+\addplot+[draw=blue!55!black,fill=blue!35] table[x=metodo,y=rtf_medio_x1000,col sep=comma]{resultados/pgfplots/rtf_por_metodo.csv};
+\end{axis}
+\end{tikzpicture}
+\caption[Fator de tempo real médio por método]{Fator de tempo real médio por método, agregado sobre os SNRs alvo do benchmark preliminar. O eixo vertical mostra \(1000\times\mathrm{RTF}\), com dados exportados pelo script para \texttt{resultados/pgfplots/rtf\_por\_metodo.csv}; valores abaixo de 1 em RTF indicam processamento mais rápido que a duração do áudio, mas a medição ainda é em PC e não equivale à latência embarcada por blocos.}
+\label{graf:rtf}
+\end{grafico}
+
+\begin{grafico}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    expaxis,
+    width=0.92\textwidth,
+    height=0.52\textwidth,
+    xmin=0,
+    xmax=3,
+    ymin=-6.1,
+    ymax=4.1,
+    xlabel={Tempo (s)},
+    ylabel={Sinais deslocados},
+    ytick={3,1,-1,-3,-5},
+    yticklabels={Limpa,Ruidosa,STFT subtr.,STFT Wiener,Wavelet soft},
+    yticklabel style={font=\scriptsize,align=right},
+]
+\addplot+[no markers,blue!65!black,thick] table[x=tempo_s,y=clean_empilhado,col sep=comma]{resultados/pgfplots/formas_onda_exemplo.csv};
+\addplot+[no markers,black!65,thick] table[x=tempo_s,y=noisy_empilhado,col sep=comma]{resultados/pgfplots/formas_onda_exemplo.csv};
+\addplot+[no markers,teal!70!black,thick] table[x=tempo_s,y=stft_subtraction_empilhado,col sep=comma]{resultados/pgfplots/formas_onda_exemplo.csv};
+\addplot+[no markers,purple!65!black,thick] table[x=tempo_s,y=stft_wiener_empilhado,col sep=comma]{resultados/pgfplots/formas_onda_exemplo.csv};
+\addplot+[no markers,orange!80!black,thick] table[x=tempo_s,y=wavelet_soft_empilhado,col sep=comma]{resultados/pgfplots/formas_onda_exemplo.csv};
+\end{axis}
+\end{tikzpicture}
+\caption[Formas de onda da condição representativa]{Formas de onda de uma condição representativa do benchmark preliminar, decimadas para manter o LaTeX leve. As séries foram exportadas por \texttt{benchmark\_audio/run\_benchmark.py} para \texttt{resultados/pgfplots/formas\_onda\_exemplo.csv}; os deslocamentos verticais servem apenas para separar visualmente os sinais.}
+\label{graf:formas-onda}
+\end{grafico}
+
+\begin{grafico}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=2 by 2,horizontal sep=0.95cm,vertical sep=1.28cm},
+    expaxis,
+    width=0.39\textwidth,
+    height=0.27\textwidth,
+    grid=none,
+    xmin=0,
+    xmax=3,
+    ymin=0,
+    ymax=8,
+    xlabel={Tempo (s)},
+    ylabel={f (kHz)},
+    tick label style={font=\scriptsize},
+    label style={font=\scriptsize},
+    title style={font=\small},
+    colormap/viridis,
+    point meta min=\pgfSpectrogramDbMin,
+    point meta max=\pgfSpectrogramDbMax,
+]
+\nextgroupplot[title={Fala limpa},xlabel={},xticklabels={}]
+\addplot[matrix plot*,mesh/cols=\pgfSpectrogramCols,point meta=explicit] table[x=tempo_s,y=freq_khz,meta=potencia_db_rel,col sep=comma]{resultados/pgfplots/espectrograma_clean.csv};
+\nextgroupplot[title={Ruidosa},xlabel={},xticklabels={},ylabel={}]
+\addplot[matrix plot*,mesh/cols=\pgfSpectrogramCols,point meta=explicit] table[x=tempo_s,y=freq_khz,meta=potencia_db_rel,col sep=comma]{resultados/pgfplots/espectrograma_noisy.csv};
+\nextgroupplot[title={STFT subtração}]
+\addplot[matrix plot*,mesh/cols=\pgfSpectrogramCols,point meta=explicit] table[x=tempo_s,y=freq_khz,meta=potencia_db_rel,col sep=comma]{resultados/pgfplots/espectrograma_stft_subtraction.csv};
+\nextgroupplot[
+    title={Wavelet soft},
+    ylabel={},
+    colorbar,
+    colorbar style={ylabel={dB rel.},yticklabel style={font=\scriptsize},ylabel style={font=\scriptsize}},
+]
+\addplot[matrix plot*,mesh/cols=\pgfSpectrogramCols,point meta=explicit] table[x=tempo_s,y=freq_khz,meta=potencia_db_rel,col sep=comma]{resultados/pgfplots/espectrograma_wavelet_soft.csv};
+\end{groupplot}
+\end{tikzpicture}
+\caption[Espectrogramas reduzidos da condição representativa]{Espectrogramas reduzidos da mesma condição representativa do Gráfico~\ref{graf:formas-onda}. As matrizes foram exportadas em dB relativo ao pico global do exemplo para \texttt{resultados/pgfplots/espectrograma\_*.csv}, com \(\pgfSpectrogramRows\) frequências por \(\pgfSpectrogramCols\) instantes; a redução da malha é uma escolha deliberada para manter a compilação confortável.}
+\label{graf:espectrogramas}
+\end{grafico}
 \FloatBarrier
 
 Os arquivos de áudio de demonstração foram salvos em \texttt{resultados/audio/}. Eles incluem a fala limpa, a mistura ruidosa e as saídas dos métodos STFT e Wavelet para uma condição representativa. Esses arquivos são úteis para apresentação, mas não substituem uma avaliação perceptual formal.
+
+% O Código~\ref{cod:exportacao-pgfplots} mostra o trecho do pipeline que concentra a exportação dos dados leves usados pelos gráficos nativos. A listagem é parcial para preservar a rastreabilidade sem transformar o relatório em uma reprodução integral do script.
+%
+% \begin{codigo}[!htbp]
+% \caption[Exportação de dados para gráficos nativos]{Trecho do script que exporta dados para gráficos nativos em LaTeX.}
+% \label{cod:exportacao-pgfplots}
+% \begin{lstlisting}[
+%     language=Python,
+%     basicstyle=\ttfamily\scriptsize,
+%     keywordstyle=\color{blue!65!black}\bfseries,
+%     commentstyle=\color{teal!70!black},
+%     stringstyle=\color{orange!70!black},
+%     numbers=left,
+%     numberstyle=\tiny,
+%     frame=single,
+%     columns=flexible
+% ]
+% def export_pgfplots_assets(summary, example, config, paths):
+%     pgfplots_dir = paths["pgfplots"]
+%     pgfplots_dir.mkdir(parents=True, exist_ok=True)
+%     export_summary_for_pgfplots(summary, pgfplots_dir)
+%     if example:
+%         export_waveforms_for_pgfplots(example, config.sample_rate, pgfplots_dir)
+%         export_spectrograms_for_pgfplots(example, config.sample_rate, pgfplots_dir)
+%     write_pgfplots_readme(pgfplots_dir, config)
+% \end{lstlisting}
+% \end{codigo}
+% \FloatBarrier
+
+\section{Fechamento acadêmico do protótipo integrado}
+
+\subsection{Do baseline STFT ao benchmark de literatura}
+
+A investigação começou com métodos clássicos, interpretáveis e reproduzíveis. A subtração espectral STFT causal adaptativa tornou-se o primeiro baseline operacional por blocos; o Wiener causal foi mantido como alternativa menos agressiva. A DWT limiarizada mostrou ganhos pequenos, e a busca Wavelet mais ampla identificou configurações WPT em quadros objetivamente competitivas. Uma WPT causal posterior passou em gates instrumentais, mas foi rejeitada na escuta pré-ponte contra o baseline STFT. Esse resultado impediu a promoção de uma configuração apenas porque suas métricas de tonalidade eram favoráveis.
+
+Em seguida, foi criado um harness comum para sistemas da literatura, com registro de versão, licença, taxa nativa, framing, causalidade, atraso por impulso, RTF, memória e hashes das misturas. Foram avaliados OM-LSA/IMCRA, RNNoise, WebRTC APM Noise Suppression e DeepFilterNet3, sempre com o baseline STFT como referência. O WebRTC APM foi rejeitado na configuração oficial testada por regressões de SNR e SI-SDR; o DeepFilterNet3 foi rejeitado pelo custo de memória e pela dominância do RNNoise na maior parte dos eixos. RNNoise e OM-LSA/IMCRA formaram a fronteira final pública.
+
+\begin{table}[!htbp]
+\centering
+\caption[Resultado do split público final]{Resultado agregado no split público final operacional. Os candidatos foram congelados antes da abertura desse split.}
+\label{tab:literatura-final}
+\footnotesize
+\begin{tabularx}{\textwidth}{XrrrrX}
+\toprule
+\textbf{Sistema} & \(\boldsymbol{\Delta}\)\textbf{SNR} & \(\boldsymbol{\Delta}\)\textbf{SI-SDR} & \(\boldsymbol{\Delta}\)\textbf{STOI} & \textbf{Envelope} & \textbf{Papel} \\
+& \textbf{(dB)} & \textbf{(dB)} & & & \\
+\midrule
+STFT causal & 3,7631 & 2,6476 & 0,00005 & 0,94220 & Referência obrigatória \\
+RNNoise & 6,5684 & 5,5728 & 0,01817 & 0,83602 & Finalista de maior supressão \\
+OM-LSA/IMCRA & 0,9349 & 0,6896 & -0,00130 & 0,94767 & Finalista de maior preservação \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+A avaliação privada cega foi executada antes da ponte e do endpoint, com a mesma entrada, o mesmo corte e sem normalização ou \textit{fade}. O ranking foi RNNoise, OM-LSA/IMCRA e baseline STFT. O RNNoise recebeu notas máximas de inteligibilidade e naturalidade e não apresentou artefatos perceptíveis na tomada avaliada. Assim, foi aprovado como candidato principal para integração incremental; OM-LSA/IMCRA permaneceu como reserva. Essa aprovação é perceptual e pré-ponte: não implica continuidade temporal do endpoint nem promoção a produto.
+
+\subsection{Arquitetura implementada}
+
+A arquitetura separa o algoritmo, o transporte e a exposição do dispositivo. O DSP permanece em espaço de usuário, enquanto o driver virtual se limita a receber blocos PCM e disponibilizar o endpoint de captura.
+
+\begin{figure}[!htbp]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    bloco/.style={draw=black!65, rounded corners=2pt, fill=black!4, minimum width=2.8cm, minimum height=1.25cm, align=center},
+    seta/.style={->, very thick, draw=blue!55!black}
+]
+\node[bloco] (fonte) at (0,0) {Fonte ou\\replay controlado};
+\node[bloco] (dsp) at (3.6,0) {DSP causal\\STFT ou RNNoise};
+\node[bloco] (pcm) at (7.2,0) {PCM16 mono\\16 kHz, 20 ms};
+\node[bloco] (controle) at (10.8,0) {Interface de controle\\e protocolo PCM v1};
+\node[bloco] (driver) at (14.4,0) {Ring buffer\\SYSVAD/WaveRT};
+\node[bloco] (cliente) at (18.0,0) {Endpoint virtual\\e cliente Windows};
+\draw[seta] (fonte) -- (dsp);
+\draw[seta] (dsp) -- (pcm);
+\draw[seta] (pcm) -- (controle);
+\draw[seta] (controle) -- (driver);
+\draw[seta] (driver) -- (cliente);
+\end{tikzpicture}%
+}
+\caption{Arquitetura do protótipo integrado. As medições distinguem fonte, DSP, transporte, escrita no driver e consumo do endpoint.}
+\label{fig:arquitetura-integrada}
+\end{figure}
+\FloatBarrier
+
+O contrato PCM v1 usa blocos de 320 amostras, 640 bytes, sequência monotônica e uma fila não paginada com capacidade de 50 blocos. A política de \textit{underrun} preenche a região requisitada com zeros; a política de \textit{overrun} rejeita o bloco novo. Um único produtor possui a interface por vez. O processo de usuário captura ou recebe o áudio, processa o bloco, converte para PCM16 e envia por IOCTL apenas quando a profundidade da fila está abaixo do alvo. A interface de controle exibe estado, nível, blocos processados, perdas e latência estimada, sem armazenar áudio.
+
+\subsection{Gates isolados e prova funcional}
+
+O RNNoise persistente foi integrado por DLL no mesmo processo, com um estado contínuo, buffers fixos e resampling FIR causal \(16 \rightarrow 48 \rightarrow 16\) kHz. O atraso por impulso foi de 341 amostras a 16 kHz, ou 21,3125 ms. No host, um ensaio equivalente a 600 s processou 30.000 blocos com p99 de 1,951 ms, pior caso de 18,249 ms e zero bloco acima de 20 ms. No self-test isolado da VM, 3.000 blocos tiveram p99 de 2,021 ms, pior caso de 10,691 ms e zero estouro.
+
+O transporte host-convidado foi então separado da entrada virtualizada. Em quatro pernas pareadas, cada perna entregou exatamente 1.000 blocos, com zero erro de sequência, CRC, framing, perda ou duplicação. O RNNoise permaneceu abaixo de 20 ms por bloco. Esses resultados demonstram que o custo do DSP e a integridade do canal externo não são o bloqueador atual.
+
+A ponte usuário-driver também foi comprovada com sinal sintético: um tom de 440 Hz foi escrito no SYSVAD e capturado por cliente externo em WAV mono, PCM16, 16 kHz e 12 s. A frequência dominante, a duração e a cauda de silêncio após a parada do produtor foram confirmadas. Portanto, o endpoint virtual é uma prova funcional de integração.
+
+\begin{table}[!htbp]
+\centering
+\caption{Resumo dos gates aceitos antes da análise temporal do endpoint.}
+\label{tab:gates-integracao}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.8cm}X>{\raggedright\arraybackslash}p{3.5cm}}
+\toprule
+\textbf{Gate} & \textbf{Evidência principal} & \textbf{Limite} \\
+\midrule
+RNNoise no host & 30.000 blocos; p99 1,951 ms; pior 18,249 ms; zero estouro. & Não inclui driver ou endpoint. \\
+\addlinespace
+RNNoise isolado na VM & 3.000 blocos; p99 2,021 ms; pior 10,691 ms; zero estouro. & Não mede continuidade do endpoint. \\
+\addlinespace
+Transporte host-convidado & 1.000 blocos por perna; zero erro de sequência, CRC, framing ou perda. & Canal de ensaio, não captura física. \\
+\addlinespace
+Ponte PCM v1 e SYSVAD & Tom de 440 Hz capturado com formato e duração corretos. & Prova funcional, não temporal prolongada. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+\subsection{Diagnóstico da cadência física e consumo WaveRT}
+
+Quando a ponte passou a alimentar o endpoint em tempo cadenciado, surgiram descartes e \textit{underruns} depois do DSP. A instrumentação separou recepção, processamento, fila local, IOCTL, fila do driver, captura WASAPI e scheduler. O escritor foi melhorado com \textit{yield}, e a barreira de partida reduziu a corrida inicial, mas nenhuma combinação de polling, temporizador, spin, afinidade, prioridade, duas a quatro vCPUs, antecipação de envio ou captura orientada a evento eliminou as perdas de forma reproduzível.
+
+O trace interno do capturador excluiu bloqueio sustentado em \texttt{GetNextPacketSize}, \texttt{GetBuffer}, cópia, análise, I/O de trace e \texttt{ReleaseBuffer}. Alguns atrasos foram localizados dentro de \texttt{SwitchToThread}; substituí-lo por spin aumentou a contenção e piorou o sistema. No modo orientado a evento, não houve falha da API nem timeout, mas retornos sinalizados chegaram a 220,532 ms. A limitação permaneceu associada ao agendamento do convidado e ao consumo WaveRT no VirtualBox/NEM.
+
+\subsection{Contrafactual SYSVAD versus HDA}
+
+O ensaio final comparou o SYSVAD modificado com o endpoint HDA emulado, na mesma VM, no mesmo boot e em ordem ABBA. Ambos usaram WASAPI compartilhado orientado a evento, sem produtor, DSP, replay ou áudio persistido. Um sinal foi considerado tardio quando o intervalo excedeu \(\max(30\text{ ms}, 2{,}5\,T_{\mathrm{ref}})\), em que \(T_{\mathrm{ref}}\) é o período do dispositivo.
+
+\begin{table}[!htbp]
+\centering
+\caption{Contrafactual de notificações orientadas a evento na mesma VM.}
+\label{tab:contrafactual}
+\small
+\begin{tabularx}{\textwidth}{Xrrr}
+\toprule
+\textbf{Perna} & \textbf{Sinais tardios} & \textbf{Períodos perdidos equivalentes} & \textbf{Máximo normalizado} \\
+\midrule
+SYSVAD A & 21 & 381 & 230,21 períodos \\
+HDA A & 22 & 1.121 & 743,64 períodos \\
+HDA B & 23 & 248 & 82,18 períodos \\
+SYSVAD B & 48 & 304 & 43,72 períodos \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+Os máximos absolutos foram 2.302,083 ms, 7.554,401 ms, 834,825 ms e 437,176 ms, respectivamente. Dos 69 sinais tardios do SYSVAD, 54 coincidiram com um \textit{gap} do scheduler; no HDA, foram 37 de 45. A classificação predefinida foi \texttt{virtualbox\_event\_timing\_supported}.
+
+O HDA não foi um controle temporal limpo. A irregularidade é fortemente compatível com limitação global do VirtualBox/NEM ou do agendamento do convidado, e não apenas com o caminho SYSVAD/PortCls modificado. Entretanto, o resultado não prova que o driver SYSVAD esteja correto: ambos os endpoints tiveram descontinuidades, e parte dos atrasos não coincidiu com o probe geral de scheduler.
+
+\subsection{Demonstração acadêmica em três camadas}
+
+A demonstração deve evitar transformar resultados independentes em uma alegação ponta a ponta não sustentada:
+
+\begin{enumerate}
+    \item \textbf{DSP audível:} comparação A/B entre fala ruidosa e a mesma fala tratada pelo RNNoise, usando material público ou autorizado e informando que o ensaio ocorre antes da ponte;
+    \item \textbf{microfone virtual funcional:} sinal sintético conhecido alimentando o SYSVAD e sendo capturado por um cliente Windows;
+    \item \textbf{integração técnica:} logs, hashes e contadores provando processamento, transporte PCM e escrita no driver sem erros de protocolo.
+\end{enumerate}
+
+Não se deve apresentar uma captura longa na VM como prova de tempo real ponta a ponta, nem mascarar lacunas com repetição de amostras, aumento oportunista de filas ou edição de áudio.
+
+\subsection{Limitações metodológicas}
+
+\begin{itemize}
+    \item A escuta privada usou uma tomada autorizada e não substitui avaliação perceptual com mais participantes e material.
+    \item O benchmark público cobre condições controladas e não representa todos os ruídos, vozes, dispositivos ou salas.
+    \item Os resultados de custo em PC e VM não podem ser transferidos diretamente para hardware embarcado.
+    \item A latência algorítmica foi medida ou estimada por componentes; a latência física ponta a ponta não foi comprovada.
+    \item O endpoint virtual foi validado funcionalmente, mas não passou um gate de continuidade prolongada na VM.
+    \item O contrafactual reforça uma limitação ambiental, mas não certifica o driver.
+    \item Binários, datasets e áudio privado permanecem fora do repositório; a reprodução integral exige obter dependências em suas fontes oficiais.
+\end{itemize}
+
+\subsection{Protocolo futuro em Windows nativo}
+
+A validação seguinte deve ocorrer em computador secundário ou SSD descartável, com Windows 11 Pro limpo, imagem restaurável, chave do BitLocker preservada, WinRE disponível e Secure Boot desabilitado apenas na bancada. O pacote experimental exige \texttt{TESTSIGNING} e certificado de teste instalado em \texttt{LocalMachine\textbackslash Root} e \texttt{LocalMachine\textbackslash TrustedPublisher}. O thumbprint registrado é:
+
+\begin{center}
+\texttt{7ABED3D56ECAFD8B95C7B98451237673A53F899B}
+\end{center}
+
+Um driver de teste pode causar tela azul ou impedir a inicialização; por isso, a bancada deve ser isolada e recuperável. A sequência futura é:
+
+\begin{enumerate}
+    \item medir baseline HDA ou microfone físico;
+    \item instalar o SYSVAD de forma controlada;
+    \item validar tom determinístico, PCM v1 e captura do endpoint;
+    \item executar matriz pareada bypass/RNNoise;
+    \item exigir zero perda e zero \textit{underrun} em repetições prolongadas;
+    \item medir latência física;
+    \item somente então usar fala controlada e escuta cega.
+\end{enumerate}
 
 \section{Avaliação do andamento e justificativa dos desvios}
 
 O cronograma anterior previa continuidade de uma revisão sistemática ampla sobre redução de ruído em sinais unidimensionais. O desvio principal foi a interrupção dessa abrangência para reformular o projeto em torno de voz humana. Esse desvio é justificado pelo feedback recebido e pela necessidade de tornar o anteprojeto mais defensável, mensurável e conectado a uma implementação realista.
 
-A mudança exigiu reescrever objetivos, público-alvo, questionário, referências e cronograma. Em compensação, reduziu riscos relevantes: evita uma revisão descritiva demais, permite comparação sob condições controladas e produz critérios objetivos para decidir a etapa embarcada. Parte da estratégia prevista para o início do segundo semestre foi antecipada: já há leitura de áudio, mistura por SNR, baselines STFT e Wavelet, métricas objetivas, gráficos e exemplos de áudio.
+A mudança exigiu reescrever objetivos, público-alvo, questionário, referências e cronograma. Em compensação, reduziu riscos relevantes: evitou uma revisão apenas descritiva, permitiu comparação sob condições controladas e produziu critérios objetivos para decidir a integração. A execução avançou além do planejamento inicial, incluindo benchmark de literatura, avaliação perceptual, RNNoise persistente, transporte cadenciado, ponte PCM v1, SYSVAD e instrumentação temporal.
 
-O andamento do projeto é considerado adequado após a reformulação e o primeiro benchmark. O sucesso da próxima fase não dependerá de implementar todas as plataformas possíveis, mas de amadurecer a comparação entre STFT e Wavelet com ruídos ambientais reais, ajuste mais cuidadoso de parâmetros, escuta crítica organizada, discussão de latência e recomendação técnica fundamentada para Raspberry Pi.
+O principal desvio técnico posterior foi a substituição da portabilidade embarcada imediata pela construção de um microfone virtual no Windows. Essa escolha respondeu melhor ao objetivo de disponibilizar o áudio tratado a aplicativos externos e permitiu validar interfaces, filas e comportamento do endpoint. O limite encontrado no VirtualBox/NEM foi mantido como resultado negativo relevante, em vez de ser ocultado por buffers ou edição de áudio. O andamento é considerado adequado para um protótipo acadêmico integrado, com a validação nativa e a medição física de latência explicitamente transferidas para trabalho futuro.
+
+\section{Próximos passos técnicos}
+
+O fechamento acadêmico encerra a investigação temporal exploratória na VM. Os próximos passos devem ser executados apenas quando houver ambiente apropriado:
+
+\begin{enumerate}
+    \item preservar RNNoise como candidato principal e OM-LSA/IMCRA como reserva, sem reabrir varreduras post-hoc;
+    \item ampliar a avaliação perceptual com material público ou autorizado, mais ouvintes e protocolo cego;
+    \item reproduzir os benchmarks públicos em outro computador a partir dos scripts, manifestos e versões registradas;
+    \item preparar uma bancada Windows nativa isolada, recuperável e separada do computador principal;
+    \item executar baseline físico antes da instalação do SYSVAD;
+    \item validar transporte e endpoint com sinal determinístico, exigindo zero perda e zero \textit{underrun};
+    \item medir latência física ponta a ponta por loopback ou método equivalente;
+    \item somente depois liberar matriz de fala controlada bypass/RNNoise e escuta cega do endpoint;
+    \item tratar Raspberry Pi e outras plataformas embarcadas como continuidade posterior, depois de consolidar o comportamento nativo no Windows.
+\end{enumerate}
 
 \section{Questionário extensionista refinado}
 
@@ -678,31 +1267,31 @@ Este questionário integra a atividade extensionista da disciplina PTC3527 -- An
 \usoPergunta{revelar cenários não previstos e orientar a seleção final de ruídos, exemplos e limitações discutidas no relatório.}
 \end{perguntaFormulario}
 
-\section{Cronograma detalhado para o segundo semestre}
+\section{Plano indicativo de continuidade}
 
-O segundo semestre deve continuar organizado de forma progressiva, mas o benchmark preliminar antecipou parte das tarefas originalmente previstas para julho, agosto e setembro. A tabela~\ref{tab:cronograma-segundo-semestre} foi ajustada para consolidar o que já foi implementado e deslocar o foco seguinte para bases ambientais reais, ajuste de parâmetros e preparação de portabilidade.
+O fechamento acadêmico encerra a busca exploratória na VM. A tabela~\ref{tab:plano-continuidade} registra uma sequência futura condicionada à disponibilidade de uma bancada Windows nativa, isolada e recuperável. Ela não representa resultado já obtido nem compromisso de produto; cada etapa só deve avançar depois de cumprir o gate anterior.
 
 \begin{table}[!htbp]
 \centering
-\caption{Cronograma proposto para o segundo semestre de 2026.}
-\label{tab:cronograma-segundo-semestre}
+\caption{Sequência indicativa para validação nativa e publicação.}
+\label{tab:plano-continuidade}
 \small
 \setstretch{1.05}
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.2cm}XX}
 \toprule
-\textbf{Período} & \textbf{Atividades} & \textbf{Entregas esperadas} \\
+\textbf{Etapa} & \textbf{Atividades} & \textbf{Gate ou entrega esperada} \\
 \midrule
-Julho & Consolidar o protocolo após o benchmark preliminar, substituir ou complementar ruídos sintéticos por DEMAND/VoiceBank--DEMAND, revisar licenças e organizar execução reproduzível em outro computador. & Protocolo revisado, dados ambientais documentados e reprodução independente do benchmark. \\
+Preparação & Selecionar computador secundário ou SSD descartável; preservar BitLocker; criar imagem restaurável; registrar versões, hashes e certificado de teste. & Bancada recuperável, sem uso do computador principal e com procedimento de reversão ensaiado. \\
 \addlinespace
-Agosto & Refinamento dos baselines STFT já implementados: estimativa de ruído mais realista, análise de ruído musical, variação de janela/salto e comparação sem silêncio inicial garantido. & Tabelas e figuras STFT revisadas, com parâmetros justificados e limitações perceptuais discutidas. \\
+Baseline & Medir HDA ou microfone físico com tom determinístico e captura WASAPI orientada a evento, antes de instalar o SYSVAD. & Distribuição de períodos, sinais tardios e latência do ambiente nativo documentada. \\
 \addlinespace
-Setembro & Refinamento do pipeline Wavelet já implementado: testar \texttt{sym4}, limiar hard, limiares por escala e níveis de decomposição alternativos. & Comparação Wavelet mais justa contra STFT, com análise dos casos em que o método piora a fala. \\
+Endpoint & Instalar o SYSVAD de forma controlada; validar IOCTLs, PCM v1, tom de 440 Hz, silêncio após parada e captura por cliente externo. & Prova funcional reproduzível, sem tela azul, corrupção de estado ou dependência de áudio privado. \\
 \addlinespace
-Outubro & Benchmark controlado ampliado com ruídos reais, múltiplas amostras e métricas objetivas; incluir escuta crítica estruturada pelos autores. & Tabelas e gráficos finais de qualidade, tempo, espectrogramas e discussão de limitações. \\
+Continuidade & Repetir matriz pareada bypass/RNNoise em execuções prolongadas, com sequência monotônica e telemetria de fila, perdas e \textit{underruns}. & Zero perda, zero \textit{underrun} e ausência de pausas anômalas nas repetições predefinidas. \\
 \addlinespace
-Novembro & Análise de tempo real e portabilidade: medir latência por bloco, memória, RTF em ambiente menos potente e planejar teste em Raspberry Pi. & Relatório de viabilidade para Raspberry Pi; ESP32 como investigação posterior; Arduino Uno R3 documentado como limitação severa. \\
+Latência física & Medir o percurso ponta a ponta com loopback ou instrumentação externa, separando atraso algorítmico, de driver e de dispositivo. & Distribuição de latência física com p50, p95, p99 e pior caso, incluindo incerteza de medição. \\
 \addlinespace
-Dezembro & Consolidação da monografia final, revisão do questionário e integração das respostas na discussão, preparação da apresentação e plano de continuidade embarcada. & Versão final do relatório, apresentação e plano para Raspberry Pi; ESP32 como etapa posterior se os custos forem compatíveis. \\
+Publicação & Somente após os gates técnicos, repetir fala controlada e escuta cega; publicar tabelas, manifests, scripts e limitações, sem áudio privado nem binários de terceiros. & Pacote público reproduzível, auditado e compatível com as licenças das dependências. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -714,6 +1303,8 @@ Dezembro & Consolidação da monografia final, revisão do questionário e integ
 \centering
 \caption{Riscos técnicos do projeto e mitigação.}
 \label{tab:riscos}
+\footnotesize
+\setstretch{1.0}
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.0cm}XX}
 \toprule
 \textbf{Risco} & \textbf{Impacto} & \textbf{Mitigação} \\
@@ -726,13 +1317,17 @@ Métrica objetiva não refletir percepção & Conclusões frágeis sobre qualida
 \addlinespace
 STFT ou Wavelet exigir parâmetros demais & Risco de comparação injusta. & Separar conjunto de validação para ajuste e conjunto final para comparação. Registrar todos os parâmetros. \\
 \addlinespace
-Latência incompatível com tempo real & Dificuldade de continuidade embarcada. & Medir tempo por quadro desde o início e limitar janelas/blocos a valores coerentes com comunicação por voz. \\
+Latência incompatível com tempo real & Dificuldade de continuidade embarcada. & Separar latência algorítmica, latência de driver e latência de dispositivo; repetir testes com saída de menor atraso que Bluetooth e limitar janelas/blocos a valores coerentes com comunicação por voz. \\
 \addlinespace
 Hardware inflar o projeto & Atraso e promessa excessiva. & Tratar hardware como continuidade: Raspberry Pi primeiro; ESP32 somente se o método final for simples; Arduino Uno R3 apenas como limitação futura. \\
 \addlinespace
-Ruídos sintéticos induzirem conclusão forte demais & Validade externa limitada e risco de superestimar desempenho. & Repetir o benchmark com ruídos ambientais reais e explicitar que os resultados atuais são preliminares. \\
+Subconjunto ambiental ainda ser pequeno ou correlacionado & Validade externa limitada e risco de superestimar desempenho em poucos cenários. & Ampliar ambientes e canais DEMAND, usar segmentos separados para validação/teste e manter os ruídos sintéticos apenas como controle. \\
+\addlinespace
+Conjunto final operacional não ser historicamente cego & Risco de influência indireta da exploração anterior. & Repetir a confirmação futura com ambientes, canais ou trechos ainda não inspecionados. \\
 \addlinespace
 Estimativa de ruído depender de silêncio inicial & Comparação otimista para STFT e pouco realista em fala contínua. & Testar cenários sem silêncio inicial garantido e estimadores de ruído adaptativos. \\
+\addlinespace
+Jitter do processo causal em Python & Blocos isolados podem exceder o orçamento mesmo com RTF médio baixo. & Registrar p95, p99, pior caso e blocos acima do orçamento; repetir teste Windows prolongado e considerar implementação otimizada na fase de portabilidade. \\
 \addlinespace
 Wavelet ficar subajustada & Conclusão injusta contra a abordagem Wavelet. & Testar famílias, níveis e limiares alternativos antes de concluir inadequação do método. \\
 \bottomrule
@@ -764,11 +1359,15 @@ Arduino Uno R3 & 2 KB de SRAM, 32 KB de flash, sem FPU e sem I2S nativo. & FFT/D
 
 \section{Considerações finais}
 
-Este segundo relatório reformula o anteprojeto de modo a responder diretamente ao feedback recebido e acrescenta um avanço experimental concreto. O projeto deixa de ser uma revisão ampla sobre sinais unidimensionais no tempo e passa a concentrar-se em redução de ruído local para voz humana, com comparação técnica entre STFT/Fourier e Wavelet. A atividade extensionista também foi ajustada: as perguntas deixam de ser genéricas e passam a informar decisões de engenharia, como ruídos de teste, latência aceitável, equilíbrio entre remoção de ruído e naturalidade, privacidade, operação offline, custo e consumo energético.
+O projeto evoluiu de uma comparação inicial entre STFT e Wavelet para um protótipo acadêmico integrado, com benchmark público, avaliação perceptual, processamento causal, transporte por blocos e microfone virtual no Windows. Essa evolução não apagou os resultados negativos: a DWT permaneceu limitada, a WPT causal foi rejeitada perceptualmente, o WebRTC APM e o DeepFilterNet3 não foram selecionados nesta bateria, e o baseline STFT revelou ruído metalizado na escuta.
 
-A principal entrega desta fase agora inclui um pipeline funcional em PC, resultados preliminares, arquivos de áudio processado, tabelas, gráficos e uma auditoria crítica. No experimento demonstrativo, os métodos STFT melhoraram a SNR de forma mais consistente que a Wavelet soft, enquanto todos os métodos rodaram com RTF muito inferior a 1 em PC. Essa conclusão, porém, é deliberadamente limitada: os ruídos foram sintetizados, os parâmetros ainda não foram otimizados e não houve avaliação perceptual formal.
+O RNNoise foi aprovado como candidato principal porque combinou supressão objetiva forte, custo compatível com blocos de 20 ms e preferência na escuta cega pré-ponte. O processamento persistente passou no host e na VM; o transporte host-convidado preservou 1.000 blocos por perna sem erros de protocolo; e a ponte PCM v1 alimentou um endpoint SYSVAD funcional. Essas evidências permitem afirmar que o algoritmo, o transporte e a integração básica funcionam.
 
-O caminho técnico mais responsável é usar o benchmark atual como base reproduzível, ampliar os dados com ruídos ambientais reais, refinar os parâmetros Wavelet e STFT, e só então migrar o método mais promissor para Raspberry Pi. ESP32/ESP32-S3 permanece como investigação posterior. O Arduino Uno R3 deve ser tratado como plataforma inadequada para o pipeline atual, salvo em versões extremamente simplificadas ou com hardware externo.
+O limite decisivo apareceu depois do DSP. O consumo WaveRT e a captura do endpoint no VirtualBox/NEM apresentaram atrasos esparsos, descartes e \textit{underruns}. O contrafactual com HDA mostrou que um endpoint não modificado também sofreu notificações tardias repetidas. O resultado reforça uma limitação global do ambiente virtualizado, mas não prova a correção do driver SYSVAD. Por isso, a escuta ponta a ponta baseada em capturas com lacunas permaneceu bloqueada.
+
+A contribuição acadêmica principal é a separação metodológica entre qualidade do DSP, integração funcional e continuidade temporal. A demonstração final deve refletir essa separação, combinando um A/B audível pré-ponte, um sinal sintético no microfone virtual e evidências técnicas de transporte e escrita no driver. Não há base para declarar produto pronto, distribuição segura, zero perda ou baixa latência física ponta a ponta.
+
+O próximo passo tecnicamente responsável é uma validação em Windows nativo, em bancada isolada e recuperável. Ela deve começar por baseline físico, instalação controlada do SYSVAD e sinal determinístico; exigir zero perda e zero \textit{underrun}; medir latência física; e somente então avançar para fala controlada e escuta cega. Até esse gate, o resultado final permanece: \textbf{protótipo acadêmico integrado, funcional em suas camadas isoladas e limitado temporalmente no ambiente virtualizado}.
 
 \newpage
 \addcontentsline{toc}{section}{Referências}
@@ -808,6 +1407,12 @@ O caminho técnico mais responsável é usar o benchmark atual como base reprodu
 \bibitem{fsdd} JACKSON, Z. et al. \textit{Free Spoken Digit Dataset}. GitHub repository. Disponível em: \url{https://github.com/Jakobovski/free-spoken-digit-dataset}. Acesso em: 6 jun. 2026.
 
 \bibitem{rethage2018} RETHAGE, D.; PONS, J.; SERRA, X. A WaveNet for speech denoising. In: \textit{IEEE International Conference on Acoustics, Speech and Signal Processing}. Calgary: IEEE, 2018. p. 5069--5073. DOI: \url{https://doi.org/10.1109/ICASSP.2018.8462417}.
+
+\bibitem{rnnoise2018} VALIN, J.-M. A hybrid DSP/deep learning approach to real-time full-band speech enhancement. In: \textit{IEEE Multimedia Signal Processing Workshop}. Vancouver: IEEE, 2018. DOI: \url{https://doi.org/10.1109/MMSP.2018.8547084}.
+
+\bibitem{cohen2003} COHEN, I. Noise spectrum estimation in adverse environments: improved minima controlled recursive averaging. \textit{IEEE Transactions on Speech and Audio Processing}, v. 11, n. 5, p. 466--475, 2003. DOI: \url{https://doi.org/10.1109/TSA.2003.811544}.
+
+\bibitem{sysvad} MICROSOFT. \textit{SYSVAD Virtual Audio Device Driver Sample}. Windows Driver Samples. Disponível em: \url{https://learn.microsoft.com/en-us/samples/microsoft/windows-driver-samples/sysvad-virtual-audio-device-driver-sample/}. Acesso em: 14 jun. 2026.
 
 \bibitem{numpy2020} HARRIS, C. R. et al. Array programming with NumPy. \textit{Nature}, v. 585, p. 357--362, 2020. DOI: \url{https://doi.org/10.1038/s41586-020-2649-2}.
 

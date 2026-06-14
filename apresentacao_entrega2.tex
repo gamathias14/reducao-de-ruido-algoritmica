@@ -1,0 +1,591 @@
+\documentclass[aspectratio=1610,11pt]{beamer}
+
+\usetheme{default}
+\usefonttheme{professionalfonts}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+\pgfplotsset{compat=1.18}
+
+\graphicspath{{figuras/}}
+
+\definecolor{uspblue}{HTML}{005CA9}
+\definecolor{signalorange}{HTML}{C76F00}
+\definecolor{softgreen}{HTML}{2E8B57}
+\definecolor{softgray}{HTML}{F3F5F7}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\setbeamersize{text margin left=7mm,text margin right=7mm}
+\setbeamercolor{structure}{fg=uspblue}
+\setbeamercolor{frametitle}{fg=uspblue}
+\setbeamercolor{itemize item}{fg=uspblue}
+\setbeamercolor{itemize subitem}{fg=uspblue}
+\setbeamercolor{enumerate item}{fg=uspblue}
+\setbeamercolor{enumerate subitem}{fg=uspblue}
+\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamerfont{title}{series=\bfseries}
+
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\newcommand{\tituloProjeto}{Revisão Sistemática da Literatura sobre Redução de Ruído de Sinais Unidimensionais no Tempo}
+\newcommand{\orientadorProjeto}{Juan Luis Poletti Soto}
+\newcommand{\alunoA}{Augusto Massayoshi Yojo de Lima}
+\newcommand{\alunoB}{Gabriel Almeida Mathias}
+\newcommand{\dataApresentacao}{06/05/2026}
+\newcommand{\maplink}[3]{\hyperlink{#2}{\textcolor{uspblue}{#1.}\hspace{0.35em}\textcolor{black}{#3}}}
+
+\title{\tituloProjeto}
+\subtitle{PTC3527 -- 1o Relatório do Anteprojeto de Formatura}
+\author{\alunoA \and \alunoB}
+\date{São Paulo, 2026}
+
+\begin{document}
+
+% Tempo total alvo: 5 min. Ritmo sugerido: cerca de 30 s por slide.
+
+\begin{frame}[plain]
+    \hypertarget{fr-capa}{}
+    \centering
+    \vspace{0.1cm}
+    \includegraphics[height=1.55cm]{logopoli.pdf}
+
+    \vspace{0.35cm}
+    {\large\bfseries Escola Politécnica da Universidade de São Paulo\par}
+    \vspace{0.2cm}
+    {\small PTC3527 -- Anteprojeto de Formatura em Telecomunicações\par}
+
+    \vspace{0.45cm}
+    {\Large\bfseries \tituloProjeto\par}
+
+    \vspace{0.35cm}
+    {\small Orientador: \orientadorProjeto\par}
+
+    \vfill
+    \scriptsize
+    \begin{tabular}{@{}lc@{}}
+        \toprule
+        \textbf{Integrantes do grupo} & \textbf{N\textsuperscript{o} USP} \\
+        \midrule
+        Augusto Massayoshi Yojo de Lima & 12487121 \\
+        Gabriel Almeida Mathias & 14543284 \\
+        \bottomrule
+    \end{tabular}
+
+    \vfill
+    {\small 1\textsuperscript{o} Relatório do Anteprojeto de Formatura -- 2026\par}
+    \vspace{0.08cm}
+    {\scriptsize Apresentação: \dataApresentacao\par}
+\end{frame}
+
+\begin{frame}{Escopo e problema}
+    \hypertarget{fr-escopo}{}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \begin{itemize}
+                \item Tema: redução de ruído em sinais unidimensionais no tempo.
+                \item Domínios: voz, áudio, telemetria, sensores, vibração, instrumentação e sinais biomédicos.
+                \item Desafio: escolher técnicas comparáveis sem perder contexto de aplicação.
+                \item Critérios críticos: tipo de ruído, dados disponíveis, tempo real, custo e preservação da informação.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \centering
+            \begin{tikzpicture}
+                \begin{axis}[
+                    width=\linewidth,
+                    height=4.6cm,
+                    axis lines=left,
+                    xlabel={tempo},
+                    ylabel={amplitude},
+                    xtick=\empty,
+                    ytick=\empty,
+                    xmin=0, xmax=10,
+                    ymin=-1.9, ymax=1.9,
+                    legend style={
+                        font=\tiny,
+                        draw=none,
+                        fill=white,
+                        fill opacity=0.65,
+                        text opacity=1,
+                        at={(0.5,1.05)},
+                        anchor=south,
+                        legend columns=2,
+                        /tikz/every even column/.append style={column sep=0.12cm}
+                    },
+                    xlabel style={font=\scriptsize},
+                    ylabel style={font=\scriptsize}
+                ]
+                    \addplot[domain=0:10, samples=160, smooth, signalorange, thick]
+                        {sin(deg(2*x)) + 0.35*sin(deg(13*x)) + 0.18*sin(deg(29*x))};
+                    \addplot[domain=0:10, samples=160, smooth, uspblue, very thick]
+                        {sin(deg(2*x))};
+                    \legend{sinal medido, componente útil}
+                \end{axis}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Objetivos e questões norteadoras}
+    \hypertarget{fr-objetivos}{}
+    \begin{itemize}
+        \item \textbf{Objetivo geral:} revisar a literatura e propor uma taxonomia crítica das famílias de métodos.
+        \item \textbf{O que comparar:} requisitos, limitações, métricas, custo computacional e contextos de aplicação.
+        \item \textbf{Perguntas centrais:}
+        \begin{itemize}
+            \item Quais famílias de métodos são mais usadas?
+            \item Quando cada família tende a ser adequada?
+            \item Quais métricas e limitações aparecem em aplicações reais?
+            \item Como acessibilidade, sustentabilidade e ética entram na escolha técnica?
+        \end{itemize}
+        \item \textbf{Produto esperado:} síntese útil para orientar aplicações em telecomunicações, voz, telemetria e instrumentação.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Metodologia da revisão sistemática}
+    \hypertarget{fr-metodologia}{}
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.25cm,
+        etapa/.style={rectangle, rounded corners=2pt, draw=uspblue, fill=softgray, text width=2.55cm, minimum height=1.05cm, align=center, font=\scriptsize},
+        seta/.style={-{Latex[length=2mm]}, thick, uspblue}
+    ]
+        \node[etapa] (busca) {Busca\\IEEE, ACM, ScienceDirect, SpringerLink, Scopus, WoS, Scholar, arXiv};
+        \node[etapa, right=of busca] (triagem) {Triagem\\inclusão, exclusão, duplicatas};
+        \node[etapa, right=of triagem] (extracao) {Extração\\método, ruído, métrica, dados, custo};
+        \node[etapa, right=of extracao] (sintese) {Síntese\\taxonomia e matriz comparativa};
+        \draw[seta] (busca) -- (triagem);
+        \draw[seta] (triagem) -- (extracao);
+        \draw[seta] (extracao) -- (sintese);
+    \end{tikzpicture}
+
+    \vspace{0.35cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{String inicial}
+            \begin{itemize}
+                \item Termos: ``denoising'', ``noise reduction'', ``speech enhancement''
+                \item Sinais 1D, séries temporais, voz, áudio, sensores
+                \item Métodos: wavelet, Wiener, filtro adaptativo, deep learning
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Seleção dos estudos}
+            \begin{itemize}
+                \item Inclui trabalhos com método, avaliação ou comparação
+                \item Exclui imagens/vídeos sem adaptação clara para 1D
+                \item Registra rastreabilidade e limitações declaradas
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Referências e famílias de métodos}
+    \hypertarget{fr-referencias}{}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{3.25cm}Y Y@{}}
+        \toprule
+        \textbf{Família} & \textbf{Referências-base} & \textbf{Papel na revisão} \\
+        \midrule
+        Espectrais e estatísticas & Boll; Ephraim e Malah & Métodos clássicos para voz, baixo custo e artefatos de estimação. \\
+        \addlinespace[0.1cm]
+        Multiescala e wavelets & Donoho; Mallat; Selesnick et al. & Sinais não estacionários e separação por escalas. \\
+        \addlinespace[0.1cm]
+        Decomposições adaptativas & Huang et al.; Dragomiretskiy e Zosso & Modos intrínsecos, EMD e VMD para sinais complexos. \\
+        \addlinespace[0.1cm]
+        Aprendizado profundo & Vincent et al.; Xu et al.; Rethage et al. & Dependência de dados, generalização e custo computacional. \\
+        \addlinespace[0.1cm]
+        Protocolo da revisão & Kitchenham e Charters; Page et al. & Transparência, rastreabilidade e relato dos resultados. \\
+        \bottomrule
+    \end{tabularx}
+\end{frame}
+
+\begin{frame}{Cronograma do 1\textsuperscript{o} semestre}
+    \hypertarget{fr-cronograma}{}
+    \small
+    \begin{tikzpicture}[
+        x=1cm,
+        y=1cm,
+        marco/.style={circle, fill=uspblue, minimum size=5pt, inner sep=0pt},
+        rotulo/.style={align=center, font=\scriptsize, text width=2.05cm},
+        tarefa/.style={align=center, font=\scriptsize, text width=2.25cm}
+    ]
+        \draw[thick, uspblue] (0,0) -- (11.5,0);
+
+        \foreach \x/\mes/\desc in {
+            0/Abril/{tema, orientador e escopo},
+            2.2/Fim abr.-mai./{relatório, objetivos e questionário},
+            4.4/Maio/{apresentação, piloto e busca},
+            6.6/Junho/{triagem e matriz inicial},
+            8.8/Fim junho/{leitura e lacunas},
+            11/Início julho/{resultados parciais}
+        }{
+            \node[marco] at (\x,0) {};
+            \node[rotulo, above=0.18cm] at (\x,0) {\textbf{\mes}};
+            \node[tarefa, below=0.22cm] at (\x,0) {\desc};
+        }
+        \node[align=center, font=\scriptsize\bfseries, text=signalorange] at (4.4,1.2) {Estamos aqui\\apresentação 06/05};
+        \draw[-{Latex[length=2mm]}, thick, signalorange] (4.4,.9) to ++ (0,-.35);
+    \end{tikzpicture}
+
+    \vspace{1.1cm}
+    \begin{itemize}
+        \item Meta de maio: questionário revisado e primeiras respostas coletadas.
+        \item Meta de junho: estudos preliminares selecionados e classificados por família.
+        \item Meta de julho: matriz comparativa inicial e análise das respostas.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Atividades realizadas nesta fase}
+    \hypertarget{fr-realizadas}{}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.52\textwidth}
+            \begin{itemize}
+                \item Definição de tema, título, orientador e grupo;
+                \item Delimitação do foco em sinais temporais 1D;
+                \item Levantamento inicial de famílias de técnicas;
+                \item Seleção das referências fundamentais;
+                \item Definição de questões e campos de extração;
+                \item Elaboração do questionário extensionista.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.42\textwidth}
+            \textbf{Resultado principal}
+            \vspace{0.15cm}
+            \begin{itemize}
+                \item Projeto saiu de um tema amplo para um protocolo estruturado;
+                \item Revisão será orientada por aplicação, não só por lista bibliográfica;
+                \item Matriz comparativa deve apoiar decisão técnica em cenários reais.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Atividade extensionista}
+    \hypertarget{fr-extensionista}{}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.49\textwidth}
+            \begin{itemize}
+                \item Público-alvo: estudantes, pesquisadores, engenheiros, profissionais de tecnologia e usuários afetados por sinais ruidosos.
+                \item Aplicação: formulário eletrônico, voluntário, sem coleta obrigatória de dados sensíveis.
+                \item Instrumento: 16 perguntas, com escalas, múltipla seleção e campos abertos.
+                \item Uso: respostas agregadas para ajustar critérios da revisão e da matriz comparativa.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.47\textwidth}
+            \centering
+            \begin{tikzpicture}[
+                eixo/.style={rectangle, draw=uspblue, rounded corners=2pt, fill=softgray, minimum width=2.9cm, minimum height=1.35cm, align=center, font=\small}
+            ]
+                \node[eixo] (social) at (0,1.55) {Benefício\\social};
+                \node[eixo] (acesso) at (3.25,1.55) {Acessibilidade\\e inclusão};
+                \node[eixo] (sust) at (0,0) {Sustentabilidade};
+                \node[eixo] (etica) at (3.25,0) {Ética e\\privacidade};
+            \end{tikzpicture}
+
+            \vspace{0.3cm}
+            \small
+            \textbf{Ideia-chave:} transformar feedback do público em requisitos técnicos e sociais.
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Atividades previstas para o 2\textsuperscript{o} semestre}
+    \hypertarget{fr-segundo-semestre}{}
+    \begin{itemize}
+        \item Concluir seleção dos estudos e documentar fluxo de inclusão/exclusão;
+        \item Finalizar a matriz comparativa das técnicas;
+        \item Aprofundar métodos promissores para voz, telemetria e sensores;
+        \item Definir critérios práticos de escolha: desempenho, custo, dados, interpretabilidade e restrições;
+        \item Implementar ou adaptar experimentos de referência, quando viável;
+        \item Incorporar respostas do questionário à discussão social, ética, ambiental e de acessibilidade;
+        \item Redigir a monografia final e preparar a apresentação conclusiva.
+    \end{itemize}
+
+    \vspace{0.2cm}
+    \centering
+    \textbf{Entrega esperada:} síntese técnica organizada, reprodutível e útil para aplicações reais.
+\end{frame}
+
+\begin{frame}{Mapa para dúvidas}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.47\textwidth}
+            \small
+            \maplink{1}{fr-capa}{Identificação do projeto}\\[0.18cm]
+            \maplink{2}{fr-escopo}{Escopo e problema}\\[0.18cm]
+            \maplink{3}{fr-objetivos}{Objetivo geral e questões norteadoras}\\[0.18cm]
+            \maplink{4}{fr-metodologia}{Metodologia da revisão sistemática}\\[0.18cm]
+            \maplink{5}{fr-referencias}{Referências e famílias de métodos}
+        \end{column}
+        \begin{column}{0.47\textwidth}
+            \small
+            \maplink{6}{fr-cronograma}{Cronograma do 1\textsuperscript{o} semestre}\\[0.18cm]
+            \maplink{7}{fr-realizadas}{Atividades realizadas}\\[0.18cm]
+            \maplink{8}{fr-extensionista}{Questionário extensionista}\\[0.18cm]
+            \maplink{9}{fr-segundo-semestre}{Atividades do 2\textsuperscript{o} semestre}\\[0.18cm]
+            \maplink{10}{fr-segundo-semestre}{Resultado esperado do anteprojeto}
+        \end{column}
+    \end{columns}
+
+    % \vspace{0.22cm}
+    % \centering
+    % \scriptsize
+    % \hyperlink{fr-questionario-anexo}{\textcolor{signalorange}{Slides de apoio: questionário completo para consulta, se solicitado.}}
+
+\end{frame}
+
+{
+\setbeamertemplate{footline}{}
+
+\begin{frame}[noframenumbering]{Anexo: questionário extensionista}
+    \hypertarget{fr-questionario-anexo}{}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Para que serve}
+            \begin{itemize}
+                \item Instrumento da atividade extensionista da disciplina PTC3527.
+                \item Consulta pública sobre redução de ruído em sinais 1D no tempo.
+                \item Foco em voz, áudio, telemetria, sensores e medições temporais.
+                \item Tempo estimado de resposta: 6 a 8 minutos.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Como será aplicado}
+            \begin{itemize}
+                \item Formulário eletrônico, voluntário.
+                \item Sem coleta obrigatória de dados pessoais sensíveis.
+                \item Respostas analisadas de forma agregada.
+                \item Resultado usado para ajustar critérios técnicos, sociais e éticos da revisão.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+
+    % \vspace{0.35cm}
+    % \centering
+    % \small
+    % \textbf{Estratégia:} estes slides ficam como material de apoio para responder perguntas da banca ou do público.
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: perfil e contato com o problema}
+    \footnotesize
+    \textbf{Seção 1 -- Perfil e contato com o problema}
+    \begin{enumerate}
+        \item Qual alternativa melhor descreve seu perfil?
+        \item Em quais áreas ou contextos o ruído aparece com mais frequência para você?
+        \item Com que frequência o ruído prejudica sinais, medições ou comunicações no seu contexto?
+    \end{enumerate}
+
+    \vspace{0.2cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Perfis previstos}
+            \begin{itemize}
+                \item Estudante; docente ou pesquisador(a).
+                \item Profissional de engenharia, tecnologia ou dados.
+                \item Usuário(a) de sistemas de voz ou áudio.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Contextos mapeados}
+            \begin{itemize}
+                \item Telecomunicações, voz, áudio e chamadas.
+                \item Instrumentação, sensores, telemetria, IoT e dados industriais.
+                \item Saúde, sinais biomédicos, laboratório e ciência de dados.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: relevância e critérios de projeto}
+    \footnotesize
+    \textbf{Seção 2 -- Relevância e critérios de projeto}
+    \begin{enumerate}
+        \setcounter{enumi}{3}
+        \item Na sua experiência, qual é o impacto do ruído sobre a interpretação ou uso de sinais temporais?
+        \item Que consequências práticas o ruído pode causar no seu contexto?
+        \item Para você, uma boa solução de redução de ruído deve priorizar quais critérios?
+    \end{enumerate}
+
+    \vspace{0.2cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Consequências investigadas}
+            \begin{itemize}
+                \item Perda de inteligibilidade, erro de medição e decisão técnica incorreta.
+                \item Retrabalho, perda de produtividade, custo financeiro e risco à segurança.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Critérios priorizados}
+            \begin{itemize}
+                \item Qualidade e preservação da informação original.
+                \item Tempo real, baixo custo, privacidade, explicabilidade e robustez.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: benefício social}
+    \footnotesize
+    \textbf{Seção 3 -- Benefício social}
+    \begin{enumerate}
+        \setcounter{enumi}{6}
+        \item Em quais situações uma solução de redução de ruído poderia gerar maior benefício social?
+        \item Cite um caso em que o ruído prejudicou comunicação, medição ou decisão, ou um grupo que poderia se beneficiar da solução.
+    \end{enumerate}
+
+    \vspace{0.2cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Situações de impacto}
+            \begin{itemize}
+                \item Comunicação por voz e acessibilidade auditiva.
+                \item Monitoramento de saúde, infraestrutura e ambiente.
+                \item Educação remota, atendimento público e segurança do trabalho.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Valor para o projeto}
+            \begin{itemize}
+                \item Identificar aplicações percebidas como socialmente relevantes.
+                \item Coletar exemplos reais para orientar a matriz comparativa.
+                \item Relacionar desempenho técnico com benefício concreto.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: acessibilidade e inclusão}
+    \footnotesize
+    \textbf{Seção 4 -- Acessibilidade e inclusão}
+    \begin{enumerate}
+        \setcounter{enumi}{8}
+        \item Quais barreiras poderiam dificultar o uso de uma solução de redução de ruído?
+        \item Que características tornariam a solução mais acessível e inclusiva para o seu contexto?
+    \end{enumerate}
+
+    \vspace{0.2cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Barreiras consideradas}
+            \begin{itemize}
+                \item Custo, computador potente, internet e conhecimento técnico.
+                \item Interface complexa, idioma, documentação e dados rotulados.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Requisitos de inclusão}
+            \begin{itemize}
+                \item Baixo custo, operação offline e compatibilidade com celulares.
+                \item Código aberto, documentação em português, interface simples e tutorial curto.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: sustentabilidade}
+    \footnotesize
+    \textbf{Seção 5 -- Sustentabilidade}
+    \begin{enumerate}
+        \setcounter{enumi}{10}
+        \item O consumo de energia ou a necessidade de hardware especializado deveria influenciar a escolha da técnica de redução de ruído?
+        \item Que aspectos de sustentabilidade deveriam ser considerados ao comparar técnicas de redução de ruído?
+    \end{enumerate}
+
+    \vspace{0.2cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Dimensão técnica}
+            \begin{itemize}
+                \item Consumo energético.
+                \item Hardware especializado.
+                \item Serviços em nuvem.
+                \item Manutenção e vida útil da solução.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Dimensão social}
+            \begin{itemize}
+                \item Retrabalho e medições repetidas.
+                \item Descarte de equipamentos.
+                \item Desigualdade de acesso.
+                \item Custo computacional como critério de comparação.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: ética, privacidade e riscos}
+    \footnotesize
+    \textbf{Seção 6 -- Ética, privacidade e riscos}
+    \begin{enumerate}
+        \setcounter{enumi}{12}
+        \item Que tipos de dados sensíveis ou preocupações de privacidade podem aparecer em aplicações de redução de ruído no seu contexto?
+        \item Uma técnica de redução de ruído pode distorcer informações importantes do sinal. Quão preocupante isso é no seu contexto?
+        \item Que riscos éticos devem ser evitados em uma solução desse tipo?
+    \end{enumerate}
+
+    \vspace{0.15cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{Privacidade}
+            \begin{itemize}
+                \item Voz, saúde, localização, clientes e dados industriais.
+                \item Gravações sem consentimento e envio para nuvem.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Riscos a evitar}
+            \begin{itemize}
+                \item Remover informação relevante ou criar falsa confiança.
+                \item Favorecer alguns tipos de voz ou sinal.
+                \item Processar ou treinar com dados sensíveis sem cuidado.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Questionário: encerramento e uso das respostas}
+    \footnotesize
+    \textbf{Seção 7 -- Encerramento}
+    \begin{enumerate}
+        \setcounter{enumi}{15}
+        \item Que requisito, aplicação, problema ou preocupação você considera indispensável para que este projeto leve em conta?
+    \end{enumerate}
+
+    \vspace{0.25cm}
+    \begin{columns}[T,onlytextwidth]
+        \begin{column}{0.48\textwidth}
+            \textbf{O que será observado}
+            \begin{itemize}
+                \item Aplicações mais citadas.
+                \item Barreiras de acesso recorrentes.
+                \item Peso de custo computacional, energia e acessibilidade.
+                \item Preocupações éticas e requisitos práticos.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \textbf{Como realimenta a revisão}
+            \begin{itemize}
+                \item Ajusta critérios de comparação entre métodos.
+                \item Pode priorizar soluções interpretáveis, acessíveis e de baixo custo.
+                \item Aproxima a revisão sistemática de necessidades reais do público.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+}
+
+\end{document}

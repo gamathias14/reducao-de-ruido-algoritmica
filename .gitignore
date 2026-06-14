@@ -5,12 +5,16 @@
 *.fdb_latexmk
 *.fls
 *.log
+*.lof
+*.lot
 *.nav
 *.out
 *.snm
 *.synctex
 *.synctex.gz
 *.toc
+*.cod
+*.grf
 *.xdv
 *.fmt
 pdflatex*.fls
@@ -22,6 +26,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
+.venv-*/
 venv/
 env/
 
@@ -29,21 +34,68 @@ env/
 dados/raw/
 dados/external/
 dados/demo/
+dados/prepared/
+dados/private/
 datasets/
 data/raw/
 data/external/
+*.wav
 *.flac
 *.mp3
 *.ogg
 
+# Deterministic synthetic vectors are public and contain no recorded speech.
+!test_vectors/**/*.wav
+
 # Benchmark outputs that are intentionally kept lightweight may be versioned.
 # Keep raw datasets out of the repository; commit only short demo audio if needed.
+resultados/realtime/
+resultados/authored_voice/audio/
+resultados/authored_voice/private/
+resultados/sysvad_checkpoint*/
+resultados/windows_realtime_longrun/
+resultados/windows_realtime_wired/
+resultados/wavelet_heavy*/
+resultados/wpt_refinement/
+resultados/storage_audit/
+resultados/demand/figuras/
+!resultados/publicaveis/
+!resultados/publicaveis/**
+
+# Binary, crash and packaged artifacts
+*.7z
+*.zip
+*.dmp
+*.exe
+*.dll
+*.sys
+*.cat
+*.cer
+*.obj
+*.pdb
+*.lib
+*.exp
 
 # Generated previews and temporary files
 previews/
+outputs/
+figuras/logopoli.png
 *.tmp
 *.bak
 ~$*
+
+# Local project history and administrative material
+mensagem_novo_chat*.md
+prompt_*.md
+revisao_wavelets_gabriel/
+revisao_wavelets_gabriel.zip
+pibiti/
+
+# PDF policy: keep only final academic deliverables and figure assets
+*.pdf
+!entrega3.pdf
+!apresentacao_fechamento.pdf
+!figuras/*.pdf
 
 # OS/editor metadata
 .DS_Store
