@@ -130,7 +130,6 @@ python -m realtime_audio.windows_realtime --pc-demo wired --duration 30
 - Avaliacao perceptual formal.
 - Resultados de voz autoral.
 - WPT causal em tempo real.
-- Portabilidade Raspberry Pi.
 
 ## Criterio de aprovacao
 

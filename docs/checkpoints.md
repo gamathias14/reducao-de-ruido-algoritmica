@@ -3609,3 +3609,24 @@ git submodule update --init
   - `docs/migracao_windows_nativo.md`;
   - `entrega3.tex`;
   - `apresentacao_fechamento.tex`.
+
+## 2026-06-14 - Revisao integral do escopo final
+
+- Titulo consolidado:
+  **Prototipo de Reducao de Ruido Local para Voz Humana no Windows:
+  Avaliacao Algoritmica, RNNoise e Microfone Virtual**.
+- A expressao `tempo real` foi retirada do titulo porque a continuidade
+  temporal e a latencia fisica ponta a ponta ainda nao foram comprovadas.
+- O escopo embarcado foi removido do relatorio final, da apresentacao, do
+  onboarding e do checklist de liberacao.
+- Resumo, objetivos, problema, hipotese, metodologia, resultados, limitacoes,
+  riscos, questionario, proximos passos e conclusao foram relidos e alinhados
+  ao prototipo Windows.
+- A validacao foi organizada em tres gates independentes:
+  qualidade do DSP, integracao funcional e continuidade temporal.
+- A proxima etapa permanece a repeticao congelada em Windows nativo, seguida
+  de diagnostico comparativo do gargalo observado na VM.
+- Referencias a embarcados em checkpoints e diarios anteriores foram mantidas
+  apenas como registro historico da evolucao do projeto.
+- Uma revisao externa via Claude CLI confirmou a ausencia de referencias
+  embarcadas residuais e de alegacoes indevidas de baixa latencia.

@@ -1,4 +1,4 @@
-# Redução de ruído local para voz humana
+# Protótipo de redução de ruído local para voz humana no Windows
 
 Protótipo acadêmico integrado para comparar algoritmos de redução de ruído,
 processar áudio causalmente por blocos e alimentar um endpoint virtual de
