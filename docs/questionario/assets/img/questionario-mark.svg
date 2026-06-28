@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Marca do questionário de redução de ruído</title>
+  <desc id="desc">Ícone vetorial com microfone e ondas sonoras.</desc>
+  <defs>
+    <linearGradient id="bg" x1="28" y1="20" x2="132" y2="140" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B5D9A"/>
+      <stop offset="1" stop-color="#073A66"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#172033" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect x="14" y="14" width="132" height="132" rx="34" fill="url(#bg)" filter="url(#shadow)"/>
+  <path d="M30 77c8-20 16-20 24 0s16 20 24 0" fill="none" stroke="#CBE4FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  <path d="M103 77c8-20 16-20 24 0" fill="none" stroke="#7DD3FC" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  <rect x="62" y="38" width="36" height="58" rx="18" fill="#FFFFFF"/>
+  <path d="M72 55h16M72 68h16M72 81h16" stroke="#6B7890" stroke-width="4" stroke-linecap="round"/>
+  <path d="M48 88c5 24 17 36 32 36s27-12 32-36" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M80 124v16M62 140h36" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+</svg>

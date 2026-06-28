@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Questionário extensionista sobre redução de ruído local para voz humana."
+    />
+    <title>Questionário extensionista - Redução de ruído de voz</title>
+    <link rel="icon" href="assets/img/ptc_virtual_mic.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#questionnaire-form">Pular para o questionário</a>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="institution-lockup" aria-label="Identificação institucional">
+          <img class="institution-seal institution-seal--poli" src="assets/img/logopoli.svg" alt="Logo da Escola Politécnica da USP" />
+          <div class="institution-text-group">
+            <h1 id="page-title">Questionário extensionista</h1>
+            <p class="eyebrow" id="institution"></p>
+            <p class="subtitle" id="page-subtitle"></p>
+          </div>
+        </div>
+        <div class="project-brand" aria-label="Identidade do projeto e da USP">
+          <img
+            class="project-logo"
+            src="assets/img/ptc_virtual_mic.svg"
+            alt="Ícone do projeto de microfone virtual"
+          />
+          <img class="project-usp-logo" src="assets/img/logousp.svg" alt="Logo da USP" />
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro-panel" aria-labelledby="project-title">
+        <h2 id="project-title"></h2>
+        <p id="opening-text"></p>
+        <div class="notice-grid" aria-label="Informações de privacidade e aplicação">
+          <p>
+            <strong>Coleta:</strong> as respostas são registradas de forma agregada para análise
+            acadêmica.
+          </p>
+          <p>
+            <strong>Áudio próprio:</strong> quando usado no modo experimental, permanece local no
+            navegador.
+          </p>
+          <p>
+            <strong>Auditoria:</strong> cada envio registra versão do questionário, ordem dos
+            áudios e respostas por identificador.
+          </p>
+        </div>
+      </section>
+
+      <form id="questionnaire-form" novalidate>
+        <section class="consent-panel" aria-labelledby="consent-title">
+          <h2 id="consent-title">Consentimento</h2>
+          <label class="check-row">
+            <input id="consent" name="consent" type="checkbox" required />
+            <span id="consent-label"></span>
+          </label>
+          <label class="hidden-field" aria-hidden="true">
+            Não preencha este campo
+            <input id="website" name="website" tabindex="-1" autocomplete="off" />
+          </label>
+        </section>
+
+        <div id="form-root"></div>
+
+        <section id="local-experiment" class="local-experiment" hidden></section>
+
+        <section class="submit-panel" aria-labelledby="submit-title">
+          <h2 id="submit-title">Envio</h2>
+          <p>
+            Revise suas respostas antes de enviar. A página não envia gravações ou arquivos de
+            áudio.
+          </p>
+          <div id="validation-summary" class="validation-summary" tabindex="-1" hidden></div>
+          <button class="primary-button" type="submit">Enviar respostas</button>
+          <p id="submission-status" class="submission-status" role="status"></p>
+        </section>
+      </form>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <img class="footer-usp-logo" src="assets/img/logousp.svg" alt="Logo da USP" />
+        <div>
+          <p>
+            PTC3527 - Anteprojeto de Formatura em Telecomunicações. Protótipo acadêmico,
+            sem coleta de áudio privado.
+          </p>
+          <p class="footer-contact">Contato: <a href="mailto:augustomassayoshi@usp.br">augustomassayoshi@usp.br</a></p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="questionario.config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

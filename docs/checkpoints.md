@@ -3630,3 +3630,25 @@ git submodule update --init
   apenas como registro historico da evolucao do projeto.
 - Uma revisao externa via Claude CLI confirmou a ausencia de referencias
   embarcadas residuais e de alegacoes indevidas de baixa latencia.
+
+## 2026-06-28 - Questionario extensionista em GitHub Pages
+
+- Foi consolidada uma pagina estatica em `docs/questionario/` para coleta
+  extensionista sem etapa de build.
+- A pagina usa players nativos de audio e comparacao perceptual cega entre:
+  referencia ruidosa, RNNoise, OM-LSA/IMCRA, STFT causal adaptativa, STFT Wiener
+  e Wavelet soft.
+- O manifesto `questionario.config.js` foi atualizado para a versao
+  `2026-06-28.4`, com hashes SHA-256 para os MP3 publicados.
+- O exemplo RNNoise do questionario foi regenerado com `startup_preroll_ms = 200`
+  em `realtime_audio/process_wav_rnnoise.py`.
+- O pre-roll usa os primeiros 200 ms reais do proprio arquivo para aquecer o
+  estado RNNoise e descarta essa saida antes do passe principal. O comprimento
+  final do audio e preservado.
+- Essa decisao corrige um transiente audivel no inicio do exemplo RNNoise sem
+  alterar os benchmarks historicos, pois o novo parametro permanece desativado
+  por padrao.
+- O teste local com audio proprio foi mantido desativado para a versao inicial;
+  processamento local em navegador fica para fase posterior.
+- O fluxo visual, os players, o embaralhamento cego e a validacao local do
+  formulario foram verificados manualmente antes da ativacao de envio real.
