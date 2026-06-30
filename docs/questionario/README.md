@@ -49,6 +49,41 @@ O envio usa `POST` em modo `no-cors`, adequado para GitHub Pages. A pagina nao
 consegue ler a resposta detalhada do endpoint, mas o Apps Script registra o
 envio na planilha.
 
+## Atualizar dashboard de respostas
+
+A analise das respostas tambem fica no mesmo Apps Script, sem bibliotecas
+externas. Depois de novas respostas chegarem na planilha, abra o projeto em
+<https://script.google.com/> e execute manualmente:
+
+```js
+rebuildDashboard()
+```
+
+A funcao le `responses_raw` como fonte canonica e recria/atualiza as abas:
+
+- `dashboard_metrics`: tabela longa com metricas por bloco, pergunta,
+  alternativa/nota, `N`, contagem, percentual, media, mediana e ranking quando
+  aplicavel.
+- `dashboard`: resumo visual com data/hora de atualizacao, `questionnaireId`,
+  `schemaVersion`, total de respostas, observacao de privacidade e graficos
+  nativos do Google Sheets.
+- `coded_open_answers`: respostas abertas preparadas para codificacao manual,
+  preservando colunas manuais ja preenchidas quando o dashboard for reconstruido.
+
+A reconstrucao nao apaga `responses_raw`, nao sobrescreve respostas existentes e
+nao altera o receptor `doPost`. Se uma pergunta nova for adicionada no futuro,
+o script tenta aproveitar `questionSnapshot` e `answers` para manter
+compatibilidade com schemas antigos.
+
+As respostas abertas nao recebem conclusoes automaticas. A aba
+`coded_open_answers` apenas organiza o texto para codificacao manual com
+categorias como ruido de fundo, eco, voz abafada, privacidade, latencia,
+travamento, dificuldade de configuracao, clareza da voz, uso em chamadas e
+outro.
+
+A analise registra explicitamente que os audios dos usuarios nao sao coletados,
+enviados ou armazenados pelo questionario.
+
 ## Modelo de auditoria
 
 O Apps Script cria ou reutiliza uma planilha com as abas:
@@ -87,43 +122,73 @@ restritos ou trechos com dados pessoais.
 
 ### Manifesto atual de audio
 
-A versao `2026-06-28.4` do questionario usa seis exemplos publicos em MP3,
+A versao `2026-06-30.1` do questionario usa tres exemplos publicos em MP3,
 gerados a partir da mesma amostra ruidosa de referencia:
 
 - `amostra_noisy_reference.mp3`: referencia ruidosa;
-- `amostra_rnnoise.mp3`: RNNoise v0.2;
-- `amostra_omlsa_imcra.mp3`: OM-LSA/IMCRA;
-- `amostra_stft_causal.mp3`: STFT causal adaptativa;
-- `amostra_stft_wiener.mp3`: STFT Wiener;
-- `amostra_wavelet_soft.mp3`: Wavelet soft.
+- `amostra_rnnoise.mp3`: RNNoise com normalizacao de loudness e equalizacao leve
+  de presenca;
+- `amostra_dfn3_default.mp3`: DeepFilterNet3 default offline com normalizacao de
+  loudness.
 
-O arquivo `amostra_rnnoise.mp3` foi regenerado com `startup_preroll_ms = 200`
-no pipeline `realtime_audio/process_wav_rnnoise.py`. Esse pre-roll processa os
-primeiros 200 ms reais do proprio audio para aquecer o estado do RNNoise e
-descarta essa primeira saida antes do passe principal. O comprimento final do
-audio e preservado. A decisao foi tomada porque a versao sem pre-roll gerava um
-transiente curto perceptivel antes do inicio da fala de teste.
+Os exemplos OM-LSA/IMCRA, STFT e Wavelet permanecem no diretorio como historico,
+mas nao fazem parte do manifesto ativo nem aparecem na comparacao atual.
 
-Comandos de referencia para reproduzir essa amostra:
+O arquivo `amostra_rnnoise.mp3` foi atualizado a partir da variante escolhida na
+avaliacao local `rnnoise_presence_eq_loudnorm`. A base continua sendo o RNNoise
+com `startup_preroll_ms = 200`, mas a amostra publicada inclui normalizacao de
+loudness e um EQ leve de presenca para reduzir a percepcao de voz apagada/abafada
+sem alterar o nucleo do metodo de reducao de ruido.
+
+O arquivo `amostra_dfn3_default.mp3` veio da avaliacao offline
+`questionario_amostra_deepfilternet_loudnorm`. Ele representa o candidato
+DeepFilterNet3 default aprovado perceptualmente como comparacao exploratoria,
+mas ainda nao prova tempo real, baixa latencia nem integracao com o microfone
+virtual Windows.
+
+Comando de referencia para reproduzir as variantes RNNoise:
 
 ```powershell
-python -m realtime_audio.process_wav_rnnoise `
-  --input resultados\audio\exemplo_noisy.wav `
-  --output tmp\questionario_audio_work\amostra_rnnoise_preroll_real.wav `
-  --metrics-json tmp\questionario_audio_work\amostra_rnnoise_preroll_real.json `
-  --startup-preroll-ms 200 `
-  --overwrite
+python scripts\audio\prepare_rnnoise_variants_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --clean-reference resultados\audio\exemplo_clean.wav `
+  --name questionario_amostra `
+  --output-dir tmp\rnnoise_variants_eval `
+  --target-i -16 `
+  --eq-gain-db 2.0
+```
 
-ffmpeg -y `
-  -i tmp\questionario_audio_work\amostra_rnnoise_preroll_real.wav `
-  -codec:a libmp3lame -b:a 96k -ar 16000 -ac 1 `
-  docs\questionario\assets\audio\amostra_rnnoise.mp3
+A variante publicada corresponde a:
+
+```text
+tmp\rnnoise_variants_eval\questionario_amostra\mp3\questionario_amostra_rnnoise_presence_eq_loudnorm.mp3
 ```
 
 O hash SHA-256 registrado no manifesto para essa versao do RNNoise e:
 
 ```text
-9c91587755d8410d7273798026580f0db0d1720659eee105a31845cc7fa2ee4c
+cb9ed5a5481186f6e8c7e657aa99c33b09dad943d1cc5e398a8981afaa3f85f9
+```
+
+Comando de referencia para reproduzir a amostra DFN3 publicada:
+
+```powershell
+tmp\.venv_deepfilternet\Scripts\python.exe scripts\audio\prepare_deepfilternet_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --clean-reference resultados\audio\exemplo_clean.wav `
+  --name questionario_amostra
+```
+
+A variante publicada corresponde a:
+
+```text
+tmp\deepfilternet_eval\questionario_amostra\mp3\questionario_amostra_deepfilternet_loudnorm.mp3
+```
+
+O hash SHA-256 registrado no manifesto para essa versao do DFN3 e:
+
+```text
+410e8867b6a47303da8ed455cb3a154f41ece567f28a86f6bbd160ffd2a8a7b1
 ```
 
 ## Experimento local com audio proprio
