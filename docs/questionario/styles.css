@@ -362,6 +362,23 @@ h1 {
   backdrop-filter: blur(10px);
 }
 
+.wizard-progress {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-strong);
+}
+
+.wizard-progress-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-warm), var(--accent-green));
+  transition: width 220ms ease;
+}
+
 .wizard-position {
   color: var(--muted);
   font-size: 0.92rem;
@@ -371,13 +388,26 @@ h1 {
 }
 
 .wizard-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
   padding: 9px 15px;
   cursor: pointer;
   font-weight: 750;
-  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+.wizard-button-icon {
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.wizard-button-label {
+  line-height: 1;
 }
 
 .wizard-button--secondary {
@@ -396,16 +426,24 @@ h1 {
 .wizard-button--primary.is-ready {
   background: var(--primary);
   border-color: var(--primary);
-  box-shadow: 0 12px 26px rgba(24, 29, 48, 0.22);
+  box-shadow: 0 8px 18px rgba(24, 29, 48, 0.16);
 }
 
 .wizard-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(24, 29, 48, 0.14);
+  border-color: var(--primary);
+  box-shadow: 0 6px 16px rgba(24, 29, 48, 0.12);
+}
+
+.wizard-button--primary:hover:not(:disabled) .wizard-button-icon {
+  transform: translateX(2px);
+}
+
+.wizard-button--secondary:hover:not(:disabled) .wizard-button-icon {
+  transform: translateX(-2px);
 }
 
 .wizard-button:active:not(:disabled) {
-  transform: translateY(0) scale(0.99);
+  box-shadow: 0 2px 8px rgba(24, 29, 48, 0.10);
 }
 
 .wizard-button:focus-visible {
@@ -420,8 +458,19 @@ h1 {
   box-shadow: none;
 }
 
-.wizard-step--submit .submit-panel {
-  margin-bottom: 0;
+.wizard-button--submit.is-ready {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.wizard-feedback {
+  max-width: 920px;
+  margin: -4px auto 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-soft);
 }
 
 .question-card,
@@ -980,11 +1029,16 @@ h1 {
   .wizard-nav {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
+      "progress progress"
       "position position"
       "prev next";
     gap: 8px;
     bottom: 8px;
     padding: 10px;
+  }
+
+  .wizard-progress {
+    grid-area: progress;
   }
 
   .wizard-position {

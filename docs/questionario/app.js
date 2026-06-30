@@ -106,22 +106,71 @@
   function renderWizardNav() {
     const nav = el("div", "wizard-nav");
 
-    const prevButton = el("button", "wizard-button wizard-button--secondary", "← Anterior");
+    const progress = el("div", "wizard-progress");
+    progress.setAttribute("role", "progressbar");
+    progress.setAttribute("aria-label", "Progresso do questionário");
+    progress.setAttribute("aria-valuemin", "1");
+    progress.setAttribute("aria-valuemax", String(state.totalQuestions));
+    const progressBar = el("span", "wizard-progress-bar");
+    progressBar.id = "wizard-progress-bar";
+    progress.appendChild(progressBar);
+
+    const prevButton = el("button", "wizard-button wizard-button--secondary");
     prevButton.type = "button";
     prevButton.id = "wizard-prev";
     prevButton.setAttribute("aria-label", "Voltar para a pergunta anterior");
+    setWizardButtonContent(prevButton, "Anterior", "left");
 
     const position = el("span", "wizard-position");
     position.id = "wizard-position";
     position.setAttribute("aria-live", "polite");
 
-    const nextButton = el("button", "wizard-button wizard-button--primary", "Próxima →");
+    const nextButton = el("button", "wizard-button wizard-button--primary");
     nextButton.type = "button";
     nextButton.id = "wizard-next";
     nextButton.setAttribute("aria-label", "Avançar para a próxima pergunta");
+    nextButton.dataset.submitAction = "true";
+    setWizardButtonContent(nextButton, "Próxima", "right");
 
-    nav.append(prevButton, position, nextButton);
+    nav.append(progress, prevButton, position, nextButton);
     return nav;
+  }
+
+  function setWizardButtonContent(button, label, iconName) {
+    button.textContent = "";
+    if (iconName === "left") {
+      button.appendChild(renderButtonIcon(iconName));
+    }
+    button.appendChild(el("span", "wizard-button-label", label));
+    if (iconName && iconName !== "left") {
+      button.appendChild(renderButtonIcon(iconName));
+    }
+  }
+
+  function renderButtonIcon(iconName) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "wizard-button-icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "18");
+    svg.setAttribute("height", "18");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    if (iconName === "left") {
+      path.setAttribute("d", "M19 12H5m6-6-6 6 6 6");
+    } else if (iconName === "send") {
+      path.setAttribute("d", "M22 2 11 13m11-11-7 20-4-9-9-4 20-7Z");
+    } else {
+      path.setAttribute("d", "M5 12h14m-6-6 6 6-6 6");
+    }
+    svg.appendChild(path);
+    return svg;
   }
 
   function renderQuestion(question, number) {
@@ -464,16 +513,8 @@
   }
 
   function bindWizardNavigation() {
-    const viewport = document.getElementById("wizard-viewport");
     const submitPanel = document.querySelector(".submit-panel");
-    if (viewport && submitPanel && !submitPanel.closest(".wizard-step")) {
-      const submitStep = el("section", "wizard-step wizard-step--submit");
-      submitStep.dataset.stepType = "submit";
-      submitStep.hidden = true;
-      submitStep.appendChild(renderSubmitStepContext());
-      submitStep.appendChild(submitPanel);
-      viewport.appendChild(submitStep);
-    }
+    prepareWizardFeedback(submitPanel);
 
     state.wizardSteps = Array.from(document.querySelectorAll(".wizard-step"));
     state.currentStepIndex = 0;
@@ -492,6 +533,9 @@
         focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]);
         return;
       }
+      if (isLastQuestionStep()) {
+        return;
+      }
       showWizardStep(state.currentStepIndex + 1, true);
     });
 
@@ -507,14 +551,27 @@
     syncConsentGate(consent.checked, false);
   }
 
-  function renderSubmitStepContext() {
-    const context = el("div", "wizard-step-context");
-    context.appendChild(el("span", "block-kicker", "Revisão final"));
-    context.appendChild(el("h2", "", "Envio das respostas"));
-    context.appendChild(
-      el("p", "", "Confira as respostas registradas no formulário antes de concluir a participação."),
-    );
-    return context;
+  function prepareWizardFeedback(submitPanel) {
+    const nav = document.querySelector(".wizard-nav");
+    if (!nav || !submitPanel) {
+      return;
+    }
+
+    const feedback = el("div", "wizard-feedback");
+    feedback.id = "wizard-feedback";
+    feedback.hidden = true;
+
+    const validationSummary = document.getElementById("validation-summary");
+    const submissionStatus = document.getElementById("submission-status");
+    if (validationSummary) {
+      feedback.appendChild(validationSummary);
+    }
+    if (submissionStatus) {
+      feedback.appendChild(submissionStatus);
+    }
+
+    nav.insertAdjacentElement("afterend", feedback);
+    submitPanel.hidden = true;
   }
 
   function showWizardStep(nextIndex, shouldScroll) {
@@ -564,26 +621,29 @@
     const prevButton = document.getElementById("wizard-prev");
     const nextButton = document.getElementById("wizard-next");
     const position = document.getElementById("wizard-position");
+    const progress = document.querySelector(".wizard-progress");
+    const progressBar = document.getElementById("wizard-progress-bar");
     const currentStep = state.wizardSteps[state.currentStepIndex];
-    if (!prevButton || !nextButton || !position || !currentStep) {
+    if (!prevButton || !nextButton || !position || !progress || !progressBar || !currentStep) {
       return;
     }
 
-    const isSubmitStep = currentStep.dataset.stepType === "submit";
     const ready = isCurrentStepReady();
-    const lastQuestionIndex = state.wizardSteps.findIndex((step) => step.dataset.stepType === "submit") - 1;
+    const isLastQuestion = isLastQuestionStep();
+    const progressValue = Math.min(state.currentStepIndex + 1, state.totalQuestions);
+    const progressPercent = Math.round((progressValue / state.totalQuestions) * 100);
 
     prevButton.disabled = state.currentStepIndex === 0;
-    nextButton.hidden = isSubmitStep;
-    nextButton.disabled = !ready || isSubmitStep;
-    nextButton.classList.toggle("is-ready", ready && !isSubmitStep);
-    nextButton.textContent = state.currentStepIndex === lastQuestionIndex ? "Revisar envio →" : "Próxima →";
-
-    if (isSubmitStep) {
-      position.textContent = "Revisão final";
-    } else {
-      position.textContent = `Pergunta ${state.currentStepIndex + 1} de ${state.totalQuestions}`;
-    }
+    nextButton.hidden = false;
+    nextButton.disabled = !ready;
+    nextButton.type = isLastQuestion ? "submit" : "button";
+    nextButton.classList.toggle("is-ready", ready);
+    nextButton.classList.toggle("wizard-button--submit", isLastQuestion);
+    setWizardButtonContent(nextButton, isLastQuestion ? "Enviar respostas" : "Próxima", isLastQuestion ? "send" : "right");
+    position.textContent = `Pergunta ${progressValue} de ${state.totalQuestions}`;
+    progress.setAttribute("aria-valuenow", String(progressValue));
+    progress.setAttribute("aria-valuetext", `${progressPercent}% concluído`);
+    progressBar.style.width = `${progressPercent}%`;
   }
 
   function isCurrentStepReady() {
@@ -599,6 +659,10 @@
 
     const answer = readQuestionAnswer(question);
     return isQuestionAnswerReady(question, answer);
+  }
+
+  function isLastQuestionStep() {
+    return state.currentStepIndex === state.totalQuestions - 1;
   }
 
   function findQuestionById(questionId) {
@@ -645,7 +709,7 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       clearSubmissionStatus();
-      const submitButton = form.querySelector(".primary-button");
+      const submitButton = form.querySelector("[data-submit-action='true']") || form.querySelector(".primary-button");
 
       const validation = validateForm();
       if (!validation.ok) {
@@ -665,25 +729,52 @@
 
       try {
         submitButton.disabled = true;
-        submitButton.dataset.originalLabel = submitButton.textContent;
-        submitButton.textContent = "Enviando...";
+        submitButton.dataset.originalLabel = submitButton.textContent.trim();
+        setSubmitButtonState(submitButton, "Enviando...", "send");
         showSubmissionStatus("Enviando respostas...", "pending");
+        const body = JSON.stringify(payload);
+        if (queueSubmission(config.submission.endpoint, body)) {
+          showSubmissionStatus("Respostas enviadas. Obrigado pela contribuição.", "success");
+          setSubmitButtonState(submitButton, "Enviado", "send");
+          return;
+        }
+
         await fetch(config.submission.endpoint, {
           method: "POST",
           mode: "no-cors",
           headers: {
             "Content-Type": "text/plain;charset=utf-8",
           },
-          body: JSON.stringify(payload),
+          body,
         });
         showSubmissionStatus("Respostas recebidas. Obrigado pela contribuição.", "success");
-        submitButton.textContent = "Enviado";
+        setSubmitButtonState(submitButton, "Enviado", "send");
       } catch (error) {
         submitButton.disabled = false;
-        submitButton.textContent = submitButton.dataset.originalLabel || "Enviar respostas";
+        setSubmitButtonState(submitButton, submitButton.dataset.originalLabel || "Enviar respostas", "send");
         showSubmissionStatus("Não foi possível enviar agora. Tente novamente em instantes.", "error");
       }
     });
+  }
+
+  function queueSubmission(endpoint, body) {
+    if (!navigator.sendBeacon || typeof Blob === "undefined") {
+      return false;
+    }
+    try {
+      const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
+      return navigator.sendBeacon(endpoint, blob);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function setSubmitButtonState(button, label, iconName) {
+    if (button.classList.contains("wizard-button")) {
+      setWizardButtonContent(button, label, iconName);
+      return;
+    }
+    button.textContent = label;
   }
 
   function validateForm() {
@@ -820,6 +911,7 @@
 
   function showValidationErrors(errors) {
     const summary = document.getElementById("validation-summary");
+    setWizardFeedbackVisible(true);
     summary.hidden = false;
     summary.innerHTML = "";
     summary.appendChild(el("strong", "", "Revise os pontos abaixo:"));
@@ -867,12 +959,21 @@
     summary.hidden = true;
     summary.innerHTML = "";
     showSubmissionStatus("", "");
+    setWizardFeedbackVisible(false);
   }
 
   function showSubmissionStatus(message, kind) {
     const status = document.getElementById("submission-status");
     status.textContent = message;
     status.className = `submission-status ${kind || ""}`.trim();
+    setWizardFeedbackVisible(Boolean(message));
+  }
+
+  function setWizardFeedbackVisible(visible) {
+    const feedback = document.getElementById("wizard-feedback");
+    if (feedback) {
+      feedback.hidden = !visible;
+    }
   }
 
   function buildAudioOrder() {
