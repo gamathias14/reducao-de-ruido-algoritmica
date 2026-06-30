@@ -422,6 +422,7 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       clearSubmissionStatus();
+      const submitButton = form.querySelector(".primary-button");
 
       const validation = validateForm();
       if (!validation.ok) {
@@ -432,7 +433,7 @@
       const payload = buildPayload();
       if (!config.submission.enabled || !config.submission.endpoint) {
         showSubmissionStatus(
-          "Pré-visualização validada. Configure a URL do Apps Script em questionario.config.js para habilitar o envio real.",
+          "Pré-visualização validada. O envio real ainda não está habilitado.",
           "success",
         );
         console.info("Payload de pré-visualização do questionário:", payload);
@@ -440,6 +441,10 @@
       }
 
       try {
+        submitButton.disabled = true;
+        submitButton.dataset.originalLabel = submitButton.textContent;
+        submitButton.textContent = "Enviando...";
+        showSubmissionStatus("Enviando respostas...", "pending");
         await fetch(config.submission.endpoint, {
           method: "POST",
           mode: "no-cors",
@@ -449,11 +454,13 @@
           body: JSON.stringify(payload),
         });
         showSubmissionStatus(
-          "Envio realizado. Como o endpoint usa modo compatível com GitHub Pages, a confirmação detalhada fica registrada na planilha.",
+          "Respostas enviadas. Obrigado por contribuir com o projeto.",
           "success",
         );
-        form.querySelector(".primary-button").disabled = true;
+        submitButton.textContent = "Enviado";
       } catch (error) {
+        submitButton.disabled = false;
+        submitButton.textContent = submitButton.dataset.originalLabel || "Enviar respostas";
         showSubmissionStatus("Não foi possível enviar agora. Tente novamente em instantes.", "error");
       }
     });

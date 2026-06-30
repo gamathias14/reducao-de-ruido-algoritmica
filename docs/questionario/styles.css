@@ -654,8 +654,21 @@ h1 {
 }
 
 .submission-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   min-height: 1.5em;
   color: var(--muted);
+}
+
+.submission-status.pending::before {
+  width: 0.95em;
+  height: 0.95em;
+  border: 2px solid #cbd3df;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  content: "";
+  animation: submission-spin 800ms linear infinite;
 }
 
 .submission-status.success {
@@ -666,6 +679,12 @@ h1 {
 .submission-status.error {
   color: var(--danger);
   font-weight: 700;
+}
+
+@keyframes submission-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .site-footer {

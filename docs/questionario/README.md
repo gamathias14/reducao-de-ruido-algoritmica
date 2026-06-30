@@ -52,8 +52,10 @@ envio na planilha.
 ## Atualizar dashboard de respostas
 
 A analise das respostas tambem fica no mesmo Apps Script, sem bibliotecas
-externas. Depois de novas respostas chegarem na planilha, abra o projeto em
-<https://script.google.com/> e execute manualmente:
+externas. O receptor esta configurado com `autoRebuildDashboardOnSubmit: true`,
+portanto cada envio valido atualiza automaticamente as abas de dashboard depois
+de registrar a resposta. Para uma reconstrucao manual, abra o projeto em
+<https://script.google.com/> e execute:
 
 ```js
 rebuildDashboard()
@@ -70,10 +72,9 @@ A funcao le `responses_raw` como fonte canonica e recria/atualiza as abas:
 - `coded_open_answers`: respostas abertas preparadas para codificacao manual,
   preservando colunas manuais ja preenchidas quando o dashboard for reconstruido.
 
-A reconstrucao nao apaga `responses_raw`, nao sobrescreve respostas existentes e
-nao altera o receptor `doPost`. Se uma pergunta nova for adicionada no futuro,
-o script tenta aproveitar `questionSnapshot` e `answers` para manter
-compatibilidade com schemas antigos.
+A reconstrucao nao apaga `responses_raw` nem sobrescreve respostas existentes.
+Se uma pergunta nova for adicionada no futuro, o script tenta aproveitar
+`questionSnapshot` e `answers` para manter compatibilidade com schemas antigos.
 
 As respostas abertas nao recebem conclusoes automaticas. A aba
 `coded_open_answers` apenas organiza o texto para codificacao manual com
