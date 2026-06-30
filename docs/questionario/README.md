@@ -147,7 +147,7 @@ restritos ou trechos com dados pessoais.
 
 ### Manifesto atual de audio
 
-A versao `2026-06-30.2` do questionario usa tres exemplos publicos em MP3 de
+A versao `2026-06-30.4` do questionario usa tres exemplos publicos em MP3 de
 aproximadamente `8,5 s`, gerados a partir da mesma amostra ruidosa de
 referencia:
 

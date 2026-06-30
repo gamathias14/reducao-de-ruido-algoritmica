@@ -1,6 +1,6 @@
 window.QUESTIONARIO_CONFIG = {
   questionnaireId: "ptc3527-voice-denoise-extension-2026",
-  schemaVersion: "2026-06-30.2",
+  schemaVersion: "2026-06-30.4",
   title: "Questionário extensionista",
   subtitle: "Redução de ruído local para voz humana",
   projectTitle:
@@ -281,14 +281,6 @@ window.QUESTIONARIO_CONFIG = {
             "Usar apenas dados públicos ou autorizados nos testes",
           ],
           other: true,
-        },
-        {
-          id: "q_problema_aberto",
-          type: "textarea",
-          title: "Qual problema relacionado a ruído em voz você considera mais importante resolver?",
-          helpText: "Resposta aberta.",
-          required: false,
-          maxLength: 1200,
         },
       ],
     },

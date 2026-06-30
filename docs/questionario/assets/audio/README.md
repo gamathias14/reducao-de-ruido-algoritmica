@@ -11,7 +11,7 @@ Formatos recomendados:
 Depois de adicionar os arquivos, atualize `../../questionario.config.js` nos
 campos `src` e `sha256` de cada item de `audioComparison.items`.
 
-Manifesto ativo em `2026-06-30.2` com audios de aproximadamente `8,5 s`:
+Manifesto ativo em `2026-06-30.4` com audios de aproximadamente `8,5 s`:
 
 - `amostra_noisy_reference.mp3`
 - `amostra_rnnoise.mp3`

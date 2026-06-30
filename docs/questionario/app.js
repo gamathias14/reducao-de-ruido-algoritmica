@@ -33,6 +33,7 @@
     bindStaticText();
     renderBlocks();
     renderLocalExperiment();
+    bindProgressiveNavigation();
     bindSubmit();
 
     state.formDefinitionHash = await sha256Json({
@@ -415,6 +416,70 @@
       "local-audio-status",
       "Áudio carregado apenas no navegador. Ele não será enviado na resposta do questionário.",
     );
+  }
+
+  function bindProgressiveNavigation() {
+    const form = document.getElementById("questionnaire-form");
+    form.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "radio") {
+        return;
+      }
+
+      const fieldset = input.closest(".question-card");
+      if (!fieldset) {
+        return;
+      }
+
+      const questionType = fieldset.dataset.questionType;
+      if (!["radio", "audio-choice", "scale"].includes(questionType)) {
+        return;
+      }
+      if (input.value === "__other__") {
+        return;
+      }
+
+      window.setTimeout(() => advanceFromQuestion_(fieldset), 180);
+    });
+  }
+
+  function advanceFromQuestion_(currentFieldset) {
+    const target = nextProgressiveTarget_(currentFieldset);
+    if (!target) {
+      return;
+    }
+
+    target.scrollIntoView({
+      behavior: prefersReducedMotion_() ? "auto" : "smooth",
+      block: "start",
+    });
+
+    window.setTimeout(() => focusFirstInteractive_(target), prefersReducedMotion_() ? 0 : 260);
+  }
+
+  function nextProgressiveTarget_(currentFieldset) {
+    const flowItems = Array.from(
+      document.querySelectorAll(".question-card, .audio-panel, .submit-panel"),
+    );
+    const currentIndex = flowItems.indexOf(currentFieldset);
+    if (currentIndex < 0) {
+      return document.querySelector(".submit-panel");
+    }
+
+    return flowItems.slice(currentIndex + 1).find((item) => !item.hidden) || document.querySelector(".submit-panel");
+  }
+
+  function focusFirstInteractive_(target) {
+    const focusable = target.matches("input, textarea, button, audio")
+      ? target
+      : target.querySelector("input:not(:disabled), textarea:not(:disabled), button:not(:disabled), audio");
+    if (focusable && typeof focusable.focus === "function") {
+      focusable.focus({ preventScroll: true });
+    }
+  }
+
+  function prefersReducedMotion_() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
   function bindSubmit() {

@@ -224,11 +224,6 @@ const DASHBOARD_QUESTION_BLOCKS = [
           "Usar apenas dados públicos ou autorizados nos testes",
         ],
       },
-      {
-        id: "q_problema_aberto",
-        type: "textarea",
-        title: "Qual problema relacionado a ruído em voz você considera mais importante resolver?",
-      },
     ],
   },
 ];
