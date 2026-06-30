@@ -466,8 +466,17 @@ h1 {
 
 .audio-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
+  align-items: start;
+}
+
+.audio-list .audio-card {
+  grid-column: span 2;
+}
+
+.audio-list .audio-card[data-audio-id="noisy_reference"] {
+  grid-column: 2 / span 2;
 }
 
 .audio-card {
@@ -768,6 +777,11 @@ h1 {
   .option-grid,
   .audio-list {
     grid-template-columns: 1fr;
+  }
+
+  .audio-list .audio-card,
+  .audio-list .audio-card[data-audio-id="noisy_reference"] {
+    grid-column: 1;
   }
 
   .question-body,

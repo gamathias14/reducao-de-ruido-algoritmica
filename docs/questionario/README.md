@@ -122,8 +122,9 @@ restritos ou trechos com dados pessoais.
 
 ### Manifesto atual de audio
 
-A versao `2026-06-30.1` do questionario usa tres exemplos publicos em MP3,
-gerados a partir da mesma amostra ruidosa de referencia:
+A versao `2026-06-30.1` do questionario usa tres exemplos publicos em MP3 de
+aproximadamente `8,5 s`, gerados a partir da mesma amostra ruidosa de
+referencia:
 
 - `amostra_noisy_reference.mp3`: referencia ruidosa;
 - `amostra_rnnoise.mp3`: RNNoise com normalizacao de loudness e equalizacao leve
@@ -146,49 +147,30 @@ DeepFilterNet3 default aprovado perceptualmente como comparacao exploratoria,
 mas ainda nao prova tempo real, baixa latencia nem integracao com o microfone
 virtual Windows.
 
-Comando de referencia para reproduzir as variantes RNNoise:
-
-```powershell
-python scripts\audio\prepare_rnnoise_variants_eval.py `
-  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
-  --clean-reference resultados\audio\exemplo_clean.wav `
-  --name questionario_amostra `
-  --output-dir tmp\rnnoise_variants_eval `
-  --target-i -16 `
-  --eq-gain-db 2.0
-```
-
-A variante publicada corresponde a:
-
-```text
-tmp\rnnoise_variants_eval\questionario_amostra\mp3\questionario_amostra_rnnoise_presence_eq_loudnorm.mp3
-```
-
-O hash SHA-256 registrado no manifesto para essa versao do RNNoise e:
-
-```text
-cb9ed5a5481186f6e8c7e657aa99c33b09dad943d1cc5e398a8981afaa3f85f9
-```
-
-Comando de referencia para reproduzir a amostra DFN3 publicada:
+Comando de referencia para reproduzir as variantes longas RNNoise/DFN3:
 
 ```powershell
 tmp\.venv_deepfilternet\Scripts\python.exe scripts\audio\prepare_deepfilternet_eval.py `
-  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --input tmp\non_rnnoise_candidates_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_reference.wav `
   --clean-reference resultados\audio\exemplo_clean.wav `
-  --name questionario_amostra
+  --name dfn3_default `
+  --output-dir tmp\dfn_aug
 ```
 
-A variante publicada corresponde a:
+As variantes publicadas correspondem a:
 
 ```text
-tmp\deepfilternet_eval\questionario_amostra\mp3\questionario_amostra_deepfilternet_loudnorm.mp3
+tmp\dfn_aug\dfn3_default\mp3\dfn3_default_noisy_reference_loudnorm.mp3
+tmp\dfn_aug\dfn3_default\mp3\dfn3_default_rnnoise_presence_eq_loudnorm.mp3
+tmp\dfn_aug\dfn3_default\mp3\dfn3_default_deepfilternet_loudnorm.mp3
 ```
 
-O hash SHA-256 registrado no manifesto para essa versao do DFN3 e:
+Os hashes SHA-256 registrados no manifesto sao:
 
 ```text
-410e8867b6a47303da8ed455cb3a154f41ece567f28a86f6bbd160ffd2a8a7b1
+amostra_noisy_reference.mp3  0635dcde09f32a05cc7745fb990c6ed2b0b326259fb8ad0a9da419e2bf34f1d9
+amostra_rnnoise.mp3          335705fad15d09ba3677d48fb171a0495879ab838419f581d2906ccff22f6304
+amostra_dfn3_default.mp3     9662f5715c26251aad21fec909bde4ff44934d59efcd60f5ce46c81009d84733
 ```
 
 ## Experimento local com audio proprio
