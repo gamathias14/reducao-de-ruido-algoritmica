@@ -52,10 +52,17 @@ envio na planilha.
 ## Atualizar dashboard de respostas
 
 A analise das respostas tambem fica no mesmo Apps Script, sem bibliotecas
-externas. O receptor esta configurado com `autoRebuildDashboardOnSubmit: true`,
-portanto cada envio valido atualiza automaticamente as abas de dashboard depois
-de registrar a resposta. Para uma reconstrucao manual, abra o projeto em
-<https://script.google.com/> e execute:
+externas. Para manter o envio rapido para o participante, o receptor apenas
+marca o dashboard como pendente quando uma resposta chega. Instale uma vez o
+gatilho periodico no Apps Script:
+
+```js
+installQuestionarioDashboardTrigger()
+```
+
+Com isso, `rebuildDashboardIfPending()` roda automaticamente a cada 5 minutos e
+reconstroi as abas de dashboard apenas quando houver resposta nova. Para uma
+reconstrucao manual, abra o projeto em <https://script.google.com/> e execute:
 
 ```js
 rebuildDashboard()

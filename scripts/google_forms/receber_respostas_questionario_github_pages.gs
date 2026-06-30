@@ -28,7 +28,11 @@ const RECEIVER_CONFIG = {
   dashboardMetricsSheetName: "dashboard_metrics",
   dashboardSheetName: "dashboard",
   codedOpenAnswersSheetName: "coded_open_answers",
-  autoRebuildDashboardOnSubmit: true,
+  autoRebuildDashboardOnSubmit: false,
+  markDashboardRebuildPendingOnSubmit: true,
+  dashboardTriggerMinutes: 5,
+  dashboardPendingProperty: "QUESTIONARIO_DASHBOARD_REBUILD_PENDING",
+  dashboardPendingAtProperty: "QUESTIONARIO_DASHBOARD_REBUILD_PENDING_AT",
 };
 
 const DASHBOARD_OPEN_ANSWER_CATEGORIES = [
@@ -284,6 +288,83 @@ function resetQuestionarioTestData() {
   }
 }
 
+function installQuestionarioDashboardTrigger() {
+  removeQuestionarioDashboardTrigger();
+  const trigger = ScriptApp.newTrigger("rebuildDashboardIfPending")
+    .timeBased()
+    .everyMinutes(RECEIVER_CONFIG.dashboardTriggerMinutes)
+    .create();
+
+  Logger.log("Trigger instalado para rebuildDashboardIfPending: " + trigger.getUniqueId());
+  return {
+    ok: true,
+    handlerFunction: "rebuildDashboardIfPending",
+    everyMinutes: RECEIVER_CONFIG.dashboardTriggerMinutes,
+    triggerId: trigger.getUniqueId(),
+  };
+}
+
+function removeQuestionarioDashboardTrigger() {
+  const handlerName = "rebuildDashboardIfPending";
+  const removed = [];
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction && trigger.getHandlerFunction() === handlerName) {
+      removed.push(trigger.getUniqueId());
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  if (removed.length) {
+    Logger.log("Triggers removidos: " + removed.join(", "));
+  }
+  return {
+    ok: true,
+    removedTriggerIds: removed,
+  };
+}
+
+function rebuildDashboardIfPending() {
+  const properties = PropertiesService.getScriptProperties();
+  if (properties.getProperty(RECEIVER_CONFIG.dashboardPendingProperty) !== "1") {
+    return {
+      ok: true,
+      skipped: true,
+      reason: "Sem rebuild pendente.",
+    };
+  }
+
+  const updatedAt = new Date();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    if (properties.getProperty(RECEIVER_CONFIG.dashboardPendingProperty) !== "1") {
+      return {
+        ok: true,
+        skipped: true,
+        reason: "Rebuild ja processado por outra execucao.",
+      };
+    }
+
+    const spreadsheet = getOrCreateSpreadsheet_();
+    ensureSheets_(spreadsheet);
+    const pendingSince = properties.getProperty(RECEIVER_CONFIG.dashboardPendingAtProperty) || "";
+    const result = rebuildDashboardFromSpreadsheet_(spreadsheet, updatedAt);
+    properties.deleteProperty(RECEIVER_CONFIG.dashboardPendingProperty);
+    properties.deleteProperty(RECEIVER_CONFIG.dashboardPendingAtProperty);
+    appendAudit_(spreadsheet, "dashboard_trigger_rebuilt", "", {
+      pendingSince: pendingSince,
+      totalResponses: result.totalResponses,
+      metricsRows: result.metricsRows,
+      updatedAt: result.updatedAt,
+    }, updatedAt);
+
+    Logger.log("Dashboard reconstruido por trigger: " + JSON.stringify(result));
+    return result;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function doGet() {
   return json_({
     ok: true,
@@ -329,6 +410,12 @@ function doPost(event) {
           totalResponses: dashboardResult.totalResponses,
           metricsRows: dashboardResult.metricsRows,
           updatedAt: dashboardResult.updatedAt,
+        }, receivedAt);
+      } else if (RECEIVER_CONFIG.markDashboardRebuildPendingOnSubmit) {
+        markDashboardRebuildPending_(payload.responseId, receivedAt);
+        appendAudit_(spreadsheet, "dashboard_rebuild_pending", payload.responseId, {
+          pendingAt: receivedAt.toISOString(),
+          expectedTriggerMinutes: RECEIVER_CONFIG.dashboardTriggerMinutes,
         }, receivedAt);
       }
     } finally {
@@ -426,6 +513,18 @@ function clearSheetDataRows_(spreadsheet, sheetName) {
   if (lastRow > 1 && lastColumn > 0) {
     sheet.getRange(2, 1, lastRow - 1, lastColumn).clearContent();
   }
+}
+
+function markDashboardRebuildPending_(responseId, receivedAt) {
+  const properties = PropertiesService.getScriptProperties();
+  properties.setProperty(RECEIVER_CONFIG.dashboardPendingProperty, "1");
+  properties.setProperty(
+    RECEIVER_CONFIG.dashboardPendingAtProperty,
+    JSON.stringify({
+      responseId: responseId || "",
+      receivedAt: receivedAt.toISOString(),
+    }),
+  );
 }
 
 function appendRawResponse_(spreadsheet, payload, payloadText, receivedAt) {
