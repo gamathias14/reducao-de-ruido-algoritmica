@@ -19,6 +19,9 @@
     },
     mediaRecorder: null,
     recordedChunks: [],
+    currentStepIndex: 0,
+    wizardSteps: [],
+    totalQuestions: 0,
   };
 
   document.addEventListener("DOMContentLoaded", init);
@@ -33,7 +36,7 @@
     bindStaticText();
     renderBlocks();
     renderLocalExperiment();
-    bindProgressiveNavigation();
+    bindWizardNavigation();
     bindSubmit();
 
     state.formDefinitionHash = await sha256Json({
@@ -57,26 +60,67 @@
     const root = document.getElementById("form-root");
     root.innerHTML = "";
     state.questionNumber = 0;
+    state.totalQuestions = config.blocks.reduce((total, block) => total + block.questions.length, 0);
+
+    const shell = el("section", "wizard-shell");
+    shell.setAttribute("aria-label", "Questionário por etapas");
+    const viewport = el("div", "wizard-viewport");
+    viewport.id = "wizard-viewport";
 
     config.blocks.forEach((block, blockIndex) => {
-      const section = el("section", "block-section");
-      section.dataset.blockId = block.id;
-
-      const heading = el("div", "block-heading");
-      heading.appendChild(el("span", "block-kicker", `Bloco ${blockIndex + 1} de ${config.blocks.length}`));
-      heading.appendChild(el("h2", "", block.title));
-      section.appendChild(heading);
-
       block.questions.forEach((question) => {
-        if (question.type === "audio-choice") {
-          section.appendChild(renderAudioComparison());
-        }
-        state.questionNumber += 1;
-        section.appendChild(renderQuestion(question, state.questionNumber));
-      });
+        const step = el("section", "wizard-step");
+        step.dataset.stepType = "question";
+        step.dataset.questionId = question.id;
+        step.dataset.blockId = block.id;
+        step.dataset.blockIndex = String(blockIndex);
+        step.hidden = true;
 
-      root.appendChild(section);
+        state.questionNumber += 1;
+        step.appendChild(renderStepContext(block, blockIndex, state.questionNumber));
+        if (question.type === "audio-choice") {
+          step.appendChild(renderAudioComparison());
+        }
+        step.appendChild(renderQuestion(question, state.questionNumber));
+        viewport.appendChild(step);
+      });
     });
+
+    shell.appendChild(viewport);
+    shell.appendChild(renderWizardNav());
+    root.appendChild(shell);
+  }
+
+  function renderStepContext(block, blockIndex, questionNumber) {
+    const context = el("div", "wizard-step-context");
+    context.appendChild(el("span", "block-kicker", `Bloco ${blockIndex + 1} de ${config.blocks.length}`));
+    context.appendChild(el("h2", "", block.title));
+    if (block.description) {
+      context.appendChild(el("p", "", block.description));
+    }
+    context.appendChild(el("span", "wizard-question-count", `Pergunta ${questionNumber} de ${state.totalQuestions}`));
+    return context;
+  }
+
+  function renderWizardNav() {
+    const nav = el("div", "wizard-nav");
+
+    const prevButton = el("button", "wizard-button wizard-button--secondary", "← Anterior");
+    prevButton.type = "button";
+    prevButton.id = "wizard-prev";
+    prevButton.setAttribute("aria-label", "Voltar para a pergunta anterior");
+
+    const position = el("span", "wizard-position");
+    position.id = "wizard-position";
+    position.setAttribute("aria-live", "polite");
+
+    const nextButton = el("button", "wizard-button wizard-button--primary", "Próxima →");
+    nextButton.type = "button";
+    nextButton.id = "wizard-next";
+    nextButton.setAttribute("aria-label", "Avançar para a próxima pergunta");
+
+    nav.append(prevButton, position, nextButton);
+    return nav;
   }
 
   function renderQuestion(question, number) {
@@ -418,55 +462,146 @@
     );
   }
 
-  function bindProgressiveNavigation() {
+  function bindWizardNavigation() {
+    const viewport = document.getElementById("wizard-viewport");
+    const submitPanel = document.querySelector(".submit-panel");
+    if (viewport && submitPanel && !submitPanel.closest(".wizard-step")) {
+      const submitStep = el("section", "wizard-step wizard-step--submit");
+      submitStep.dataset.stepType = "submit";
+      submitStep.hidden = true;
+      submitStep.appendChild(renderSubmitStepContext());
+      submitStep.appendChild(submitPanel);
+      viewport.appendChild(submitStep);
+    }
+
+    state.wizardSteps = Array.from(document.querySelectorAll(".wizard-step"));
+    state.currentStepIndex = 0;
+
+    const prevButton = document.getElementById("wizard-prev");
+    const nextButton = document.getElementById("wizard-next");
     const form = document.getElementById("questionnaire-form");
-    form.addEventListener("change", (event) => {
-      const input = event.target;
-      if (!(input instanceof HTMLInputElement) || input.type !== "radio") {
-        return;
-      }
 
-      const fieldset = input.closest(".question-card");
-      if (!fieldset) {
-        return;
-      }
-
-      const questionType = fieldset.dataset.questionType;
-      if (!["radio", "audio-choice", "scale"].includes(questionType)) {
-        return;
-      }
-      if (input.value === "__other__") {
-        return;
-      }
-
-      window.setTimeout(() => advanceFromQuestion_(fieldset), 180);
+    prevButton.addEventListener("click", () => {
+      showWizardStep(state.currentStepIndex - 1, true);
     });
+
+    nextButton.addEventListener("click", () => {
+      if (!isCurrentStepReady()) {
+        focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]);
+        return;
+      }
+      showWizardStep(state.currentStepIndex + 1, true);
+    });
+
+    form.addEventListener("change", updateWizardState);
+    form.addEventListener("input", updateWizardState);
+
+    showWizardStep(0, false);
   }
 
-  function advanceFromQuestion_(currentFieldset) {
-    const target = nextProgressiveTarget_(currentFieldset);
-    if (!target) {
+  function renderSubmitStepContext() {
+    const context = el("div", "wizard-step-context");
+    context.appendChild(el("span", "block-kicker", "Revisão final"));
+    context.appendChild(el("h2", "", "Envio das respostas"));
+    context.appendChild(
+      el("p", "", "Confira as respostas registradas no formulário antes de concluir a participação."),
+    );
+    return context;
+  }
+
+  function showWizardStep(nextIndex, shouldScroll) {
+    if (!state.wizardSteps.length) {
       return;
     }
 
-    target.scrollIntoView({
-      behavior: prefersReducedMotion_() ? "auto" : "smooth",
-      block: "start",
+    const clampedIndex = Math.max(0, Math.min(nextIndex, state.wizardSteps.length - 1));
+    state.currentStepIndex = clampedIndex;
+
+    state.wizardSteps.forEach((step, index) => {
+      const isCurrent = index === state.currentStepIndex;
+      step.hidden = !isCurrent;
+      step.setAttribute("aria-hidden", String(!isCurrent));
     });
 
-    window.setTimeout(() => focusFirstInteractive_(target), prefersReducedMotion_() ? 0 : 260);
+    updateWizardState();
+
+    if (shouldScroll) {
+      document.querySelector(".wizard-shell").scrollIntoView({
+        behavior: prefersReducedMotion_() ? "auto" : "smooth",
+        block: "start",
+      });
+      window.setTimeout(
+        () => focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]),
+        prefersReducedMotion_() ? 0 : 220,
+      );
+    }
   }
 
-  function nextProgressiveTarget_(currentFieldset) {
-    const flowItems = Array.from(
-      document.querySelectorAll(".question-card, .audio-panel, .submit-panel"),
-    );
-    const currentIndex = flowItems.indexOf(currentFieldset);
-    if (currentIndex < 0) {
-      return document.querySelector(".submit-panel");
+  function updateWizardState() {
+    const prevButton = document.getElementById("wizard-prev");
+    const nextButton = document.getElementById("wizard-next");
+    const position = document.getElementById("wizard-position");
+    const currentStep = state.wizardSteps[state.currentStepIndex];
+    if (!prevButton || !nextButton || !position || !currentStep) {
+      return;
     }
 
-    return flowItems.slice(currentIndex + 1).find((item) => !item.hidden) || document.querySelector(".submit-panel");
+    const isSubmitStep = currentStep.dataset.stepType === "submit";
+    const ready = isCurrentStepReady();
+    const lastQuestionIndex = state.wizardSteps.findIndex((step) => step.dataset.stepType === "submit") - 1;
+
+    prevButton.disabled = state.currentStepIndex === 0;
+    nextButton.hidden = isSubmitStep;
+    nextButton.disabled = !ready || isSubmitStep;
+    nextButton.classList.toggle("is-ready", ready && !isSubmitStep);
+    nextButton.textContent = state.currentStepIndex === lastQuestionIndex ? "Revisar envio →" : "Próxima →";
+
+    if (isSubmitStep) {
+      position.textContent = "Revisão final";
+    } else {
+      position.textContent = `Pergunta ${state.currentStepIndex + 1} de ${state.totalQuestions}`;
+    }
+  }
+
+  function isCurrentStepReady() {
+    const currentStep = state.wizardSteps[state.currentStepIndex];
+    if (!currentStep || currentStep.dataset.stepType === "submit") {
+      return true;
+    }
+
+    const question = findQuestionById(currentStep.dataset.questionId);
+    if (!question) {
+      return true;
+    }
+
+    const answer = readQuestionAnswer(question);
+    return isQuestionAnswerReady(question, answer);
+  }
+
+  function findQuestionById(questionId) {
+    for (const block of config.blocks) {
+      const found = block.questions.find((question) => question.id === questionId);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  function isQuestionAnswerReady(question, answer) {
+    if (!question.required) {
+      return true;
+    }
+    if (!answer || isEmptyAnswer(answer)) {
+      return false;
+    }
+    if (question.type === "checkbox" && question.maxChoices && answer.value.length > question.maxChoices) {
+      return false;
+    }
+    if (question.type === "textarea" && question.maxLength && answer.value.length > question.maxLength) {
+      return false;
+    }
+    return true;
   }
 
   function focusFirstInteractive_(target) {
@@ -687,7 +822,14 @@
     const fieldset = document.querySelector(`[data-question-id="${targetId}"]`);
     const target = direct || fieldset;
     if (target) {
-      target.scrollIntoView({ block: "center" });
+      const step = target.closest(".wizard-step");
+      if (step) {
+        const stepIndex = state.wizardSteps.indexOf(step);
+        if (stepIndex >= 0) {
+          showWizardStep(stepIndex, false);
+        }
+      }
+      target.scrollIntoView({ block: "center", behavior: prefersReducedMotion_() ? "auto" : "smooth" });
       const focusable = target.matches("input, textarea, button")
         ? target
         : target.querySelector("input, textarea, button");
