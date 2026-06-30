@@ -300,6 +300,10 @@ h1 {
   margin: 0 auto 22px;
 }
 
+.wizard-shell[hidden] {
+  display: none !important;
+}
+
 .wizard-viewport {
   min-width: 0;
 }

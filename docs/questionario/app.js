@@ -22,6 +22,7 @@
     currentStepIndex: 0,
     wizardSteps: [],
     totalQuestions: 0,
+    wizardUnlocked: false,
   };
 
   document.addEventListener("DOMContentLoaded", init);
@@ -480,6 +481,7 @@
     const prevButton = document.getElementById("wizard-prev");
     const nextButton = document.getElementById("wizard-next");
     const form = document.getElementById("questionnaire-form");
+    const consent = document.getElementById("consent");
 
     prevButton.addEventListener("click", () => {
       showWizardStep(state.currentStepIndex - 1, true);
@@ -495,8 +497,14 @@
 
     form.addEventListener("change", updateWizardState);
     form.addEventListener("input", updateWizardState);
+    consent.addEventListener("change", () => {
+      if (consent.checked) {
+        state.currentStepIndex = 0;
+      }
+      syncConsentGate(consent.checked, consent.checked);
+    });
 
-    showWizardStep(0, false);
+    syncConsentGate(consent.checked, false);
   }
 
   function renderSubmitStepContext() {
@@ -535,6 +543,21 @@
         prefersReducedMotion_() ? 0 : 220,
       );
     }
+  }
+
+  function syncConsentGate(consentChecked, shouldScroll) {
+    const shell = document.querySelector(".wizard-shell");
+    if (!shell) {
+      return;
+    }
+
+    state.wizardUnlocked = Boolean(consentChecked);
+    shell.hidden = !state.wizardUnlocked;
+    if (!state.wizardUnlocked) {
+      return;
+    }
+
+    showWizardStep(state.currentStepIndex, shouldScroll);
   }
 
   function updateWizardState() {
