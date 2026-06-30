@@ -147,15 +147,15 @@ restritos ou trechos com dados pessoais.
 
 ### Manifesto atual de audio
 
-A versao `2026-06-30.1` do questionario usa tres exemplos publicos em MP3 de
+A versao `2026-06-30.2` do questionario usa tres exemplos publicos em MP3 de
 aproximadamente `8,5 s`, gerados a partir da mesma amostra ruidosa de
 referencia:
 
 - `amostra_noisy_reference.mp3`: referencia ruidosa;
 - `amostra_rnnoise.mp3`: RNNoise com normalizacao de loudness e equalizacao leve
   de presenca;
-- `amostra_dfn3_default.mp3`: DeepFilterNet3 default offline com normalizacao de
-  loudness.
+- `amostra_dfn3_default.mp3`: DeepFilterNet3 C API com `post_filter_beta = 1`,
+  preroll de `2 s`, EQ de presenca e normalizacao de loudness.
 
 Os exemplos OM-LSA/IMCRA, STFT e Wavelet permanecem no diretorio como historico,
 mas nao fazem parte do manifesto ativo nem aparecem na comparacao atual.
@@ -166,13 +166,25 @@ com `startup_preroll_ms = 200`, mas a amostra publicada inclui normalizacao de
 loudness e um EQ leve de presenca para reduzir a percepcao de voz apagada/abafada
 sem alterar o nucleo do metodo de reducao de ruido.
 
-O arquivo `amostra_dfn3_default.mp3` veio da avaliacao offline
-`questionario_amostra_deepfilternet_loudnorm`. Ele representa o candidato
-DeepFilterNet3 default aprovado perceptualmente como comparacao exploratoria,
-mas ainda nao prova tempo real, baixa latencia nem integracao com o microfone
-virtual Windows.
+O arquivo `amostra_dfn3_default.mp3` veio da cadeia DeepFilterNet3 C API
+congelada perceptualmente em `tmp\dfn_native\preroll_beta100_diag`. A
+configuracao usada foi:
 
-Comando de referencia para reproduzir as variantes longas RNNoise/DFN3:
+```text
+post_filter_beta = 1.0
+preroll = 2 s
+loop interno = crossfade de 10 ms
+atraso causal descartado = 1440 samples = 30 ms
+EQ de presenca = 3 kHz, Q = 1.0, +2 dB
+loudnorm dois-passos = I = -16 LUFS, LRA = 7 LU, TP = -1 dBTP
+```
+
+Ele representa o candidato DeepFilterNet3 aprovado perceptualmente como
+comparacao exploratoria, mas ainda nao prova integracao com o microfone virtual
+Windows/SYSVAD.
+
+Comando de referencia para reproduzir as variantes longas RNNoise/default
+offline usadas como etapa anterior:
 
 ```powershell
 tmp\.venv_deepfilternet\Scripts\python.exe scripts\audio\prepare_deepfilternet_eval.py `
@@ -187,7 +199,7 @@ As variantes publicadas correspondem a:
 ```text
 tmp\dfn_aug\dfn3_default\mp3\dfn3_default_noisy_reference_loudnorm.mp3
 tmp\dfn_aug\dfn3_default\mp3\dfn3_default_rnnoise_presence_eq_loudnorm.mp3
-tmp\dfn_aug\dfn3_default\mp3\dfn3_default_deepfilternet_loudnorm.mp3
+tmp\dfn_native\preroll_beta100_diag\capi_loop2s_xfade10_beta100_presence_eq_loudnorm.wav
 ```
 
 Os hashes SHA-256 registrados no manifesto sao:
@@ -195,7 +207,7 @@ Os hashes SHA-256 registrados no manifesto sao:
 ```text
 amostra_noisy_reference.mp3  0635dcde09f32a05cc7745fb990c6ed2b0b326259fb8ad0a9da419e2bf34f1d9
 amostra_rnnoise.mp3          335705fad15d09ba3677d48fb171a0495879ab838419f581d2906ccff22f6304
-amostra_dfn3_default.mp3     9662f5715c26251aad21fec909bde4ff44934d59efcd60f5ce46c81009d84733
+amostra_dfn3_default.mp3     70337fd055add5fc9dde4f15ebdd6ce7546182290b911a7298b751ca8c48da3d
 ```
 
 ## Experimento local com audio proprio

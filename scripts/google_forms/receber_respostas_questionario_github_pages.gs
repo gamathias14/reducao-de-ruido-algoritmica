@@ -1449,7 +1449,7 @@ function buildAudioLabelMap_(records) {
   });
 
   labels.rnnoise = labels.rnnoise || "RNNoise";
-  labels.dfn3_default = labels.dfn3_default || "DeepFilterNet3 default";
+  labels.dfn3_default = labels.dfn3_default || "DeepFilterNet3 C API beta=1";
   return labels;
 }
 

@@ -1,6 +1,6 @@
 window.QUESTIONARIO_CONFIG = {
   questionnaireId: "ptc3527-voice-denoise-extension-2026",
-  schemaVersion: "2026-06-30.1",
+  schemaVersion: "2026-06-30.2",
   title: "Questionário extensionista",
   subtitle: "Redução de ruído local para voz humana",
   projectTitle:
@@ -44,11 +44,11 @@ window.QUESTIONARIO_CONFIG = {
       },
       {
         id: "dfn3_default",
-        methodLabel: "DeepFilterNet3 default",
-        choiceLabel: "DeepFilterNet3 default offline com normalização de loudness",
+        methodLabel: "DeepFilterNet3 C API beta=1",
+        choiceLabel: "DeepFilterNet3 C API beta=1 com equalização de presença e normalização de loudness",
         src: "assets/audio/amostra_dfn3_default.mp3",
-        sha256: "9662f5715c26251aad21fec909bde4ff44934d59efcd60f5ce46c81009d84733",
-        note: "Candidato de qualidade perceptual em avaliação offline; ainda não integrado ao microfone virtual em tempo real.",
+        sha256: "70337fd055add5fc9dde4f15ebdd6ce7546182290b911a7298b751ca8c48da3d",
+        note: "Candidato DFN3 com cadeia C API congelada para qualidade perceptual; ainda não integrado ao microfone virtual em tempo real.",
         enabled: true,
       },
     ],
@@ -151,7 +151,7 @@ window.QUESTIONARIO_CONFIG = {
           required: true,
           fallbackOptions: [
             "RNNoise com normalização de loudness e equalização leve de presença",
-            "DeepFilterNet3 default offline com normalização de loudness",
+            "DeepFilterNet3 C API beta=1 com equalização de presença e normalização de loudness",
             "Não sei avaliar sem ouvir mais exemplos",
           ],
         },

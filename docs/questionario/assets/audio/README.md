@@ -11,11 +11,11 @@ Formatos recomendados:
 Depois de adicionar os arquivos, atualize `../../questionario.config.js` nos
 campos `src` e `sha256` de cada item de `audioComparison.items`.
 
-Manifesto ativo em `2026-06-30.1` com audios de aproximadamente `8,5 s`:
+Manifesto ativo em `2026-06-30.2` com audios de aproximadamente `8,5 s`:
 
 - `amostra_noisy_reference.mp3`
 - `amostra_rnnoise.mp3`
-- `amostra_dfn3_default.mp3`
+- `amostra_dfn3_default.mp3` (DeepFilterNet3 C API beta=1 + EQ de presenca + loudnorm)
 
 Os demais MP3s no diretorio sao historico de comparacoes anteriores e nao
 aparecem no questionario enquanto nao estiverem listados em
