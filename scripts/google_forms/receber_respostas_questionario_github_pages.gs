@@ -237,6 +237,53 @@ function setupQuestionarioReceiver() {
   return spreadsheet.getUrl();
 }
 
+function resetQuestionarioTestData() {
+  const resetAt = new Date();
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const spreadsheet = getOrCreateSpreadsheet_();
+    ensureSheets_(spreadsheet);
+
+    const clearedSheets = [
+      RECEIVER_CONFIG.rawSheetName,
+      RECEIVER_CONFIG.wideSheetName,
+      RECEIVER_CONFIG.dashboardMetricsSheetName,
+      RECEIVER_CONFIG.codedOpenAnswersSheetName,
+      RECEIVER_CONFIG.errorSheetName,
+    ];
+    clearedSheets.forEach(function(sheetName) {
+      clearSheetDataRows_(spreadsheet, sheetName);
+    });
+
+    const dashboardResult = rebuildDashboardFromSpreadsheet_(spreadsheet, resetAt);
+    appendAudit_(spreadsheet, "test_data_reset", "", {
+      clearedSheets: clearedSheets,
+      preservedSheets: [
+        RECEIVER_CONFIG.schemaSheetName,
+        RECEIVER_CONFIG.auditSheetName,
+      ],
+      totalResponses: dashboardResult.totalResponses,
+      metricsRows: dashboardResult.metricsRows,
+      updatedAt: dashboardResult.updatedAt,
+    }, resetAt);
+
+    Logger.log("Dados de teste limpos. Spreadsheet URL: " + spreadsheet.getUrl());
+    return {
+      ok: true,
+      spreadsheetUrl: spreadsheet.getUrl(),
+      clearedSheets: clearedSheets,
+      preservedSheets: [
+        RECEIVER_CONFIG.schemaSheetName,
+        RECEIVER_CONFIG.auditSheetName,
+      ],
+      updatedAt: resetAt.toISOString(),
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function doGet() {
   return json_({
     ok: true,
@@ -366,6 +413,19 @@ function ensureSheetWithHeaders_(spreadsheet, sheetName, headers) {
     sheet.getRange(1, currentHeaders.length + 1, 1, missing.length).setValues([missing]);
   }
   return sheet;
+}
+
+function clearSheetDataRows_(spreadsheet, sheetName) {
+  const sheet = spreadsheet.getSheetByName(sheetName);
+  if (!sheet) {
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastRow > 1 && lastColumn > 0) {
+    sheet.getRange(2, 1, lastRow - 1, lastColumn).clearContent();
+  }
 }
 
 function appendRawResponse_(spreadsheet, payload, payloadText, receivedAt) {

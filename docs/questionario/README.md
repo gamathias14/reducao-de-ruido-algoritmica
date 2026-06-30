@@ -66,6 +66,18 @@ A versao publicada do Apps Script precisa estar sincronizada com
 de alterar esse arquivo no repositorio, copie o conteudo para o `Code.gs` do
 Apps Script e implante uma nova versao do Web App antes de coletar respostas.
 
+Durante o periodo de testes, use a funcao abaixo no Apps Script para limpar as
+submissoes experimentais e reconstruir o dashboard vazio antes da coleta
+oficial:
+
+```js
+resetQuestionarioTestData()
+```
+
+Ela limpa `responses_raw`, `responses_wide`, `dashboard_metrics`,
+`coded_open_answers` e `errors`, preserva `schema_history` e `audit`, e registra
+o reset na propria aba `audit`.
+
 A funcao le `responses_raw` como fonte canonica e recria/atualiza as abas:
 
 - `dashboard_metrics`: tabela longa com metricas por bloco, pergunta,
