@@ -453,10 +453,7 @@
           },
           body: JSON.stringify(payload),
         });
-        showSubmissionStatus(
-          "Respostas enviadas. Obrigado por contribuir com o projeto.",
-          "success",
-        );
+        showSubmissionStatus("Respostas recebidas. Obrigado pela contribuição.", "success");
         submitButton.textContent = "Enviado";
       } catch (error) {
         submitButton.disabled = false;

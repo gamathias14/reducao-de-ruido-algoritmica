@@ -1291,10 +1291,6 @@ function buildAudioLabelMap_(records) {
 
   labels.rnnoise = labels.rnnoise || "RNNoise";
   labels.dfn3_default = labels.dfn3_default || "DeepFilterNet3 default";
-  labels.omlsa_imcra = labels.omlsa_imcra || "OM-LSA/IMCRA";
-  labels.stft_causal = labels.stft_causal || "STFT causal adaptativa";
-  labels.stft_wiener = labels.stft_wiener || "STFT Wiener";
-  labels.wavelet_soft = labels.wavelet_soft || "Wavelet soft";
   return labels;
 }
 

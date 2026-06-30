@@ -676,6 +676,20 @@ h1 {
   font-weight: 700;
 }
 
+.submission-status.success::before {
+  display: inline-grid;
+  width: 1.25em;
+  height: 1.25em;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--success);
+  color: #fff;
+  content: "✓";
+  font-size: 0.75em;
+  line-height: 1;
+  animation: submission-confirm 360ms ease-out both;
+}
+
 .submission-status.error {
   color: var(--danger);
   font-weight: 700;
@@ -684,6 +698,22 @@ h1 {
 @keyframes submission-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes submission-confirm {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  70% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

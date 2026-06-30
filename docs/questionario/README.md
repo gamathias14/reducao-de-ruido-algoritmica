@@ -61,6 +61,11 @@ de registrar a resposta. Para uma reconstrucao manual, abra o projeto em
 rebuildDashboard()
 ```
 
+A versao publicada do Apps Script precisa estar sincronizada com
+`scripts/google_forms/receber_respostas_questionario_github_pages.gs`. Depois
+de alterar esse arquivo no repositorio, copie o conteudo para o `Code.gs` do
+Apps Script e implante uma nova versao do Web App antes de coletar respostas.
+
 A funcao le `responses_raw` como fonte canonica e recria/atualiza as abas:
 
 - `dashboard_metrics`: tabela longa com metricas por bloco, pergunta,
