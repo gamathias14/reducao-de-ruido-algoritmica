@@ -36,24 +36,20 @@
 
 html {
   scroll-behavior: smooth;
-  /* Reserva a calha da barra de rolagem em TODAS as telas para que a largura
-     (e o header/footer full-width) fique idêntica entre a tela de consentimento,
-     que rola, e as telas de perguntas, que usam overflow: hidden no body.
-     overflow-y: scroll torna o html o container de rolagem e impede que o
-     overflow:hidden do body seja propagado para a viewport (o que zeraria a
-     calha e mudaria a largura). scrollbar-gutter reforça em navegadores modernos. */
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
+  /* App-shell fixo à viewport em TODAS as telas: cabeçalho e rodapé são linhas
+     do grid (fora de qualquer área de rolagem), então a largura deles nunca
+     depende da barra de rolagem — fica idêntica no consentimento e nas perguntas.
+     O miolo (main) rola internamente quando precisa. */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   min-width: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   margin: 0;
-  overflow-x: hidden;
+  overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(242, 109, 99, 0.075), transparent 28rem),
     radial-gradient(circle at top right, rgba(52, 192, 124, 0.075), transparent 30rem),
@@ -65,11 +61,6 @@ body {
 }
 
 body.questionnaire-active {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
   font-size: var(--ui-scale);
 }
 
@@ -246,7 +237,11 @@ h1 {
 }
 
 .page-shell {
-  flex: 1 1 auto;
+  /* Linha 1fr do app-shell: rola internamente (consentimento); nas perguntas o
+     modo ativo troca para overflow: hidden. Cabeçalho/rodapé ficam fora daqui. */
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
@@ -1644,15 +1639,24 @@ h1 {
     width: 100%;
   }
 
-  body.questionnaire-active {
+  /* No celular a página rola normalmente; o app-shell fixo é só para desktop. */
+  body {
     display: flex;
     flex-direction: column;
     height: auto;
     min-height: 100dvh;
     overflow-x: hidden;
     overflow-y: auto;
+  }
+
+  body.questionnaire-active {
     /* No celular a restricao passa a ser a LARGURA: escala por vw. */
     font-size: clamp(1.13rem, 4.6vw, 1.35rem);
+  }
+
+  .page-shell {
+    min-height: auto;
+    overflow: visible;
   }
 
   .questionnaire-active .page-shell,
