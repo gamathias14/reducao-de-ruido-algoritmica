@@ -1022,6 +1022,27 @@ h1 {
   }
 }
 
+/* Fade usado no celular e sob prefers-reduced-motion (movimento suave). */
+@keyframes wizard-step-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes wizard-step-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes feedback-overlay-fade {
   from {
     opacity: 0;
@@ -1182,11 +1203,14 @@ h1 {
 
 .questionnaire-active .wizard-step.is-entering,
 .questionnaire-active .wizard-step.is-exiting {
-  will-change: opacity, transform;
+  /* Promove cada card a uma camada de composição própria: o slide vira um
+     transform puro na GPU (sem repaint por frame), eliminando o travamento. */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .questionnaire-active .wizard-step.is-entering {
-  animation: wizard-step-enter-forward 440ms cubic-bezier(0.25, 1, 0.5, 1) both;
+  animation: wizard-step-enter-forward 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .questionnaire-active .wizard-step.is-exiting {
@@ -1199,7 +1223,7 @@ h1 {
   align-content: center;
   pointer-events: none;
   /* Mesma duração e easing do enter -> os dois cards deslizam encostados. */
-  animation: wizard-step-exit-forward 440ms cubic-bezier(0.25, 1, 0.5, 1) both;
+  animation: wizard-step-exit-forward 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .questionnaire-active .wizard-viewport[data-direction="backward"] .wizard-step.is-entering {
@@ -1722,6 +1746,15 @@ h1 {
     overflow: visible;
   }
 
+  /* No celular a transição entre perguntas é um fade rápido (sem slide). */
+  .questionnaire-active .wizard-step.is-entering {
+    animation: wizard-step-fade-in 220ms ease-out both;
+  }
+
+  .questionnaire-active .wizard-step.is-exiting {
+    animation: wizard-step-fade-out 190ms ease-out both;
+  }
+
   .questionnaire-active .wizard-step-context h2 {
     font-size: 1rem;
   }
@@ -1744,6 +1777,45 @@ h1 {
 
   .questionnaire-active .site-footer p {
     font-size: 0.84rem;
+  }
+
+  /* --- Header no mobile: título e subtítulo à esquerda em largura cheia;
+     selo da Poli emparelhado (centralizado) com o texto da Escola Politécnica. --- */
+  .institution-lockup,
+  .questionnaire-active .institution-lockup {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "title    title"
+      "seal     inst"
+      "subtitle subtitle";
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+  }
+
+  .institution-text-group {
+    display: contents;
+  }
+
+  #page-title {
+    grid-area: title;
+    align-self: end;
+  }
+
+  .institution-lockup .institution-seal--poli {
+    grid-area: seal;
+    align-self: center;
+  }
+
+  #institution {
+    grid-area: inst;
+    align-self: center;
+    margin-top: 0;
+  }
+
+  #page-subtitle {
+    grid-area: subtitle;
+    margin-top: 2px;
   }
 }
 
@@ -1851,5 +1923,19 @@ h1 {
 
   .option-row {
     padding: 9px;
+  }
+}
+
+/* Sob movimento reduzido, a transição vira um fade curto e suave em vez de
+   troca seca (opacidade não desencadeia desconforto como o deslize). O
+   !important vence o zeramento global de animation-duration acima, e por vir
+   por último também vence o fade do celular. */
+@media (prefers-reduced-motion: reduce) {
+  .questionnaire-active .wizard-step.is-entering {
+    animation: wizard-step-fade-in 160ms ease both !important;
+  }
+
+  .questionnaire-active .wizard-step.is-exiting {
+    animation: wizard-step-fade-out 140ms ease both !important;
   }
 }

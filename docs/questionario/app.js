@@ -590,10 +590,11 @@
     const previousStep = state.wizardSteps[previousIndex];
     const clampedIndex = Math.max(0, Math.min(nextIndex, state.wizardSteps.length - 1));
     const nextStep = state.wizardSteps[clampedIndex];
+    // Anima sempre que troca de etapa; sob prefers-reduced-motion o CSS
+    // substitui o deslize por um fade curto (definido nas media queries).
     const shouldAnimate = Boolean(
       shouldScroll &&
         state.wizardUnlocked &&
-        !prefersReducedMotion_() &&
         previousStep &&
         nextStep &&
         previousStep !== nextStep,
