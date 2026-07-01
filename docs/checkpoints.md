@@ -3652,3 +3652,2477 @@ git submodule update --init
   processamento local em navegador fica para fase posterior.
 - O fluxo visual, os players, o embaralhamento cego e a validacao local do
   formulario foram verificados manualmente antes da ativacao de envio real.
+
+## 2026-06-28 - Camada de analise do questionario
+
+- Foi adicionada a funcao `rebuildDashboard()` ao Apps Script do receptor do
+  questionario.
+- A reconstrucao usa `responses_raw` como fonte canonica e preserva o receptor
+  `doPost`, `responses_raw` e `responses_wide`.
+- Foram previstas as abas `dashboard_metrics`, `dashboard` e
+  `coded_open_answers`.
+- As metricas incluem frequencias, percentuais, distribuicoes de escala, media,
+  mediana, ranking de preferencia por metodo e notas de auditoria por schema.
+- As respostas abertas foram estruturadas para codificacao manual, sem tentativa
+  de conclusao automatica fraca.
+- O dashboard registra `questionnaireId`, `schemaVersion`, data/hora de
+  atualizacao, total de respostas, `N` por metrica e a observacao de que audios
+  dos usuarios nao sao coletados.
+
+## 2026-06-28 - Reducao de friccao no questionario mobile
+
+- Foi adicionado avanco automatico apos resposta em perguntas de escolha unica,
+  comparacao de audio e escala.
+- Perguntas de multipla selecao e respostas abertas permanecem com navegacao
+  manual, para nao cortar escolhas do participante.
+- A escala de 1 a 5 ganhou layout mobile em grade de cinco botoes maiores, com
+  rotulos extremos alinhados lado a lado.
+- A nota introdutoria de audio proprio foi ajustada para deixar claro que a fase
+  atual usa apenas exemplos publicos preparados e nao solicita nem envia audio
+  do usuario.
+
+## 2026-06-28 - Avaliacao de loudness dos audios do questionario
+
+- Foi criada uma rotina local de avaliacao em
+  `scripts/audio/prepare_questionario_loudness_eval.py`.
+- A rotina usa o filtro `loudnorm` do FFmpeg em dois passes para gerar copias
+  temporarias dos audios com alvo de `-16 LUFS`, `LRA = 7 LU` e true peak maximo
+  de `-1 dBTP`.
+- As saidas foram geradas em `tmp/questionario_loudness_eval/`, sem substituir
+  os MP3 publicados em `docs/questionario/assets/audio/`.
+- O relatorio `tmp/questionario_loudness_eval/loudness_report.json` registrou os
+  ganhos aproximados aplicados; o RNNoise recebeu cerca de `+3,08 dB`, coerente
+  com a percepcao de que a versao anterior soava mais baixa.
+- A decisao metodologica permanece pendente de escuta comparativa antes de
+  substituir arquivos do questionario ou atualizar hashes no manifesto.
+
+## 2026-06-28 - Variantes genericas RNNoise para avaliacao de timbre
+
+- Foi criada a rotina generica
+  `scripts/audio/prepare_rnnoise_variants_eval.py`.
+- A rotina recebe qualquer WAV de entrada e gera tres variantes auditaveis:
+  RNNoise puro, RNNoise com loudness equalizado e RNNoise com EQ de presenca mais
+  loudness final equalizado.
+- A etapa de EQ usa, por padrao, filtro `equalizer` do FFmpeg centrado em
+  `3000 Hz`, `Q = 1.0` e ganho de `+2 dB`, parametros alteraveis por CLI.
+- Para manter comparacao justa, a variante com EQ termina com normalizacao de
+  loudness, evitando confundir ganho de presenca com simples aumento de volume.
+- A execucao de teste foi feita com entrada
+  `tmp/questionario_audio_work/amostra_noisy_reference.wav` e referencia limpa
+  `resultados/audio/exemplo_clean.wav`.
+- As saidas foram geradas em
+  `tmp/rnnoise_variants_eval/questionario_amostra/`, com relatorio auditavel em
+  `variant_report.json` contendo hashes, parametros, loudness, RMS e metricas
+  espectrais.
+- Os MP3 oficiais do questionario ainda nao foram substituidos.
+
+## 2026-06-28 - Questionario preparado com RNNoise + EQ de presenca
+
+- Apos escuta comparativa, a variante preferida para o questionario foi
+  `questionario_amostra_rnnoise_presence_eq_loudnorm.mp3`.
+- O arquivo `docs/questionario/assets/audio/amostra_rnnoise.mp3` foi substituido
+  por essa variante.
+- O manifesto `docs/questionario/questionario.config.js` foi atualizado para
+  `schemaVersion = 2026-06-28.5`.
+- O hash SHA-256 registrado para `amostra_rnnoise.mp3` passou a ser
+  `cb9ed5a5481186f6e8c7e657aa99c33b09dad943d1cc5e398a8981afaa3f85f9`.
+- O label do RNNoise no questionario passou a indicar normalizacao de loudness e
+  equalizacao leve de presenca, deixando claro que ha pos-processamento
+  auditavel sobre a saida RNNoise.
+- O README do questionario foi atualizado com o comando reprodutivel para gerar
+  as variantes e com a origem da amostra publicada.
+- A avaliacao com DeepFilterNet fica em trilha separada/offline e nao bloqueia a
+  publicacao do questionario atual.
+
+## 2026-06-28 - Trilha offline DeepFilterNet preparada
+
+- Antes da implementacao, foi feita uma revisao tecnica via Claude CLI em modo
+  de planejamento/leitura, sem alteracao de arquivos pelo Claude.
+- Decisao metodologica: DeepFilterNet fica como avaliacao exploratoria offline,
+  separada do questionario publicado e sem qualquer promessa de tempo real,
+  baixa latencia ou compatibilidade com microfone virtual Windows.
+- Foi criada a rotina:
+  `scripts/audio/prepare_deepfilternet_eval.py`.
+- A rotina aceita WAV de entrada, referencia limpa opcional e gera apenas saidas
+  dentro de `tmp/deepfilternet_eval/<nome>/`.
+- O script recusa `--output-dir` fora de `tmp/`, para impedir substituicao
+  acidental de audios publicados ou resultados versionados.
+- O fluxo de sample rate ficou explicito:
+  - entrada original registrada no relatorio;
+  - entrada convertida para mono em 48 kHz para o DeepFilterNet;
+  - comparacoes finais renderizadas em 16 kHz, alinhadas ao pipeline principal
+    do projeto.
+- Limitacao registrada: quando a entrada original e 16 kHz, o upsample para
+  48 kHz nao cria conteudo acima de 8 kHz; ele apenas satisfaz a entrada usual
+  do DeepFilterNet.
+- Comparacoes previstas:
+  - referencia ruidosa com loudness equalizado;
+  - RNNoise + EQ leve de presenca + loudness;
+  - DeepFilterNet + loudness;
+  - DeepFilterNet + EQ leve de presenca + loudness;
+  - referencia limpa com loudness equalizado, quando fornecida.
+- O relatorio JSON `deepfilternet_report.json` registra caminhos, hashes
+  SHA-256, sample rates, parametros de loudness/EQ, loudness/LUFS, RMS, pico,
+  centroide espectral, energia em 3-8 kHz, tempos de processamento, RTF,
+  ambiente e limitacoes metodologicas.
+- Dependencia pesada nao foi adicionada a `requirements.txt`. O caminho seguro e
+  usar uma venv isolada em `tmp/.venv_deepfilternet`.
+- Comandos sugeridos de instalacao isolada:
+
+```powershell
+python -m venv tmp\.venv_deepfilternet
+tmp\.venv_deepfilternet\Scripts\python -m pip install --upgrade pip
+tmp\.venv_deepfilternet\Scripts\python -m pip install -r requirements.txt
+tmp\.venv_deepfilternet\Scripts\python -m pip install deepfilternet
+```
+
+- Comando de reproducao planejado:
+
+```powershell
+tmp\.venv_deepfilternet\Scripts\python scripts\audio\prepare_deepfilternet_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --clean-reference resultados\audio\exemplo_clean.wav `
+  --name questionario_amostra
+```
+
+- Validacoes executadas nesta etapa:
+  - `python -m compileall scripts/audio/prepare_deepfilternet_eval.py`;
+  - `python scripts/audio/prepare_deepfilternet_eval.py --help`;
+  - execucao com a amostra local confirmou falha limpa quando `deepFilter` nao
+    esta instalado, antes de gerar artefatos.
+- O Apps Script, o questionario, o manifesto `2026-06-28.5` e os audios
+  publicados em `docs/questionario/assets/audio/` nao foram alterados.
+
+## 2026-06-28 - DeepFilterNet instalado e avaliacao offline executada
+
+- Foi criada e usada a venv isolada `tmp/.venv_deepfilternet`.
+- Dependencias instaladas na venv:
+  - `deepfilternet==0.5.6`;
+  - `DeepFilterLib==0.5.6`;
+  - `torch==2.5.1+cpu`;
+  - `torchaudio==2.5.1+cpu`;
+  - `soundfile==0.12.1`.
+- O primeiro par `torch==2.12.1+cpu` e `torchaudio==2.11.0+cpu` foi substituido
+  porque nao expos o modulo de backend esperado por `deepfilternet==0.5.6`.
+- Antes de instalar `soundfile`, `torchaudio.list_audio_backends()` retornava
+  lista vazia; depois passou a retornar `['soundfile']`.
+- A CLI `deepFilter.exe --help` respondeu corretamente. O warning interno sobre
+  `torchaudio.backend.common.AudioMetaData` foi registrado, mas nao bloqueou a
+  execucao.
+- A primeira execucao completa revelou um bug local da rotina: o relatorio
+  tentava medir MP3 com `scipy.io.wavfile`, que so aceita RIFF/RIFX/RF64.
+- `scripts/audio/prepare_deepfilternet_eval.py` foi corrigido para medir WAV
+  diretamente com `scipy` e arquivos comprimidos, como MP3, via
+  `ffprobe`/`ffmpeg` decodificando para `float32` mono.
+- Validacao apos correcao:
+  - `tmp/.venv_deepfilternet/Scripts/python.exe -m compileall scripts/audio/prepare_deepfilternet_eval.py`.
+- A avaliacao offline foi executada com referencia limpa:
+
+```powershell
+tmp\.venv_deepfilternet\Scripts\python.exe scripts\audio\prepare_deepfilternet_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --clean-reference resultados\audio\exemplo_clean.wav `
+  --name questionario_amostra
+```
+
+- Saidas geradas em:
+  `tmp/deepfilternet_eval/questionario_amostra/`.
+- MP3s gerados para escuta comparativa:
+  - `questionario_amostra_noisy_reference_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_presence_eq_loudnorm.mp3`;
+  - `questionario_amostra_deepfilternet_loudnorm.mp3`;
+  - `questionario_amostra_deepfilternet_presence_eq_loudnorm.mp3`;
+  - `questionario_amostra_clean_reference_loudnorm.mp3`.
+- Relatorio auditavel:
+  `tmp/deepfilternet_eval/questionario_amostra/deepfilternet_report.json`.
+- Resultado de custo computacional nesta execucao offline:
+  - DeepFilterNet: RTF aproximadamente `2,342`;
+  - RNNoise: RTF aproximadamente `0,106`.
+- Loudness final ficou controlado em torno de `-16 LUFS` nas variantes geradas.
+- Interpretacao metodologica:
+  **DeepFilterNet foi executado com sucesso como trilha offline exploratoria,
+  mas o RTF medido nesta rodada nao sustenta qualquer alegacao de tempo real ou
+  baixa latencia no prototipo Windows.**
+- O Apps Script, o questionario, o manifesto `2026-06-28.5` e os audios
+  publicados em `docs/questionario/assets/audio/` continuaram inalterados.
+
+## 2026-06-28 - Variantes anti-metalizacao RNNoise geradas
+
+- Decisao de continuidade: DeepFilterNet permanece apenas como comparacao
+  offline exploratoria, pois o RTF medido de aproximadamente `2,342` nao
+  sustenta continuidade como candidato pratico ao microfone virtual atual.
+- O foco voltou integralmente para RNNoise, que combina boa reducao perceptual
+  de ruido e custo computacional baixo.
+- Foi criada a rotina:
+  `scripts/audio/prepare_rnnoise_antimetallic_eval.py`.
+- A rotina mantem RNNoise como nucleo e testa apenas pos-processamento auditavel
+  para reduzir percepcao de voz metalizada:
+  - normalizacao de loudness;
+  - EQ de pico atual em 3 kHz;
+  - mistura RNNoise/original 90/10;
+  - mistura RNNoise/original 85/15;
+  - high-shelf suave;
+  - high-shelf com reforco leve de corpo;
+  - low-pass suave no topo da banda;
+  - reforco leve de corpo;
+  - combinacao 90/10 com shelf e corpo.
+- O script recusa saida fora de `tmp/` e nao altera o questionario publicado.
+- Ajuste de compatibilidade: o FFmpeg local nao aceitou `amix=normalize=0`; como
+  os volumes da mistura ja sao definidos explicitamente, a rotina passou a usar
+  `amix=inputs=2`.
+- Validacoes executadas:
+  - `python -m compileall scripts/audio/prepare_rnnoise_antimetallic_eval.py`;
+  - `python scripts/audio/prepare_rnnoise_antimetallic_eval.py --help`.
+- Execucao com a amostra do questionario:
+
+```powershell
+python scripts\audio\prepare_rnnoise_antimetallic_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --clean-reference resultados\audio\exemplo_clean.wav `
+  --name questionario_amostra
+```
+
+- Saidas geradas em:
+  `tmp/rnnoise_antimetallic_eval/questionario_amostra/`.
+- MP3s gerados:
+  - `questionario_amostra_noisy_reference_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_peak_eq_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_mix90_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_mix85_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_shelf_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_shelf_warm_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_lowpass_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_warm_loudnorm.mp3`;
+  - `questionario_amostra_rnnoise_mix90_shelf_warm_loudnorm.mp3`.
+- Relatorio auditavel:
+  `tmp/rnnoise_antimetallic_eval/questionario_amostra/antimetallic_report.json`.
+- Loudness final ficou controlado em torno de `-16 LUFS` nas variantes.
+- RTF RNNoise medido nesta execucao da rotina: aproximadamente `0,0276`.
+- Observacao para escuta manual: as variantes `mix90` e `mix85` aumentam a
+  energia em 3-8 kHz em relacao ao RNNoise puro, o que pode recuperar naturalidade
+  de voz, mas tambem pode devolver um pouco de ruido residual. A escolha deve ser
+  feita por escuta comparativa.
+- O Apps Script, o questionario, o manifesto `2026-06-28.5` e os audios
+  publicados em `docs/questionario/assets/audio/` continuaram inalterados.
+
+## 2026-06-28 - Feedback de escuta anti-metalizacao e pendencias
+
+- Feedback manual de escuta:
+  - `questionario_amostra_rnnoise_mix90_loudnorm.mp3` ficou com ruido de fundo
+    perceptivel;
+  - `questionario_amostra_rnnoise_mix85_loudnorm.mp3` ficou com ruido de fundo
+    perceptivel;
+  - `questionario_amostra_rnnoise_mix90_shelf_warm_loudnorm.mp3` tambem ficou
+    com ruido de fundo perceptivel.
+- Decisao: as variantes com mistura wet/dry usando o sinal original nao devem
+  seguir como candidatas principais, pois devolvem ruido demais para o objetivo
+  perceptual atual.
+- Foi percebido um barulho curto tipo `tick` imediatamente depois da palavra
+  `two`. O tick nao existe no audio original e parece estar presente nos audios
+  tratados por RNNoise.
+- Revisao via Claude CLI, sem edicao de arquivos, sugeriu investigar primeiro:
+  - fronteira de bloco do RNNoise;
+  - diferenca entre `rnnoise_base.wav`, WAV pos-loudnorm e MP3 decodificado;
+  - possivel efeito de pre-roll, reamostragem, loudnorm/EQ ou encoder MP3.
+- Diagnostico rapido inicial com diferencas e maiores saltos de amostra foi
+  inconclusivo: nao confirmou de forma direta alinhamento exato do maior evento
+  com fronteira de bloco, portanto a causa do tick ainda nao deve ser afirmada.
+- Pendencia tecnica criada:
+  **montar uma rotina diagnostica dedicada em `tmp/` para localizar o tick por
+  janela temporal, comparar original, RNNoise base, RNNoise loudnorm, EQ e MP3
+  decodificado, e verificar se o evento aparece antes ou depois do
+  pos-processamento.**
+- Para reduzir metalizacao sem devolver ruido, as proximas alternativas devem
+  evitar wet/dry mix e priorizar:
+  - EQ pos-RNNoise mais conservador, sem pico agressivo em 3 kHz;
+  - atenuacao leve na regiao alta associada ao brilho metalico;
+  - eventual controle de piso de supressao/ganho minimo no wrapper RNNoise,
+    somente apos diagnostico offline;
+  - nova matriz pequena, sem reintroduzir sinal original ruidoso.
+- O Apps Script, o questionario, o manifesto `2026-06-28.5` e os audios
+  publicados em `docs/questionario/assets/audio/` continuaram inalterados.
+
+## 2026-06-28 - Diagnostico inicial do tick RNNoise
+
+- Foi criada a rotina:
+  `scripts/audio/diagnose_rnnoise_tick.py`.
+- Objetivo: isolar o `tick` percebido logo apos a palavra `two/to`, comparando
+  janela curta do audio original, RNNoise processado no arquivo completo,
+  RNNoise processado apenas na janela, MP3 decodificado e variantes RNNoise ja
+  geradas.
+- A rotina grava apenas em `tmp/rnnoise_tick_diag/<nome>/` e nao altera o
+  questionario publicado.
+- Validacoes executadas:
+  - `python -m compileall scripts/audio/diagnose_rnnoise_tick.py`;
+  - `python scripts/audio/diagnose_rnnoise_tick.py --help`.
+- Execucao inicial:
+
+```powershell
+python scripts\audio\diagnose_rnnoise_tick.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --name questionario_amostra `
+  --center-s 1.82 `
+  --window-s 0.50 `
+  --also-file tmp\rnnoise_antimetallic_eval\questionario_amostra\wav\questionario_amostra_rnnoise_loudnorm.wav `
+  --also-file tmp\rnnoise_antimetallic_eval\questionario_amostra\wav\questionario_amostra_rnnoise_peak_eq_loudnorm.wav
+```
+
+- Saidas geradas em:
+  `tmp/rnnoise_tick_diag/questionario_amostra/`.
+- Relatorio gerado:
+  `tmp/rnnoise_tick_diag/questionario_amostra/tick_diag_report.json`.
+- Janelas WAV geradas para escuta:
+  - `questionario_amostra_original_window.wav`;
+  - `questionario_amostra_rnnoise_full_window.wav`;
+  - `questionario_amostra_rnnoise_window_only.wav`;
+  - `questionario_amostra_rnnoise_full_window_mp3decoded.wav`;
+  - janelas extras das variantes `rnnoise_loudnorm` e `rnnoise_peak_eq_loudnorm`.
+- Resultado inicial:
+  - o evento forte aparece no RNNoise base e permanece no MP3 decodificado;
+  - o evento nao parece ser criado exclusivamente pelo encoder MP3;
+  - loudnorm/EQ parecem amplificar o evento, mas nao necessariamente cria-lo;
+  - os maiores saltos detectados na janela nao ficaram exatamente alinhados com
+    uma fronteira de bloco RNNoise, portanto a hipotese de fronteira de bloco
+    ainda nao esta confirmada.
+- Proxima acao recomendada: escutar as janelas curtas geradas e, se necessario,
+  ajustar `--center-s` para o ponto exato percebido manualmente antes de tentar
+  remocao/correcao.
+
+## 2026-06-28 - Pre-checagem local do questionario GitHub Pages
+
+- A URL esperada para GitHub Pages, a partir do `origin`, e:
+  `https://gamathias14.github.io/reducao-de-ruido-algoritmica/questionario/`.
+- Pre-checagem local do manifesto:
+  - `submission.enabled` esta `true`;
+  - `schemaVersion` esta em `2026-06-28.5`;
+  - os 6 MP3s declarados no manifesto existem;
+  - todos os hashes SHA-256 declarados no manifesto batem com os arquivos locais.
+- Esta checagem nao substitui o teste real no navegador apos o deploy do GitHub
+  Pages, especialmente o teste de envio para Apps Script/Google Sheets.
+
+## 2026-06-28 - Confirmacao manual do Pages e do tick isolado
+
+- O teste manual no navegador do GitHub Pages foi bem-sucedido: o questionario
+  carregou corretamente e o fluxo inicial esta funcional.
+- O tick foi confirmado por escuta manual nas janelas curtas geradas pela rotina
+  `scripts/audio/diagnose_rnnoise_tick.py`.
+- Com isso, a etapa de localizacao deixou de ser apenas teorica: ha um trecho
+  curto reproduzivel em `tmp/rnnoise_tick_diag/questionario_amostra/wav/` para
+  guiar a correcao.
+- Proxima frente tecnica: testar remocao/correcao do tick primeiro nessa janela
+  curta, antes de alterar a cadeia completa RNNoise ou qualquer audio publicado.
+- Possiveis estrategias de correcao a avaliar offline:
+  - atenuacao localizada do transiente;
+  - interpolacao curta ao redor do clique;
+  - filtro de de-click em janela estreita;
+  - ajuste no pos-processamento para nao amplificar o evento.
+- O questionario publicado permanece como esta ate haver uma variante RNNoise
+  corrigida e aprovada por escuta manual.
+
+## 2026-06-28 - Primeira tentativa de remocao do tick RNNoise
+
+- Foi criada a rotina experimental:
+  `scripts/audio/prepare_rnnoise_tick_declick_eval.py`.
+- Objetivo: aplicar correcoes localizadas no tick identificado, gerando variantes
+  em `tmp/` para escuta manual antes de qualquer substituicao de audio publicado.
+- Validacao executada:
+  - `python -m compileall scripts/audio/prepare_rnnoise_tick_declick_eval.py`.
+- Execucao inicial:
+
+```powershell
+python scripts\audio\prepare_rnnoise_tick_declick_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --processed-rnnoise tmp\rnnoise_tick_diag\questionario_amostra\wav\questionario_amostra_rnnoise_full.wav `
+  --name questionario_amostra `
+  --tick-time-s 1.8171 `
+  --search-ms 90
+```
+
+- Tick detectado automaticamente em aproximadamente `1,817125 s`, amostra
+  `29074` no audio completo.
+- Saidas geradas em:
+  `tmp/rnnoise_tick_declick_eval/questionario_amostra/`.
+- Relatorio gerado:
+  `tmp/rnnoise_tick_declick_eval/questionario_amostra/tick_declick_report.json`.
+- Variantes geradas para escuta de janela curta:
+  - `questionario_amostra_rnnoise_uncorrected_window.mp3`;
+  - `questionario_amostra_interp_5_samples_window.mp3`;
+  - `questionario_amostra_interp_9_samples_window.mp3`;
+  - `questionario_amostra_interp_15_samples_window.mp3`;
+  - `questionario_amostra_attenuate_2ms_window.mp3`;
+  - `questionario_amostra_microfade_9_samples_window.mp3`.
+- A rotina tambem gerou arquivos completos com a cadeia de EQ atual + loudnorm
+  para verificar se a correcao se mantem no formato de avaliacao do questionario.
+- Resultado objetivo inicial: nas variantes corrigidas, o maior salto da janela
+  deixou de ocorrer exatamente no ponto do tick detectado e passou para outro
+  evento posterior de fala. Isso sugere que o transiente local foi reduzido,
+  mas a aprovacao depende de escuta manual.
+- Feedback manual posterior: todas as variantes iniciais ainda mantiveram o tick
+  audivel por volta de `1,817125 s`, logo a correcao de poucos samples foi
+  insuficiente.
+- A rotina foi ampliada para uma segunda rodada com correcoes de milissegundos:
+  - interpolacao agressiva de 8 ms e 16 ms;
+  - atenuacao localizada de 8 ms e 20 ms;
+  - suavizacao local de 8 ms;
+  - patch curto usando o audio original ruidoso em 6 ms, 12 ms e 24 ms.
+- Segunda execucao:
+
+```powershell
+python scripts\audio\prepare_rnnoise_tick_declick_eval.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --processed-rnnoise tmp\rnnoise_tick_diag\questionario_amostra\wav\questionario_amostra_rnnoise_full.wav `
+  --name questionario_amostra_round2 `
+  --tick-time-s 1.8171 `
+  --search-ms 90
+```
+
+- Saidas da segunda rodada:
+  `tmp/rnnoise_tick_declick_eval/questionario_amostra_round2/`.
+- Relatorio da segunda rodada:
+  `tmp/rnnoise_tick_declick_eval/questionario_amostra_round2/tick_declick_report.json`.
+- Observacao objetiva: os patches com audio original ruidoso aumentaram bastante
+  os saltos locais, portanto podem remover a percepcao de tick, mas tendem a
+  reintroduzir transientes/ruido e devem ser avaliados com cautela.
+- Nada foi alterado no questionario publicado.
+
+
+## 2026-06-28 - Revisao Claude high sobre tick persistente
+
+- A segunda rodada de de-click ainda manteve o tick perceptivel em todas as
+  variantes indicadas para escuta.
+- Foi chamada uma revisao via Claude CLI em modo de planejamento/leitura, sem
+  edicao de arquivos pelo Claude.
+- Conclusao principal: a falha das correcoes de poucos samples e tambem das
+  correcoes de ate 24 ms indica que o problema provavelmente nao e um clique
+  pontual simples.
+- Hipoteses prioritarias levantadas:
+  - artefato espectral/tonal criado pelo RNNoise na transicao de fala para
+    silencio/ruido;
+  - localizacao errada do evento, pois `argmax(abs(processado - original))` pode
+    localizar a maior diferenca numerica e nao o centro perceptual do tick;
+  - artefato multi-frame do RNNoise, possivelmente com duracao de 30 a 60 ms;
+  - costuras das tentativas de patch criando ou mantendo artefatos;
+  - pre-echo ou redistribuicao perceptual introduzida pelo MP3;
+  - necessidade de alinhar patches a fronteiras de frame equivalentes a blocos
+    do RNNoise.
+- Proxima estrategia recomendada:
+  1. gerar espectrogramas da janela `1,75 s` a `1,95 s` para original, RNNoise e
+     diferenca;
+  2. criar uma varredura perceptual com clipes curtos deslizantes para localizar
+     onset/offset reais do tick, em vez de confiar apenas na maior diferenca de
+     amostra;
+  3. testar patches maiores de `40 ms`, `60 ms`, `80 ms` e `100 ms` com crossfade
+     longo, somente apos confirmar a localizacao;
+  4. comparar WAV diretamente contra MP3 para verificar se o codec esta mantendo
+     ou espalhando o artefato;
+  5. testar patches alinhados a fronteiras de frame se a evidencia apontar para
+     artefato de frame/bloco.
+- Criterio de parada sugerido: se mesmo patches grandes e localizados por escuta
+  falharem, considerar trocar a amostra de audio usada no questionario, em vez de
+  continuar tentando mascarar um artefato estrutural dessa fala especifica.
+- Nada foi alterado no questionario publicado.
+
+## 2026-06-28 - Diagnostico profundo do tick RNNoise executado
+
+- Foi criada a rotina:
+  `scripts/audio/prepare_rnnoise_tick_deepdiag.py`.
+- Objetivo: dar continuidade ao plano Claude high com diagnostico por
+  espectrograma, varredura perceptual de clipes deslizantes e patches maiores /
+  alinhados a frames.
+- Validacao executada:
+  - `python -m compileall scripts/audio/prepare_rnnoise_tick_deepdiag.py`.
+- Execucao inicial:
+
+```powershell
+python scripts\audio\prepare_rnnoise_tick_deepdiag.py `
+  --input tmp\questionario_audio_work\amostra_noisy_reference.wav `
+  --processed-rnnoise tmp\rnnoise_tick_diag\questionario_amostra\wav\questionario_amostra_rnnoise_full.wav `
+  --name questionario_amostra `
+  --range-start-s 1.70 `
+  --range-end-s 2.02 `
+  --scan-clip-ms 60 `
+  --scan-step-ms 20 `
+  --tick-time-s 1.817125
+```
+
+- Saidas geradas em:
+  `tmp/rnnoise_tick_deepdiag/questionario_amostra/`.
+- Relatorio:
+  `tmp/rnnoise_tick_deepdiag/questionario_amostra/deepdiag_report.json`.
+- Guia de escuta:
+  `tmp/rnnoise_tick_deepdiag/questionario_amostra/README.md`.
+- Espectrogramas gerados:
+  - `png/questionario_amostra_spectrogram_original.png`;
+  - `png/questionario_amostra_spectrogram_rnnoise.png`;
+  - `png/questionario_amostra_spectrogram_difference_gain4.png`.
+- Varredura perceptual gerada em `mp3/scan/`, com clipes de `60 ms` a cada
+  `20 ms`, em formato `original -> pausa -> RNNoise`.
+- Patches maiores gerados em `mp3/patches/`, incluindo:
+  - patches com original ruidoso de `40`, `60`, `80` e `100 ms`;
+  - fades para silencio nos mesmos intervalos;
+  - patches e fades alinhados a frames RNNoise equivalentes.
+- Observacao inicial do relatorio: os maiores scores espectrais de diferenca
+  aparecem antes de `1,817125 s`, especialmente por volta de `1,784 s` a
+  `1,796 s` em energia total/presenca, enquanto a banda baixa tambem apresenta
+  diferencas relevantes mais tarde, entre `1,872 s` e `1,908 s`.
+- Proxima acao: escuta manual da varredura em `mp3/scan/` para identificar em
+  qual clipe o tick fica mais evidente e assim localizar onset/offset reais.
+- Nada foi alterado no questionario publicado.
+
+## 2026-06-28 - Preparacao para teste com gravacao propria
+
+- Objetivo da nova frente: verificar se o tick percebido na transicao `two -> three`
+  e especifico da amostra atual do questionario ou se tambem aparece em uma
+  gravacao nova feita localmente.
+- Estado confirmado por inspecao local:
+  - scripts RNNoise/tick existentes em `scripts/audio/`;
+  - nucleo RNNoise existente em `realtime_audio/process_wav_rnnoise.py` e
+    `realtime_audio/rnnoise_processor.py`;
+  - saidas temporarias anteriores preservadas em `tmp/rnnoise_tick_diag/`,
+    `tmp/rnnoise_tick_declick_eval/` e `tmp/rnnoise_tick_deepdiag/`.
+- Ferramentas locais confirmadas:
+  - Python `3.11.4`;
+  - FFmpeg/FFprobe `4.2.9`;
+  - DLL RNNoise default encontrada em
+    `%USERPROFILE%\.cache\ptc3527-benchmark\bin\ptc3527-rnnoise-v0.2.dll`.
+- Observacao operacional: `realtime_audio/process_wav_rnnoise.py` deve ser
+  executado como modulo (`python -m realtime_audio.process_wav_rnnoise`), pois a
+  execucao direta do arquivo nao encontra o pacote `realtime_audio`.
+- Proxima acao: o usuario deve gravar um audio curto proprio, entre `10` e
+  `20 s`, preferencialmente em WAV/PCM ou M4A/MP3 sem efeitos, e salvar/copiar o
+  arquivo bruto para `tmp/user_recordings/` antes da rodada experimental.
+- Restricoes preservadas: nada foi alterado em `docs/questionario/`, Apps Script,
+  manifesto `2026-06-28.5` ou audios publicados.
+
+## 2026-06-28 - Rodada RNNoise com gravacao propria executada
+
+- Arquivo bruto encontrado em:
+  `tmp/user_recordings/teste_audio_augusto.m4a`.
+- Metadados de entrada:
+  - codec: AAC;
+  - taxa de amostragem: `48 kHz`;
+  - canais: `2`;
+  - duracao: `8,469 s`.
+- Observacao: a duracao ficou abaixo da faixa ideal de `10` a `20 s`, mas foi
+  considerada suficiente para esta rodada experimental.
+- Foi criada a rotina:
+  `scripts/audio/prepare_user_recording_rnnoise_eval.py`.
+- Validacao executada:
+  - `python -m compileall scripts/audio/prepare_user_recording_rnnoise_eval.py`;
+  - `python scripts/audio/prepare_user_recording_rnnoise_eval.py --help`.
+- Execucao:
+
+```powershell
+python scripts\audio\prepare_user_recording_rnnoise_eval.py `
+  --input tmp\user_recordings\teste_audio_augusto.m4a `
+  --name teste_audio_augusto `
+  --snr-db 5.0
+```
+
+- Saidas geradas em:
+  `tmp/user_recording_rnnoise_eval/teste_audio_augusto/`.
+- Relatorio completo:
+  `tmp/user_recording_rnnoise_eval/teste_audio_augusto/metrics/user_recording_rnnoise_eval_report.json`.
+- WAVs principais gerados:
+  - `wav/teste_audio_augusto_clean_16k_mono.wav`;
+  - `wav/teste_audio_augusto_clean_normalized.wav`;
+  - `wav/teste_audio_augusto_artificial_noise_only.wav`;
+  - `wav/teste_audio_augusto_noisy_artificial.wav`;
+  - `wav/teste_audio_augusto_rnnoise_base.wav`;
+  - `wav/teste_audio_augusto_rnnoise_loudnorm.wav`;
+  - `wav/teste_audio_augusto_rnnoise_eq_loudnorm.wav`;
+  - `wav/teste_audio_augusto_rnnoise_shelf_warm_loudnorm.wav`;
+  - `wav/teste_audio_augusto_rnnoise_lowpass_loudnorm.wav`.
+- MP3s para escuta manual gerados em:
+  `tmp/user_recording_rnnoise_eval/teste_audio_augusto/mp3/`.
+- Ruido artificial:
+  - modelo: banda larga colorida + hum `60/120 Hz` + tom fraco tipo ventilacao;
+  - SNR solicitado: `5,0 dB`;
+  - SNR obtido: aproximadamente `5,0 dB`.
+- RTF RNNoise medido nesta rodada: aproximadamente `0,0288`.
+- Loudness/RMS/pico e hashes foram registrados no relatorio JSON.
+- Interpretacao tecnica limitada: a rodada gerou material para escuta comparativa,
+  mas ainda nao sustenta conclusao sobre presenca ou ausencia de tick sem escuta
+  manual dos MP3s/WAVs gerados.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto
+  `2026-06-28.5` ou audios publicados.
+
+## 2026-06-28 - Metalizacao intrinseca RNNoise: reparo ativo e caminho 48 kHz
+
+- Feedback manual do usuario sobre o diagnostico de normalizacao:
+  - `rnnoise_raw_no_norm` tambem soou metalizado;
+  - conclusao provisoria: a normalizacao/loudnorm nao e a causa principal,
+    embora possa agravar/expor o artefato.
+- Decisao tecnica: tratar a metalizacao como artefato intrinseco da saida
+  RNNoise ou do caminho atual de adaptacao 16 kHz <-> 48 kHz.
+- Foi criada a rotina:
+  `scripts/audio/prepare_rnnoise_active_repair_eval.py`.
+- Objetivo da rotina: testar mitigacoes que atuem em fala ativa sem `loudnorm`
+  dinamico e sem gate/release que corte pausas.
+- Familias testadas:
+  - suavizacao temporal leve/media da magnitude espectral;
+  - suavizacao cepstral leve de envelope;
+  - atenuacao de picos tonais estreitos entre `1,6` e `6,5 kHz`;
+  - restauracao fraca/leve de residuo speech-like do sinal original, limitada a
+    bins harmonicamente plausiveis e fala ativa.
+- Execucao:
+
+```powershell
+python scripts\audio\prepare_rnnoise_active_repair_eval.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto `
+  --output-dir tmp\rnnoise_active_repair_eval `
+  --startup-preroll-ms 200
+```
+
+- Saidas:
+  `tmp/rnnoise_active_repair_eval/teste_audio_augusto/`.
+- Relatorio:
+  `tmp/rnnoise_active_repair_eval/teste_audio_augusto/metrics/active_repair_report.json`.
+- MP3s principais:
+  - `mp3/clean_reference.mp3`;
+  - `mp3/noisy_reference.mp3`;
+  - `mp3/rnnoise_raw.mp3`;
+  - `mp3/tonal_tame_mild.mp3`;
+  - `mp3/tonal_tame_medium.mp3`;
+  - `mp3/cepstral_smooth_mild.mp3`;
+  - `mp3/temporal_smooth_mild.mp3`;
+  - `mp3/temporal_smooth_medium.mp3`;
+  - `mp3/speech_residual_restore_weak.mp3`;
+  - `mp3/speech_residual_restore_mild.mp3`.
+- Resultado objetivo inicial:
+  - `tonal_tame_mild` e `tonal_tame_medium` alteraram pouco o sinal
+    (`delta_vs_rnnoise_relative_db` entre aproximadamente `-48 dB` e `-41 dB`)
+    e reduziram levemente a participacao ativa em `3-8 kHz`;
+  - suavizacao temporal reduziu um pouco a modulacao/energia de alta banda, mas
+    mexeu mais no sinal;
+  - suavizacao cepstral foi mais invasiva e piorou metricas contra a referencia;
+  - restauracao speech-like preservou custo baixo, mas deve ser ouvida com
+    cautela por risco de devolver ruido.
+- RTF RNNoise nesta rodada: aproximadamente `0,0258`.
+- RTF do pos-processamento: aproximadamente `0,005` a `0,019`, ainda abaixo do
+  tempo real em PC, mas as familias mais caras exigiriam otimizacao antes de
+  prototipo realtime.
+- Tambem foi criada a rotina:
+  `scripts/audio/prepare_rnnoise_path_compare.py`.
+- Objetivo: separar artefato do modelo RNNoise de possivel artefato do adaptador
+  atual 16 kHz -> 48 kHz -> 16 kHz.
+- A rotina compara:
+  - caminho atual via DLL `ptc3527-rnnoise-v0.2.dll`, com up/downsample FIR no
+    adaptador;
+  - caminho alternativo via executavel RNNoise nativo 48 kHz, com resampling
+    externo `scipy.signal.resample_poly` e mesmo `startup_preroll_ms`.
+- Execucao:
+
+```powershell
+python scripts\audio\prepare_rnnoise_path_compare.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto `
+  --output-dir tmp\rnnoise_path_compare `
+  --startup-preroll-ms 200
+```
+
+- Saidas:
+  `tmp/rnnoise_path_compare/teste_audio_augusto/`.
+- Relatorio:
+  `tmp/rnnoise_path_compare/teste_audio_augusto/metrics/path_compare_report.json`.
+- MP3s principais:
+  - `mp3/rnnoise_dll_16k_adapter.mp3`;
+  - `mp3/rnnoise_exe_48k_resample_poly.mp3`.
+- Resultado objetivo inicial:
+  - os dois caminhos ficaram com RMS/pico semelhantes;
+  - o caminho `exe_48k_resample_poly` diferiu bastante da DLL
+    (`delta_vs_dll_rms_dbfs` em torno de `-15 dBFS`);
+  - a diferenca objetiva torna obrigatoria a escuta comparativa: se o caminho
+    48 kHz externo soar menos metalizado, o proximo foco deve ser o adaptador ou
+    o resampling interno, nao apenas pos-processamento.
+- Conclusao honesta do ciclo:
+  - nao e possivel garantir que o RNNoise stock nao introduza metalizacao apenas
+    por pos-processamento simples;
+  - se as variantes de reparo ativo e o caminho 48 kHz tambem falharem por
+    escuta, deve-se registrar RNNoise como limitado perceptualmente nessa
+    condicao e avaliar alternativas: controle de agressividade no adaptador,
+    exposicao/alteracao de ganhos internos, retreino/fine-tuning do RNNoise ou
+    selecao de outro nucleo com RTF aceitavel.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto
+  `2026-06-28.5` ou audios publicados.
+
+## 2026-06-28 - Diagnostico da normalizacao/loudnorm no RNNoise
+
+- Feedback manual do usuario sobre a rodada temporal de cauda:
+  - todas as variantes ainda mantiveram a voz metalizada;
+  - as variantes de release/gate ficaram truncadas/picotadas entre momentos de
+    silencio;
+  - portanto, a estrategia de cortar cauda por VAD/release nao deve seguir como
+    candidata principal neste audio.
+- Nova hipotese levantada pelo usuario: a normalizacao/loudnorm apos o RNNoise
+  pode estar agravando ou causando a percepcao de voz metalizada ao elevar
+  residuos/artefatos da saida processada.
+- Foi feita uma consulta curta ao Claude CLI em modo `high`, sem edicao pelo
+  Claude. A recomendacao foi comparar RNNoise cru, ganho fixo, peak normalize,
+  RMS-match e loudnorm atual, porque apenas remover loudnorm pode enviesar a
+  escuta por diferenca de volume.
+- Inspecao dos relatorios existentes mostrou que as variantes RNNoise com
+  `loudnorm` atual estavam registrando `normalization_type: dynamic`, nao
+  apenas ganho linear. Isso torna a hipotese de agravamento por normalizacao
+  tecnicamente plausivel, embora ainda nao prove causalidade perceptual.
+- Foi criada a rotina:
+  `scripts/audio/prepare_rnnoise_loudness_diagnosis.py`.
+- A rotina:
+  - processa a entrada pelo RNNoise;
+  - gera MP3s sem loudnorm e com alternativas de ganho fixo;
+  - gera variantes `loudnorm` atuais e com LRA mais folgado;
+  - mede RMS, pico, loudness, banda ativa de `3-8 kHz`, centroide espectral,
+    SI-SDR contra a referencia limpa e RTF;
+  - nao aplica release, gate ou cortes entre palavras.
+- Validacoes executadas:
+  - `python -m compileall scripts\audio\prepare_rnnoise_loudness_diagnosis.py`;
+  - `python scripts\audio\prepare_rnnoise_loudness_diagnosis.py --help`.
+- Execucao principal:
+
+```powershell
+python scripts\audio\prepare_rnnoise_loudness_diagnosis.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto `
+  --output-dir tmp\rnnoise_loudness_diagnosis `
+  --startup-preroll-ms 200
+```
+
+- Saidas geradas em:
+  `tmp/rnnoise_loudness_diagnosis/teste_audio_augusto/`.
+- Relatorio principal:
+  `tmp/rnnoise_loudness_diagnosis/teste_audio_augusto/metrics/loudness_diagnosis_report.json`.
+- MP3s principais para escuta manual:
+  - `mp3/clean_reference_no_norm.mp3`;
+  - `mp3/noisy_reference_no_norm.mp3`;
+  - `mp3/rnnoise_raw_no_norm.mp3`;
+  - `mp3/rnnoise_fixed_loudnorm_offset.mp3`;
+  - `mp3/rnnoise_peak_m1.mp3`;
+  - `mp3/rnnoise_active_rms_match_clean.mp3`;
+  - `mp3/rnnoise_half_active_rms_match_clean.mp3`;
+  - `mp3/rnnoise_all_rms_match_clean.mp3`;
+  - `mp3/rnnoise_active_rms_match_noisy.mp3`;
+  - `mp3/rnnoise_loudnorm_current.mp3`;
+  - `mp3/rnnoise_loudnorm_lra20.mp3`;
+  - `mp3/rnnoise_loudnorm_i20_lra20.mp3`.
+- RTF RNNoise medido nesta rodada: aproximadamente `0,0280`.
+- Resultado objetivo inicial:
+  - RNNoise cru: RMS aproximadamente `-18,04 dBFS`, pico `-1,52 dBFS`,
+    loudness aproximado `-16,89 LUFS`;
+  - a referencia limpa tinha RMS ativo apenas cerca de `0,9 dB` acima do RNNoise
+    cru, portanto a saida RNNoise nao estava dramaticamente baixa;
+  - o ganho fixo para igualar RMS ativo a referencia limpa foi de apenas
+    aproximadamente `+0,90 dB`;
+  - `rnnoise_loudnorm_current` entrou em `normalization_type: dynamic`;
+  - `rnnoise_loudnorm_lra20` tambem entrou em `dynamic` nesta versao do FFmpeg;
+  - `rnnoise_loudnorm_i20_lra20` entrou em `linear`, mas ficou mais baixo
+    (`-20 LUFS`, pico aproximadamente `-4,63 dBFS`);
+  - a participacao espectral ativa em `3-8 kHz` ficou praticamente igual nas
+    variantes de ganho fixo, como esperado, e um pouco maior no loudnorm atual
+    (`~2,16%` contra `~2,07%`), diferenca objetiva pequena.
+- Interpretacao honesta:
+  - se `rnnoise_raw_no_norm`, `rnnoise_peak_m1` ou
+    `rnnoise_active_rms_match_clean` soarem menos metalizados que
+    `rnnoise_loudnorm_current`, o loudnorm atual deve ser tratado como agravante;
+  - se todos continuarem metalizados, inclusive o RNNoise cru, a causa principal
+    provavelmente esta na propria saida RNNoise/modelo/amostra, e a normalizacao
+    apenas expõe o defeito;
+  - a variante `rnnoise_loudnorm_i20_lra20` serve para testar loudnorm linear
+    mais baixo, mas pode parecer menos cheia por estar cerca de 4 LU abaixo do
+    alvo anterior.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto
+  `2026-06-28.5` ou audios publicados.
+
+## 2026-06-28 - Avaliacao temporal de cauda/metalizacao RNNoise
+
+- Objetivo: investigar a hipotese de que a voz metalizada percebida na gravacao
+  propria vem de artefatos temporais em transicoes fala -> pausa, e nao apenas
+  de EQ fixo ou de falta de mistura com o sinal ruidoso.
+- Foi feita uma consulta curta ao Claude CLI em modo conceitual. A consulta
+  longa com leitura do projeto excedeu o tempo limite, mas a consulta curta
+  convergiu para a abordagem de VAD/envelope/hold-release pos-RNNoise.
+- Foi criada a rotina:
+  `scripts/audio/prepare_rnnoise_temporal_tail_eval.py`.
+- A rotina:
+  - processa o WAV ruidoso pelo RNNoise;
+  - detecta regioes de fala e offsets por VAD de energia em blocos de 20 ms;
+  - mede eventos de cauda usando a referencia limpa quando disponivel;
+  - aplica variantes causais de hold/release sobre a saida RNNoise;
+  - gera WAVs crus, WAVs loudnorm, MP3s para escuta e JSON com metricas;
+  - registra RTF do RNNoise e RTF do pos-processamento temporal.
+- Validacoes executadas:
+  - `python -m compileall scripts\audio\prepare_rnnoise_temporal_tail_eval.py`;
+  - `python scripts\audio\prepare_rnnoise_temporal_tail_eval.py --help`.
+- Rodada principal executada com VAD de controle no sinal ruidoso:
+
+```powershell
+python scripts\audio\prepare_rnnoise_temporal_tail_eval.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto `
+  --output-dir tmp\rnnoise_temporal_tail_eval `
+  --startup-preroll-ms 200 `
+  --control-vad-source input `
+  --analysis-vad-source clean
+```
+
+- Saidas principais:
+  `tmp/rnnoise_temporal_tail_eval/teste_audio_augusto/`.
+- Relatorio principal:
+  `tmp/rnnoise_temporal_tail_eval/teste_audio_augusto/metrics/temporal_tail_eval_report.json`.
+- MP3s principais para escuta manual:
+  - `mp3/clean_reference_loudnorm.mp3`;
+  - `mp3/noisy_reference_loudnorm.mp3`;
+  - `mp3/rnnoise_base_loudnorm.mp3`;
+  - `mp3/tail_release30_loudnorm.mp3`;
+  - `mp3/tail_release45_loudnorm.mp3`;
+  - `mp3/tail_release60_loudnorm.mp3`;
+  - `mp3/tail_release15_loudnorm.mp3`;
+  - `mp3/tail_release30_floor_m60_loudnorm.mp3`;
+  - `mp3/speechmix3_release30_loudnorm.mp3`.
+- Foram detectados `3` eventos de cauda pela referencia limpa.
+- RTF RNNoise medido na rodada principal: aproximadamente `0,0330`.
+- RTF do pos-processamento temporal: ordem de `0,0002` a `0,0007`, portanto
+  custo computacional desprezivel frente ao RNNoise nesta medicao offline.
+- Resultado objetivo da rodada principal:
+  - RNNoise base: mediana de energia de cauda aproximadamente `-22,03 dB`
+    contra a janela de fala anterior;
+  - `tail_release30`: mediana de cauda aproximadamente `-53,01 dB`;
+  - `tail_release45`: mediana de cauda aproximadamente `-42,01 dB`;
+  - `tail_release60`: mediana de cauda aproximadamente `-37,00 dB`;
+  - `tail_release15`: reducao extrema, aproximadamente `-81,65 dB`, mas com
+    alto risco de corte perceptual/artificialidade;
+  - `speechmix3_release30` manteve a reducao de cauda do release de 30 ms, mas
+    piorou metricas contra a referencia limpa por reintroduzir parte do sinal
+    ruidoso durante fala ativa. Deve ser ouvido com cautela, nao tratado como
+    candidato automatico.
+- Rodada comparativa executada com VAD de controle na propria saida RNNoise:
+
+```powershell
+python scripts\audio\prepare_rnnoise_temporal_tail_eval.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto_rnnoisevad `
+  --output-dir tmp\rnnoise_temporal_tail_eval `
+  --startup-preroll-ms 200 `
+  --control-vad-source rnnoise `
+  --analysis-vad-source clean
+```
+
+- Saidas comparativas:
+  `tmp/rnnoise_temporal_tail_eval/teste_audio_augusto_rnnoisevad/`.
+- Observacao tecnica importante: com VAD de controle no RNNoise, o gate quase
+  nao atuou; as variantes ficaram praticamente iguais ao RNNoise base. Isso
+  sugere que a propria saida RNNoise tende a manter regioes de cauda como fala
+  ativa/energia relevante, reforcando a hipotese de artefato temporal de
+  transicao.
+- Interpretacao honesta:
+  - a nova familia nao devolve ruido em pausas por mistura fixa com o original;
+  - as variantes de release atacam diretamente a cauda artificial;
+  - a metrica favorece `tail_release30`, mas a escuta pode preferir
+    `tail_release45` ou `tail_release60` se `30 ms` soar truncado;
+  - `15 ms` e diagnostico agressivo, nao candidato primario;
+  - a decisao final permanece perceptual, especialmente para verificar se
+    consoantes finais e respiracoes naturais foram cortadas.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto
+  `2026-06-28.5` ou audios publicados.
+
+## 2026-06-28 - Feedback manual: tick ausente e metalizacao perceptivel
+
+- Feedback manual do usuario sobre a gravacao propria:
+  - o artefato tipo `tick` nao ocorreu;
+  - a voz ficou metalizada nos audios tratados;
+  - a percepcao descrita foi de um resquicio/cauda no fim da fala, como um eco
+    mais grosso, sem resultado `crystal clear`.
+- Interpretacao provisoria:
+  - o tick provavelmente foi infelicidade especifica da primeira amostra de
+    benchmark;
+  - o foco volta a ser reduzir metalizacao/cauda residual do RNNoise sem criar
+    novos problemas.
+- Nova rodada anti-metalizacao executada sobre a gravacao propria:
+
+```powershell
+python scripts\audio\prepare_rnnoise_antimetallic_eval.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto `
+  --output-dir tmp\rnnoise_antimetallic_eval `
+  --startup-preroll-ms 200 `
+  --peak-eq-gain-db 1.0 `
+  --shelf-gain-db 1.0 `
+  --warmth-gain-db 1.0 `
+  --lowpass-freq-hz 7000
+```
+
+- Saidas geradas em:
+  `tmp/rnnoise_antimetallic_eval/teste_audio_augusto/`.
+- MP3s principais para escuta manual:
+  - `teste_audio_augusto_rnnoise_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_peak_eq_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_mix90_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_mix85_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_shelf_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_shelf_warm_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_lowpass_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_warm_loudnorm.mp3`;
+  - `teste_audio_augusto_rnnoise_mix90_shelf_warm_loudnorm.mp3`.
+- RTF RNNoise nessa execucao: aproximadamente `0,0252`.
+- Observacao tecnica: variantes com mistura RNNoise/original podem recuperar
+  naturalidade, mas tambem podem devolver ruido; a decisao depende de escuta
+  manual.
+- Foi criado um prompt de apoio para Claude em:
+  `tmp/rnnoise_antimetallic_eval/teste_audio_augusto/PROMPT_CLAUDE_INVESTIGAR_METALIZACAO.md`.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto
+  `2026-06-28.5` ou audios publicados.
+
+## 2026-06-28 - Pivo para candidatos nao-RNNoise contra metalizacao
+
+- Feedback manual consolidado do usuario:
+  - todos os audios da leva com cauda/release continuaram metalizados;
+  - a estrategia de cauda introduziu tambem voz truncada/picotada entre pausas;
+  - `rnnoise_raw_no_norm` tambem soou metalizado, indicando que a normalizacao
+    nao e a causa principal;
+  - 16 kHz via DLL/adaptador e 48 kHz via executavel nativo/resampling soaram
+    indistinguiveis;
+  - conclusao operacional: RNNoise stock passa a ser tratado como referencia
+    negativa para essa gravacao, nao como candidato principal.
+- Foi feita uma consulta ao Claude CLI em modo `high`, sem edicao pelo Claude.
+  A recomendacao convergiu para abandonar o RNNoise stock como supressor
+  principal nesse caso e priorizar WebRTC APM NS, depois OMLSA/IMCRA e STFT
+  causal; DeepFilterNet fica como teto de qualidade, mas fora da linha principal
+  por RTF ja observado alto.
+- Foi criada a rotina:
+  `scripts/audio/prepare_non_rnnoise_candidates_eval.py`.
+- A rotina:
+  - gera referencias limpa/ruidosa;
+  - gera `rnnoise_reference_raw` apenas como referencia negativa;
+  - gera `webrtc_apm_ns_raw`, `omlsa_imcra_raw` e `baseline_stft_raw`;
+  - nao aplica `loudnorm` dinamico nem gate/release;
+  - grava WAV, MP3 e relatorio JSON com RTF, latencia declarada, RMS ativo e
+    inativo, banda ativa de `3-8 kHz` e SI-SDR contra a referencia limpa.
+- Validacao executada:
+  - `python -m py_compile scripts\audio\prepare_non_rnnoise_candidates_eval.py`.
+- Execucao principal:
+
+```powershell
+python scripts\audio\prepare_non_rnnoise_candidates_eval.py `
+  --input tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_noisy_artificial.wav `
+  --clean-reference tmp\user_recording_rnnoise_eval\teste_audio_augusto\wav\teste_audio_augusto_clean_normalized.wav `
+  --name teste_audio_augusto `
+  --output-dir tmp\non_rnnoise_candidates_eval
+```
+
+- Saidas geradas em:
+  `tmp/non_rnnoise_candidates_eval/teste_audio_augusto/`.
+- Relatorio principal:
+  `tmp/non_rnnoise_candidates_eval/teste_audio_augusto/metrics/non_rnnoise_candidates_report.json`.
+- MP3s principais para escuta manual:
+  - `mp3/clean_reference.mp3`;
+  - `mp3/noisy_reference.mp3`;
+  - `mp3/rnnoise_reference_raw.mp3`;
+  - `mp3/webrtc_apm_ns_raw.mp3`;
+  - `mp3/omlsa_imcra_raw.mp3`;
+  - `mp3/baseline_stft_raw.mp3`.
+- Resultado objetivo inicial:
+  - `rnnoise_reference_raw`: RTF `~0,0211`, latencia algoritmica `20 ms`,
+    RMS inativo `~-53,83 dBFS`, SI-SDR ativo `~10,34 dB`;
+  - `webrtc_apm_ns_raw`: RTF `~0,0024`, latencia algoritmica `6 ms`, RMS
+    inativo `~-37,78 dBFS`, SI-SDR ativo `~-14,71 dB`;
+  - `omlsa_imcra_raw`: RTF `~0,0643`, latencia algoritmica `32 ms`, RMS
+    inativo `~-26,52 dBFS`, SI-SDR ativo `~11,27 dB`;
+  - `baseline_stft_raw`: RTF `~0,1120`, latencia algoritmica `32 ms`, RMS
+    inativo `~-32,15 dBFS`, SI-SDR ativo `~9,58 dB`.
+- Checagem adicional de alinhamento por correlacao:
+  - RNNoise, OMLSA/IMCRA e STFT ficaram com lag maximo `0` amostras;
+  - WebRTC APM NS ficou com lag maximo de aproximadamente `12` amostras
+    (`0,75 ms`), insuficiente para explicar sozinho o SI-SDR ativo negativo.
+- Interpretacao honesta:
+  - a decisao continua sendo perceptual, porque SI-SDR pode punir fortemente
+    mudancas nao lineares que talvez ainda soem aceitaveis;
+  - WebRTC APM NS e o candidato prioritario por latencia e custo, mas a metrica
+    objetiva desfavoravel precisa ser confrontada com a escuta;
+  - OMLSA/IMCRA tem a melhor metrica ativa entre os processados, mas deixa muito
+    mais energia residual em pausas, portanto pode soar mais natural e mais
+    ruidoso;
+  - STFT causal fica como alternativa conservadora e leve, possivelmente menos
+    metalizada, mas sem a supressao agressiva do RNNoise.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto
+  `2026-06-28.5` ou audios publicados.
+
+## 2026-06-29 - DeepFilterNet3 como candidato principal e plano de runtime nativo
+
+- Contexto perceptual consolidado:
+  - RNNoise stock e variantes pos-processadas/internas foram rejeitados por voz
+    metalizada;
+  - o veredito perceptual do usuario permanece soberano;
+  - DeepFilterNet3 default, sem `--atten-lim`, tornou-se o novo candidato
+    principal depois da escuta dos arquivos da rodada em `tmp/dfn_aug/`;
+  - `dfn3_atten18` e `dfn3_atten12` foram rejeitados por devolverem
+    metalizacao e ruido de fundo.
+- Benchmark de viabilidade executado em area temporaria:
+  - script: `tmp/dfn_realtime_benchmark/benchmark_dfn_realtime.py`;
+  - resumo: `tmp/dfn_realtime_benchmark/README.md`;
+  - CSV: `tmp/dfn_realtime_benchmark/dfn_realtime_stream_summary.csv`;
+  - JSON completo:
+    `tmp/dfn_realtime_benchmark/dfn_realtime_benchmark_results.json`.
+- Achados computacionais locais:
+  - instalacao atual: `DeepFilterNet==0.5.6`, `torch==2.5.1+cpu`,
+    `torchaudio==2.5.1+cpu`;
+  - modelo local: 48 kHz, `fft_size=960`, `hop_size=480`, 32 bandas ERB,
+    96 bins DF, ordem DF 5, `df_lookahead=2`;
+  - chamada direta com 10 ms falha no modelo PyTorch com
+    `narrow(): length must be non-negative`;
+  - streaming simulado acumula pelo menos 2 frames, isto e, processamento
+    minimo de 20 ms;
+  - melhor medicao local: 4 threads, captura/processamento de 20 ms, RTF
+    aproximadamente `0,512`, media `10,24 ms`, p95 `13,55 ms`, p99
+    `14,76 ms`, pior caso `16,49 ms`, zero underruns simulados;
+  - CLI `deep-filter-py.exe` e API Python sao adequadas para prototipo e
+    validacao offline, mas nao como nucleo final do microfone virtual.
+- Investigacao de runtime nativo:
+  - o ambiente local atual possui `deep-filter-py.exe` e
+    `libdf.cp311-win_amd64.pyd`, mas nao possui `deep-filter.exe`;
+  - o repositorio oficial do DeepFilterNet documenta `libDF` em Rust,
+    `pyDF`, modelos para `libDF/deep-filter` e plugin LADSPA em tempo real;
+  - releases oficiais registram versao Rust-only com loop real-time e
+    correcao de divergencia entre implementacao nativa e PyTorch;
+  - OpenVINO possui modelos IR para DeepFilterNet2/3, mas a reproducao de
+    estado/streaming precisa ser validada antes de qualquer uso no pipeline;
+  - projetos externos com FFmpeg/libDF e Rust/ONNX Runtime sao referencias
+    uteis, nao decisoes automaticas.
+- Documento tecnico criado:
+  `docs/viabilidade_deepfilternet_tempo_real.md`.
+- Integracao com a VM:
+  - a VM `PTC3527-SYSVAD-LAB-FAST` continua sendo o laboratorio seguro para
+    SYSVAD/endpoint;
+  - nao iniciar nova tentativa de driver no host;
+  - devido aos checkpoints 46-R, nao depender de captura fisica virtualizada
+    como relogio inicial;
+  - o proximo ensaio funcional deve seguir a disciplina host-cadenciada antes
+    de reabrir ponte PCM v1 e endpoint.
+- Proximo plano:
+  - DFN-2: obter/compilar runtime nativo DeepFilterNet3 e reproduzir o
+    processamento offline do mesmo WAV;
+  - DFN-3: medir streaming nativo simulado com blocos de 20 ms;
+  - DFN-4: validar host-cadenciado sem endpoint na VM;
+  - DFN-5: reabrir ponte PCM v1/SYSVAD somente se os gates anteriores forem
+    aprovados;
+  - DFN-6: escuta controlada, mantendo a avaliacao perceptual como criterio
+    soberano.
+- Nada foi alterado em `entrega3.tex`, `entrega3.pdf`,
+  `docs/questionario/`, assets publicados ou Apps Script.
+
+## 2026-06-29 - DFN-2 runtime nativo oficial offline obtido
+
+- Objetivo: resolver a pendencia operacional de nao haver `deep-filter.exe`
+  nativo local para seguir a trilha DeepFilterNet3.
+- Foi verificado que `rustc`/`cargo` nao estavam disponiveis no ambiente atual;
+  portanto, a primeira rota escolhida foi baixar o binario oficial Windows em
+  vez de compilar.
+- Binario oficial baixado em area temporaria:
+  `tmp/dfn_native/deep-filter-0.5.6-x86_64-pc-windows-msvc.exe`.
+- Modelo oficial para runtime nativo baixado em area temporaria:
+  `tmp/dfn_native/DeepFilterNet3_onnx.tar.gz`.
+- Hashes:
+  - binario: `75E11FA16445F560CB6B021521DDB89E89270D13B83089705D98776F58FD7915`;
+  - modelo: `C94D91F70911001C946E0FABB4AA9ADC37045F45A03B56008CB0C8244CB63616`.
+- Smoke test offline executado sobre:
+  `tmp/dfn_aug/dfn3_default/wav/dfn3_default_deepfilternet_input_48000hz.wav`.
+- Resultados:
+  - execucao nativa com `-D`: `exit_code=0`, tempo total inicial
+    aproximadamente `1441,85 ms`;
+  - execucao nativa sem `-D`: `exit_code=0`, tempo total inicial
+    aproximadamente `1812,08 ms`;
+  - saida sem `-D` preserva o comprimento (`406527` amostras);
+  - saida com `-D` alinha com a saida Python, mas fica `1440` amostras
+    menor, equivalente a `30 ms`;
+  - correlacao alinhada contra a saida Python: aproximadamente `0,995438`;
+  - diferenca RMS alinhada: aproximadamente `-34,87 dBFS`.
+- Benchmark repetido da CLI nativa:
+  - sem `-D`: RTF total `0,1489`, `0,1716`, `0,1404`;
+  - com `-D`: RTF total `0,1769`, `0,1427`, `0,1474`.
+- Arquivos gerados:
+  - `tmp/dfn_native/README.md`;
+  - `tmp/dfn_native/native_cli_repeated_benchmark.csv`;
+  - `tmp/dfn_native/out_dfn3_default_D/`;
+  - `tmp/dfn_native/out_dfn3_default_noD/`.
+- Documento tecnico atualizado:
+  `docs/viabilidade_deepfilternet_tempo_real.md`.
+- Interpretacao:
+  - a falta de binario nativo offline foi resolvida;
+  - a CLI nativa prova disponibilidade do motor e RTF favoravel em arquivo;
+  - o fonte oficial v0.5.6 foi clonado em
+    `tmp/dfn_native/DeepFilterNet-v0.5.6-source`;
+  - `libDF/src/capi.rs` expoe `df_create`, `df_get_frame_length`,
+    `df_process_frame`, controles de atenuacao/post-filter e `df_free`;
+  - `libDF/Cargo.toml` possui feature `capi`, mas o release baixado nao trouxe
+    uma DLL C API pronta;
+  - `ladspa/src/lib.rs` confirma loop persistente com `DfTract::process()` e
+    filas, mas LADSPA nao e a interface natural para o pipeline Windows/SYSVAD;
+  - a proxima pendencia real e compilar ou obter uma DLL/API persistente para
+    processar blocos com estado preservado, sem iniciar processo por arquivo;
+  - VM, SYSVAD, ponte PCM v1 e endpoint continuam fora desta etapa.
+- Nada foi alterado em `entrega3.tex`, `entrega3.pdf`,
+  `docs/questionario/`, assets publicados ou Apps Script.
+
+
+## 2026-06-29 - Fase A aprovada: host nativo C++ cadenciado por QPC
+
+- Objetivo: substituir a bancada Python host-cadenciada por um loop nativo C++ minimalista para medir DeepFilterNet3 C API sem contaminação do scheduler Python.
+- Diretório criado:
+  `tmp/dfn_native/native_host_bench/`.
+- Executável gerado:
+  `tmp/dfn_native/native_host_bench/bin/native_host_bench.exe`.
+- Relatório:
+  `tmp/dfn_native/native_host_bench/PHASE_A_RESULTS.md`.
+- Resumo consolidado:
+  `tmp/dfn_native/native_host_bench/results/suite_summary.json`.
+- Configuração preservada:
+  - `post_filter_beta = 1.0`;
+  - `atten_lim = 100.0`;
+  - frame DeepFilterNet3 C API: `480` amostras a 48 kHz, isto é, `10 ms`;
+  - preroll descartado: `96000` amostras, isto é, `2 s`;
+  - atraso causal descartado: `1440` amostras, isto é, `30 ms`.
+- Resultados da Fase A:
+  - `dfn3_default`: p99 `1,650 ms`, máximo `2,013 ms`, over budget `0`, missed deadline `0`;
+  - `clean_lufs16`: p99 `1,811 ms`, máximo `2,514 ms`, over budget `0`, missed deadline `0`;
+  - `noisy_reference_lufs16`: p99 `1,593 ms`, máximo `1,684 ms`, over budget `0`, missed deadline `0`.
+- Conclusão: Fase A aprovada. O C++ nativo resolveu a dúvida de cadência que contaminava a bancada Python.
+- Próximo passo aprovado: iniciar Fase B com WASAPI/MMCSS antes de qualquer retorno a VM, SYSVAD, ponte PCM v1 ou microfone virtual final.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto `2026-06-28.5` ou áudios publicados.
+
+## 2026-06-29 - Fase B1 iniciada: WASAPI render bench com MMCSS
+
+- Objetivo: validar DeepFilterNet3 C API sob o relógio real do Windows Audio Engine usando WASAPI event-driven e MMCSS, ainda sem VM, SYSVAD, ponte PCM v1 ou microfone virtual final.
+- Diretório criado:
+  `tmp/dfn_native/wasapi_render_bench/`.
+- Executável gerado:
+  `tmp/dfn_native/wasapi_render_bench/bin/wasapi_render_bench.exe`.
+- Documentação/relatório:
+  - `tmp/dfn_native/wasapi_render_bench/README.md`;
+  - `tmp/dfn_native/wasapi_render_bench/PHASE_B_RESULTS.md`.
+- Script reproduzível:
+  `tmp/dfn_native/wasapi_render_bench/run_shared_suite.ps1`.
+- Resumo consolidado da última suite:
+  `tmp/dfn_native/wasapi_render_bench/results/shared_muted_gate_suite_summary.json`.
+- O render é mudo por padrão: segue o relógio do endpoint WASAPI, mas escreve silêncio no alto-falante. Para render audível, é necessário passar `--audible-render` explicitamente.
+- Probe do endpoint shared:
+  - formato: `48000 Hz`, `2 ch`, `32 bit`, `float32`;
+  - período default: `100000 hns`, isto é, `10 ms`;
+  - período mínimo: `30000 hns`, isto é, `3 ms`.
+- Configuração testada:
+  - WASAPI shared render event-driven;
+  - buffer de `4800` frames, isto é, `100 ms`;
+  - MMCSS `Pro Audio`: OK;
+  - `timeBeginPeriod(1)`: OK;
+  - `post_filter_beta = 1.0` preservado;
+  - gate estável ignora `1` frame inicial de métrica, porque esse frame está dentro do preroll de `2 s` descartado depois do DFN; o CSV completo continua registrando todos os frames.
+- Última suite shared/muted/MMCSS:
+  - `dfn3_default`: p99 `2,813 ms`, máximo `11,941 ms`, over budget `1`, missed deadline `1`, underflow `0`, status `CHECK`;
+  - `clean_lufs16`: p99 `2,582 ms`, máximo `3,348 ms`, over budget `0`, missed deadline `0`, underflow `0`, status `PASS`;
+  - `noisy_reference_lufs16`: p99 `3,588 ms`, máximo `4,052 ms`, over budget `0`, missed deadline `0`, underflow `0`, status `CHECK`.
+- Execuções individuais anteriores passaram nos três inputs, mas a suite reproduzível mostrou jitter/outlier real no modo WASAPI shared síncrono.
+- Conclusão honesta: Fase B1 está implementada e funcional, mas ainda não fecha gate final nos três inputs. O caminho é promissor, mas precisa endurecimento antes de promoção.
+- Caminho exclusive:
+  - implementado no mesmo executável via `--mode exclusive`;
+  - tentou formatos 48 kHz estéreo `float32`, `PCM16`, `PCM24` e `PCM32`;
+  - o endpoint/driver atual recusou todos com `0x8889000E`;
+  - interpretação: exclusive está bloqueado pelo endpoint atual, não pelo DeepFilterNet3.
+- Próximo passo: B2 com separação entre thread WASAPI e worker DFN por ring buffer/fila, ou host-paced PCM usando relógio real, ainda sem SYSVAD; só depois reabrir ponte PCM v1/endpoint.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto `2026-06-28.5` ou áudios publicados.
+
+
+## 2026-06-29 - Revisão externa da Fase B1 via Claude CLI
+
+- Objetivo: consultar o Claude Code CLI como revisor técnico externo antes de avançar da B1 para B2.
+- Prompt salvo em:
+  `tmp/dfn_native/wasapi_render_bench/PROMPT_CLAUDE_REVIEW_B1.md`.
+- Parecer salvo em:
+  `tmp/dfn_native/wasapi_render_bench/CLAUDE_REVIEW_B1.md`.
+- Veredito do Claude: **parcialmente aprovado**.
+- Principais pontos do parecer:
+  - a interpretação “B1 implementada e funcional, mas ainda não fecha gate final” está correta;
+  - o desenho síncrono atual, no qual o evento WASAPI chama diretamente `ensure_samples()`/`df_process_frame()`, é causa plausível dos outliers;
+  - o spike de `11,9 ms` no `dfn3_default` é compatível com jitter/preempção do Windows, não com bug evidente do DeepFilterNet3;
+  - ignorar o frame 0 no gate estável é defensável porque ele está dentro do preroll descartado, desde que o CSV completo continue registrando todos os frames;
+  - o bloqueio do exclusive mode deve ser tratado como limitação do endpoint/driver atual, não como falha do projeto.
+- Recomendação do Claude para B2:
+  - separar thread/evento WASAPI do worker DeepFilterNet3;
+  - usar ring buffer/fila entre worker e render;
+  - event thread deve apenas copiar amostras já processadas para `IAudioRenderClient`;
+  - medir separadamente `dfn_proc_us`, `callback_us`, nível do ring buffer, p99/p999/max e underflows.
+- Gate B2 sugerido:
+  - worker DFN p99 <= `4 ms`;
+  - worker DFN p999 <= `8 ms`;
+  - worker DFN max <= `10 ms`;
+  - callback WASAPI p99 <= `1 ms`;
+  - underflow = `0`;
+  - nível mínimo do ring buffer >= `1` frame;
+  - três inputs aprovados na suite reproduzível.
+- Decisão operacional: não avançar para SYSVAD/ponte PCM v1 ainda; primeiro endurecer B2 com ring buffer/fila ou, se o objetivo for VM, tratar host-paced PCM como trilha separada.
+
+## 2026-06-29 - Fase B2 aprovada: WASAPI worker/ring buffer
+
+- Objetivo: implementar a recomendação da revisão externa da B1, separando o event thread WASAPI do processamento DeepFilterNet3.
+- Diretório criado:
+  `tmp/dfn_native/wasapi_worker_bench/`.
+- Executável gerado:
+  `tmp/dfn_native/wasapi_worker_bench/bin/wasapi_worker_bench.exe`.
+- Arquivos principais:
+  - `tmp/dfn_native/wasapi_worker_bench/CMakeLists.txt`;
+  - `tmp/dfn_native/wasapi_worker_bench/build_release.ps1`;
+  - `tmp/dfn_native/wasapi_worker_bench/run_worker_suite.ps1`;
+  - `tmp/dfn_native/wasapi_worker_bench/src/main.cpp`;
+  - `tmp/dfn_native/wasapi_worker_bench/README.md`;
+  - `tmp/dfn_native/wasapi_worker_bench/PHASE_B2_RESULTS.md`.
+- Arquitetura implementada:
+  - worker thread DeepFilterNet3 com `df_process_frame()`;
+  - ring buffer SPSC de amostras float;
+  - event thread WASAPI apenas copia amostras do ring buffer para `IAudioRenderClient`;
+  - render mudo por padrão;
+  - `post_filter_beta = 1.0` preservado;
+  - warm-up aumentado para `10` frames.
+- Observação de endpoint:
+  - nesta rodada, o endpoint shared apareceu como `96000 Hz`, `8 ch`, `float32`;
+  - o cliente 48 kHz shared não foi aceito exatamente;
+  - para manter o DFN intacto, o worker continua em 48 kHz e o render mudo duplica amostras para seguir o relógio de 96 kHz;
+  - isso não altera o processamento DFN nem os WAVs salvos em 48 kHz.
+- Gate B2 usado:
+  - worker p99 <= `4 ms`;
+  - worker p999 <= `8 ms`;
+  - worker max <= `10 ms`;
+  - callback WASAPI p99 <= `1 ms`;
+  - underflow = `0`;
+  - ring buffer antes do callback >= `480` amostras.
+- Resultados da suite local:
+  - `dfn3_default`: worker p99 `1,782 ms`, p999 `2,121 ms`, max `2,227 ms`, callback p99 `0,137 ms`, underflow `0`, status `PASS`;
+  - `clean_lufs16`: worker p99 `1,648 ms`, p999 `1,933 ms`, max `1,946 ms`, callback p99 `0,165 ms`, underflow `0`, status `PASS`;
+  - `noisy_reference_lufs16`: worker p99 `1,823 ms`, p999 `4,056 ms`, max `6,073 ms`, callback p99 `0,140 ms`, underflow `0`, status `PASS`.
+- Resumo consolidado:
+  `tmp/dfn_native/wasapi_worker_bench/results/worker_ring_suite_summary.json`.
+- Conclusão: B2 aprovada na suite local. A separação worker/ring buffer resolveu a falha estrutural da B1, reduzindo o callback p99 para menos de `0,2 ms` nos três inputs e mantendo underflow zero.
+- Próximo passo recomendado: antes de SYSVAD, rodar teste mais longo/pior caso ou iniciar trilha host-paced PCM rumo à VM.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto `2026-06-28.5` ou áudios publicados.
+
+## 2026-06-29 - Fase B3 pré-VM aprovada: teste longo de 60 s
+
+- Objetivo: fechar a validação local imediatamente anterior à VM com um teste mais longo sobre a arquitetura B2 worker/ring buffer.
+- Input composto gerado:
+  `tmp/dfn_native/wasapi_worker_bench/b3_inputs/mixed_60s_capi_input48.wav`.
+- Composição do input:
+  - `dfn3_default`;
+  - `clean_lufs16`;
+  - `noisy_reference_lufs16`;
+  - repetidos/cortados até `60 s` em mono PCM16 48 kHz.
+- Arquivos de reprodução:
+  - `tmp/dfn_native/wasapi_worker_bench/make_b3_mixed_input.py`;
+  - `tmp/dfn_native/wasapi_worker_bench/run_b3_pre_vm.ps1`.
+- Resultado bruto:
+  - `summary.json` ficou `CHECK` porque o frame `0` do worker teve `14,451 ms`;
+  - esse frame fica dentro do preroll descartado e não chega ao `output_aligned_raw48.wav`.
+- Resultado estável, ignorando apenas o frame `0` e mantendo o CSV completo para auditoria:
+  - duração: `60 s`;
+  - worker frames totais: `6000`;
+  - worker frames no gate estável: `5999`;
+  - worker p99: `1,875 ms`;
+  - worker p999: `2,508 ms`;
+  - worker max: `3,306 ms`;
+  - worker > `4 ms`: `0`;
+  - worker > `8 ms`: `0`;
+  - worker > `10 ms`: `0`;
+  - callback p99: `0,039 ms`;
+  - callback p999: `0,076 ms`;
+  - callback max: `0,158 ms`;
+  - underflow: `0`;
+  - ring mínimo antes do callback: `480` samples;
+  - status estável: `PASS`.
+- Arquivos de resultado:
+  - `tmp/dfn_native/wasapi_worker_bench/results/b3_mixed_60s_worker/summary.json`;
+  - `tmp/dfn_native/wasapi_worker_bench/results/b3_mixed_60s_worker/b3_stable_summary.json`;
+  - `tmp/dfn_native/wasapi_worker_bench/results/b3_mixed_60s_worker/worker_metrics.csv`;
+  - `tmp/dfn_native/wasapi_worker_bench/results/b3_mixed_60s_worker/wasapi_events.csv`;
+  - `tmp/dfn_native/wasapi_worker_bench/PHASE_B3_PRE_VM_RESULTS.md`.
+- Conclusão: B3 pré-VM aprovada no gate estável. A validação local do motor fica encerrada o suficiente para preparar a trilha de VM.
+- Handoff para VM criado:
+  `tmp/dfn_native/VM_HANDOFF_NEXT_STEPS.md`.
+- Decisão operacional para a VM: não entrar direto em SYSVAD. Primeiro validar transporte host-paced PCM com sequência, CRC/hash, timing, WAV reconstruído e underflow/backlog; só depois reabrir ponte PCM v1/SYSVAD.
+- Nada foi alterado em `docs/questionario/`, Apps Script, manifesto `2026-06-28.5` ou áudios publicados.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K executada com gate `check`
+
+- Objetivo: validar somente transporte host -> guest para DeepFilterNet3, sem SYSVAD, sem ponte PCM v1, sem driver e sem RNNoise.
+- Scripts criados:
+  - `scripts/audio/host_guest_pcm_stream_dfn48.py`;
+  - `scripts/audio/analyze_dfn48_vm_transport.py`;
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1`.
+- Input: `tmp/dfn_native/wasapi_worker_bench/b3_inputs/mixed_60s_capi_input48.wav`.
+- Contrato efetivo: PCM16 mono, `48 kHz`, `480 samples/bloco`, `10 ms/bloco`, `100 blocos/s`.
+- Observacao: a anotacao anterior de `50 blocos/s` era incompativel com `480 samples @ 48 kHz = 10 ms`; a rodada preservou o contrato de 10 ms.
+- Resultado de integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`, framing `0`, duracao reconstruida `60,0 s`.
+- Hash de payload origem/recebido: `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Resultado de timing: envio host p99 `13,447 ms`, max `36,280 ms`; recepcao guest p99 `18,722 ms`, max `442,938 ms`; um stall acima de `100 ms`; `188` rajadas abaixo de `5 ms`.
+- Gate final: `resultados/dfn3_vm_transport_48k/vm_transport_gate.json` = `check`.
+- Interpretacao: transporte logico aceito, mas jitter de chegada ainda impede promover a fase para `accepted`.
+- Teardown: o orquestrador teve timeout aguardando `poweroff`, mas a recuperacao posterior restaurou `checkpoint45-causal-wpt-validated` e confirmou VM em `poweroff`, `audio_in=on`, clipboard/drag-and-drop desabilitados e NIC NAT.
+- Decisao operacional: nao reabrir SYSVAD, ponte PCM v1 ou DFN dentro da VM antes de resolver/repetir o transporte classificado como `check`.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R2-JITTER manteve gate `check`
+
+- Rodada: `resultados/dfn3_vm_transport_48k/runs/20260629-134254-dfn3-transport-48k-r2-jitter`.
+- Objetivo: repetir o transporte DFN48 com sonda interna de scheduler no convidado.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`, framing `0`, WAV `60,0 s`.
+- Hash de payload: `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Timing: envio host p99 `12,554 ms`, max `107,175 ms`; recepcao guest p99 `20,646 ms`, max `110,346 ms`.
+- Sonda scheduler convidado: 37 gaps acima de `30 ms`, 2 acima de `100 ms`, max `569,455 ms`.
+- Correlacao: 3 stalls de recepcao acima de `50 ms`; apenas 1 coincidiu com gap de scheduler acima de `30 ms` na mesma janela.
+- Gate final: `check`.
+- Interpretacao: payload e duracao estao corretos, mas a cadencia segue insuficiente para promover a etapa a `accepted`.
+- Teardown: Windows ficou preso em `Desligando`; apos shutdown normal e ACPI falharem, foi usado `poweroff` forcado com autorizacao do usuario e restore imediato do snapshot 45. Estado final seguro confirmado.
+- Decisao: ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R4-HOSTSEND isolou host/send
+
+- Rodada: `resultados/dfn3_vm_transport_48k/runs/20260629-141223-dfn3-transport-48k-r4-hostsend`.
+- Objetivo: testar transporte DFN48 com servidor host em prioridade `High` e instrumentacao fina do receive no convidado.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`, framing `0`, WAV `60,0 s`.
+- Hash de payload: `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send: p99 `10,015 ms`, max `10,532 ms`, lateness max `0,542 ms`, zero stall acima de `20 ms`.
+- Guest receive: p99 `21,297 ms`, max `428,577 ms`, dois stalls acima de `50 ms`, um acima de `100 ms`.
+- Os stalls relevantes ficaram em `header_wait_ms`, nao em payload read, CRC, hash ou WAV.
+- Correlacao: os dois stalls relevantes tiveram envio host normal e nao coincidiram com gap de scheduler acima de `30 ms` na janela medida.
+- Gate final: `check`.
+- Classificacao: `guest_receive_or_nat_jitter`.
+- Teardown limpo: VM em `poweroff`, snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard/drag-and-drop desabilitados, NIC NAT, sem poweroff forcado.
+- Decisao: ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD; proximo gate deve isolar `recv`/NAT com receptor receive-only em memoria ou receptor nativo simples.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R5-RECEIVE-ONLY isolou escrita WAV
+
+- Rodada: `resultados/dfn3_vm_transport_48k/runs/20260629-142556-dfn3-transport-48k-r5-receive-only`.
+- Objetivo: testar transporte DFN48 com cliente `sink=memory`, sem escrita WAV no loop.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`, framing `0`, duracao logica `60,0 s`.
+- Hash de payload: `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send: prioridade `High`, p99 `10,023 ms`, max `10,789 ms`, zero stall acima de `20 ms`.
+- Guest receive: p99 `16,896 ms`, max `473,736 ms`, dois stalls acima de `100 ms`.
+- Os stalls ficaram em `header_wait_ms`, nao em payload read, CRC, hash ou WAV.
+- Correlacao: os dois stalls relevantes tiveram envio host normal e nao coincidiram com gap de scheduler acima de `30 ms` na janela medida.
+- Gate final: `check`.
+- Classificacao: `guest_recv_or_nat_header_wait_jitter`.
+- Teardown limpo: VM em `poweroff`, snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard/drag-and-drop desabilitados, NIC NAT, sem poweroff forcado.
+- Decisao: ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD; proximo gate deve remover Python do receptor ou testar transporte alternativo/batching controlado.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R6-BATCH4 diagnosticou wakeups/NAT
+
+- Rodada: `resultados/dfn3_vm_transport_48k/runs/20260629-143939-dfn3-transport-48k-r6-batch4-diagnostic`.
+- Objetivo: testar transporte DFN48 com cliente `sink=memory` e empacotamento diagnostico de `4` blocos logicos por pacote TCP, sem alterar o contrato logico de `480` amostras, `10 ms` e `100 blocos/s`.
+- Natureza do gate: diagnostico por design; `blocks_per_packet > 1` nao pode promover a fase a `accepted`.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`, framing `0`, duracao logica `60,0 s`.
+- Hash de payload: `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send no nivel de pacote: p99 `40,020 ms`, max `40,513 ms`, lateness max `0,528 ms`.
+- Guest packet receive: p99 `49,413 ms`, max `138,401 ms`; ainda houve `15` stalls acima de `50 ms` e `1` acima de `100 ms`.
+- Os stalls permaneceram em `header_wait_ms`; payload read, CRC e hash nao explicam o problema.
+- Correlacao: `12/15` stalls acima de `50 ms` foram `unaccounted_receive_or_nat`; `3/15` coincidiram com gap de scheduler do convidado; nenhum foi atribuido ao host/send.
+- Gate final: `check`.
+- Teardown limpo: VM em `poweroff`, snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard/drag-and-drop desabilitados, NIC NAT, sem poweroff forcado.
+- Interpretacao: batching reduziu o pior outlier em relacao a R5, mas nao eliminou jitter de recepcao; a causa restante segue antes do DSP, no caminho `recv`/NAT/scheduler do convidado.
+- Decisao: ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD. Proximo passo recomendado: receptor nativo minimo ou transporte alternativo para remover Python/Guest socket do caminho critico.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R7-NATIVE removeu Python do receptor
+
+- Artefatos de codigo:
+  - `scripts/native/dfn48_native_receiver/CMakeLists.txt`;
+  - `scripts/native/dfn48_native_receiver/build_release.ps1`;
+  - `scripts/native/dfn48_native_receiver/src/main.cpp`;
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1` atualizado com `ClientImplementation=Native|Python`.
+- Receptor nativo: WinSock TCP, contrato `PTCDFN3`, ACK `PTCDAK3`, CRC32, SHA-256 via BCrypt, temporizacao QPC, sonda de scheduler com `timeBeginPeriod(1)` e JSON compativel com o analisador existente.
+- Build validado: MSVC Release com runtime estatico (`/MT`); dependencias do `.exe`: `WS2_32.dll`, `bcrypt.dll`, `WINMM.dll`, `KERNEL32.dll`.
+- Validacao local host-only: gate `accepted`, sem warnings; integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`; hash `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`; recepcao p99 `10,107 ms`, max `13,764 ms`.
+- Preflight antes da VM: `ready=true`, `failures=0`, `warnings=0`, snapshot `checkpoint45-causal-wpt-validated`, runtime `C:\PTC3527-Private\vm_runtime`.
+- Tentativa abortada: `runs/20260629-150318-dfn3-transport-48k-r7-native-receiver` falhou antes do transporte com exit code `-1073741515` por runtime DLL ausente; teardown limpo, sem poweroff forcado. Essa tentativa nao foi usada como resultado experimental.
+- Rodada valida: `resultados/dfn3_vm_transport_48k/runs/20260629-150919-dfn3-transport-48k-r7-native-receiver`.
+- Objetivo: remover Python do receptor convidado, mantendo transporte DFN48, `sink=memory`, `BlocksPerPacket=1`, sem SYSVAD, sem ponte PCM v1, sem RNNoise e sem DeepFilterNet3 dentro da VM.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`, framing `0`, duracao logica `60,0 s`.
+- Hash de payload: `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send: p99 `10,018 ms`, max `10,482 ms`, lateness max `0,488 ms`, zero stall acima de `20 ms`.
+- Guest receive nativo: p99 `14,936 ms`, max `186,643 ms`; `7` stalls acima de `20 ms`, `1` acima de `50 ms`, `1` acima de `100 ms`.
+- Stall dominante: bloco `2246`, `header_wait_ms=186,609 ms`, payload read `0,023 ms`, CRC `0,004 ms`, envio host normal e sem gap de scheduler acima de `30 ms` na janela.
+- Correlacao: `1/1` stall acima de `50 ms` classificado como `unaccounted_receive_or_nat`; nenhum atribuido ao host/send.
+- Gate final: `check`, com warning `client_receive_stall_over_100ms`.
+- Teardown limpo: VM em `poweroff`, snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard/drag-and-drop desabilitados, NIC NAT, sem poweroff forcado.
+- Interpretacao: remover Python melhorou fortemente o p99 de recepcao, mas nao eliminou o outlier de `header_wait`; o bloqueio restante segue antes do DSP, no caminho `recv`/NAT/entrega TCP do convidado.
+- Decisao: nao promover a fase; ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD. Proximo passo recomendado: transporte alternativo controlado, preferencialmente UDP diagnostico com sequencia/CRC/hash, ou repeticao R7 para medir variancia.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R8-UDP diagnosticou transporte alternativo
+
+- Objetivo: testar transporte alternativo diagnostico para isolar o outlier de
+  `header_wait` observado na R7 TCP nativa, ainda sem SYSVAD, sem ponte PCM v1,
+  sem RNNoise e sem DeepFilterNet3 dentro da VM.
+- Implementacao:
+  - `scripts/audio/host_guest_pcm_stream_dfn48.py` ganhou `--transport tcp|udp`;
+  - `scripts/native/dfn48_native_receiver/src/main.cpp` ganhou cliente UDP;
+  - o controle permanece TCP para preambulo e ACK final;
+  - os blocos PCM seguem por UDP com sequencia, CRC32 e hash SHA-256;
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1` ganhou `-Transport tcp|udp`,
+    mantendo `tcp` como padrao;
+  - `scripts/audio/analyze_dfn48_vm_transport.py` marca UDP como diagnostico
+    por design com warning `udp_transport_diagnostic_not_realtime_gate`.
+- Validacoes antes da VM:
+  - `python -m compileall scripts/audio/host_guest_pcm_stream_dfn48.py scripts/audio/analyze_dfn48_vm_transport.py`;
+  - parse de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - build Release do receptor nativo com runtime estatico (`/MT`);
+  - teste host-only UDP curto: `100/100` blocos, perda zero, sequencia zero,
+    CRC zero, framing zero e hash origem/recebido igual;
+  - preflight VM: `ready=true`, `failures=0`, `warnings=0`, snapshot
+    `checkpoint45-causal-wpt-validated`, runtime
+    `C:\PTC3527-Private\vm_runtime`.
+- Rodada VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260629-185315-dfn3-transport-48k-r8-udp-native-receiver`.
+- Gate final: `check`, apenas com warning deliberado de UDP diagnostico.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`,
+  framing `0`, duracao logica `60,0 s`.
+- Hash de payload origem/recebido:
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send: p99 `10,044 ms`, max `10,387 ms`, lateness max `0,413 ms`.
+- Guest receive UDP nativo: p99 `14,400 ms`, max `70,537 ms`; `14` stalls
+  acima de `20 ms`, `1` acima de `50 ms` e `0` acima de `100 ms`.
+- Stall dominante: bloco `5107`, `header_wait_ms=70,526 ms`, payload read
+  `0,000 ms`, CRC `0,011 ms`, envio host normal e sem gap de scheduler acima de
+  `30 ms` na janela.
+- Correlacao: `1/1` stall acima de `50 ms` classificado como
+  `unaccounted_receive_or_nat`; nenhum atribuido ao host/send.
+- Teardown limpo: VM em `poweroff`, snapshot `checkpoint45-causal-wpt-validated`,
+  `audio_in=on`, clipboard/drag-and-drop desabilitados, NIC NAT, sem poweroff
+  forcado.
+- Interpretacao: UDP removeu o outlier acima de `100 ms` visto na R7 TCP e
+  manteve integridade perfeita, mas ainda preservou um stall relevante antes do
+  DSP. O problema restante nao deve ser atribuido ao DeepFilterNet3, SYSVAD,
+  ponte PCM v1, RNNoise, WAV, CRC ou hash.
+- Decisao: nao promover a fase; ainda nao acoplar DeepFilterNet3 dentro da VM,
+  ponte PCM v1 ou SYSVAD. Proximo passo recomendado: repetir R8 para medir
+  variancia e/ou adicionar jitter buffer diagnostico minimo no receptor UDP para
+  separar atraso de chegada de viabilidade de consumo em cadencia de `10 ms`.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R8-JITTER-BUFFER posthoc e repeticao UDP
+
+- `scripts/audio/analyze_dfn48_vm_transport.py` passou a gerar
+  `jitter_buffer_diagnosis` a partir de `client_trace.json`.
+- A simulacao e posthoc e nao altera o gate de integridade: ela estima underflows
+  para consumo ordenado com buffers de `1,2,4,6,8,12,16` blocos DFN48.
+- Na primeira R8 UDP
+  `runs/20260629-185315-dfn3-transport-48k-r8-udp-native-receiver`:
+  - integridade permaneceu perfeita, `6000/6000` blocos;
+  - max phase error: `58,789 ms`;
+  - buffer de `1` bloco: `20` underflows;
+  - buffer de `2` blocos: `8` underflows;
+  - buffer de `4` blocos: `2` underflows;
+  - buffer de `6` blocos (`60 ms`): `0` underflows;
+  - interpretacao: aquela execucao era absorvivel por buffer, mas com latencia
+    diagnostica alta para microfone em tempo real.
+- Repeticao UDP executada em:
+  `runs/20260629-190754-dfn3-transport-48k-r8-udp-native-receiver`.
+- Resultado da repeticao: gate `rejected`.
+- Integridade da repeticao:
+  - recebidos `5913/6000` blocos;
+  - perdas `87`;
+  - erros de sequencia `1`;
+  - CRC `0`;
+  - framing `0`;
+  - hash recebido diferente do hash de origem.
+- Timing da repeticao:
+  - host/send p99 `10,018 ms`, max `13,107 ms`;
+  - guest receive p99 `17,813 ms`, max `1554,858 ms`;
+  - `36` stalls acima de `20 ms`, `2` acima de `50 ms`, `1` acima de `100 ms`;
+  - stall dominante no bloco `2607`, `header_wait_ms=1554,840 ms`, envio host
+    normal e sem gap de scheduler acima de `30 ms` na janela.
+- Jitter buffer posthoc da repeticao:
+  - blocos observados `5913`;
+  - max phase error `1545,294 ms`;
+  - nenhum buffer testado ate `16` blocos absorveu a rodada;
+  - minimo teorico pelo maior atraso: `155` blocos, ainda sem recuperar os
+    `87` datagramas ausentes.
+- Teardown da repeticao: o orquestrador falhou na consulta final de `VMState`,
+  mas auditoria posthoc confirmou VM em `poweroff`, snapshot
+  `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard/drag-and-drop
+  desabilitados, NIC NAT e sem poweroff forcado.
+- Conclusao: UDP puro nao deve seguir como transporte de promocao. O caminho
+  mais promissor e voltar a transporte confiavel e separar recepcao/consumo no
+  convidado com fila/ring buffer, medindo backlog e underflows antes de qualquer
+  acoplamento com DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R9-TCP-QUEUE validou fila diagnostica
+
+- Implementacao:
+  - receptor nativo ganhou `--queue-diagnostic`,
+    `--queue-buffer-blocks` e `--consumer-trace`;
+  - a thread de recepcao continua validando sequencia, CRC e hash;
+  - uma consumer thread separada consome um bloco logico a cada `10 ms` apos o
+    prebuffer configurado;
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1` ganhou `-QueueDiagnostic` e
+    `-QueueBufferBlocks`;
+  - o orquestrador copia `consumer_trace.json` quando a fila diagnostica esta
+    ativa.
+- Validacao local host-only TCP de `1 s`: gate `accepted`, perda zero,
+  `consumer_underflows=0`, profundidade minima `1` bloco e `consumer_trace.json`
+  gerado.
+- Rodada valida:
+  `resultados/dfn3_vm_transport_48k/runs/20260629-193111-dfn3-transport-48k-r9-tcp-native-receiver-queue20-diagnostic`.
+- Gate final: `accepted`.
+- Integridade: `6000/6000` blocos, perda `0`, sequencia `0`, CRC `0`,
+  framing `0`.
+- Hash de payload origem/recebido:
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Transporte: TCP, receptor nativo, `BlocksPerPacket=1`, `sink=memory`.
+- Fila/consumer:
+  - prebuffer `20` blocos (`200 ms`);
+  - blocos consumidos `6000`;
+  - underflows `0`;
+  - profundidade minima antes do consumo `1` bloco;
+  - profundidade media antes do consumo `22,113` blocos;
+  - profundidade maxima antes do consumo `105` blocos.
+- Timing:
+  - host/send p99 `10,042 ms`, max `10,551 ms`;
+  - guest receive p99 `13,794 ms`, max `73,402 ms`;
+  - `1` stall acima de `50 ms`, `0` acima de `100 ms`;
+  - o stall relevante foi correlacionado a gap de scheduler do convidado, nao
+    ao envio host.
+- Teardown limpo: VM em `poweroff`, snapshot `checkpoint45-causal-wpt-validated`,
+  `audio_in=on`, clipboard/drag-and-drop desabilitados, NIC NAT, sem poweroff
+  forcado.
+- Interpretacao: transporte confiavel com recepcao separada e fila absorveu o
+  jitter desta rodada sem perda e sem underflow. A arquitetura e promissora, mas
+  `200 ms` de prebuffer ainda e margem alta demais para ser assumida como alvo
+  final de microfone em tempo real.
+- Tentativa abortada:
+  `resultados/dfn3_vm_transport_48k/runs/20260629-193509-dfn3-transport-48k-r9-tcp-native-receiver-queue8-diagnostic`.
+  Objetivo: testar `8` blocos (`80 ms`). O servidor host falhou aguardando ACK
+  final (`TimeoutError: timed out`) e a execucao externa atingiu timeout antes
+  do teardown. Nao houve `client.json`, `consumer_trace.json`, hash nem gate;
+  portanto a tentativa nao e resultado experimental. Recuperacao por ACPI
+  shutdown, restore do snapshot 45 e invariantes finais confirmados sem poweroff
+  forcado.
+- Decisao: nao acoplar ainda DeepFilterNet3 dentro da VM, ponte PCM v1 ou
+  SYSVAD. Proximo passo: depurar a variante de menor prebuffer com host-only
+  longo ou telemetria de progresso no guest antes de nova rodada VM com latencia
+  menor.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R9-QUEUE8/7/6 fechou faixa de prebuffer
+
+- Implementacao adicional:
+  - receptor nativo ganhou `--progress-output` e
+    `--progress-interval-blocks`, escrevendo `progress.json` atomico com estado
+    de recepcao, fila e consumer;
+  - orquestrador ganhou `-ProgressIntervalBlocks` e
+    `-GuestLaunchMode Run|Start`;
+  - `GuestLaunchMode=Start` inicia o receptor nativo em modo destacado no
+    convidado e aguarda `guest_exit.json` antes de copiar artefatos, evitando
+    manter uma sessao Guest Control longa presa durante os `60 s` de audio.
+- Validacoes:
+  - build nativo Release com runtime estatico (`/MT`);
+  - parse de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - `python -m compileall` dos scripts de audio;
+  - auditorias VM antes/depois: `poweroff`,
+    `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+    drag-and-drop desabilitados, NIC NAT.
+- Host-only longo:
+  - queue8:
+    `runs/20260629-200210-dfn3-transport-48k-r9-local-tcp-native-receiver-queue8-progress`,
+    gate `check`, `6000/6000`, underflows `0`, profundidade media `8,977`;
+  - queue6:
+    `runs/20260629-205039-dfn3-transport-48k-r9-local-tcp-native-receiver-queue6-progress`,
+    gate `accepted`, `6000/6000`, underflows `0`, profundidade media `6,291`.
+- Rodada VM queue8 valida:
+  `runs/20260629-204534-dfn3-transport-48k-r9-tcp-native-receiver-queue8-diagnostic`.
+  Gate `accepted`, sem warnings, integridade `6000/6000`, perda `0`,
+  sequencia `0`, CRC `0`, framing `0`, hash
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+  Host/send p99 `10,016 ms`, max `10,251 ms`; guest receive p99
+  `16,784 ms`, max `38,016 ms`; stalls acima de `100 ms`: `0`.
+  Consumer com prebuffer `8` blocos (`80 ms`): underflows `0`, profundidade
+  minima `1`, media `10,313`, maxima `86`. `progress.json` terminou em
+  `completed`, `guest_exit_code=0`, teardown limpo e sem poweroff forcado.
+- Rodada VM queue6:
+  `runs/20260629-205157-dfn3-transport-48k-r9-tcp-native-receiver-queue6-diagnostic`.
+  Integridade perfeita, mas gate `check` com warning
+  `client_receive_stall_over_100ms`; guest receive max `187,201 ms`, `2`
+  stalls acima de `100 ms`; consumer prebuffer `6` blocos (`60 ms`) teve
+  `12` underflows e profundidade minima `0`. Teardown limpo.
+- Rodada VM queue7:
+  `runs/20260629-205700-dfn3-transport-48k-r9-tcp-native-receiver-queue7-diagnostic`.
+  Integridade perfeita, mas gate `check` com warning
+  `client_receive_stall_over_100ms`; guest receive max `147,170 ms`, `2`
+  stalls acima de `100 ms`; consumer prebuffer `7` blocos (`70 ms`) teve
+  `7` underflows e profundidade minima `0`. Teardown limpo.
+- Tentativas nao experimentais:
+  - `runs/20260629-200352-dfn3-transport-48k-r9-tcp-native-receiver-queue8-diagnostic`:
+    modo `Run` ainda ficou preso no fechamento de sessao Guest Control
+    (`VERR_TIMEOUT`), sem artefatos de cliente/gate; houve poweroff forcado no
+    teardown automatico e restore correto do snapshot;
+  - `runs/20260629-202446-dfn3-transport-48k-r9-tcp-native-receiver-queue8-diagnostic`:
+    falha antes do transporte por separador `--` passado incorretamente ao
+    `guestcontrol start`; nao conta como experimento;
+  - `runs/20260629-203639-dfn3-transport-48k-r9-tcp-native-receiver-queue8-diagnostic`:
+    evidenciou corrida de copia no modo destacado; servidor recebeu ACK
+    perfeito e `progress.json` chegou a `completed`, mas faltou `client.json`
+    no momento da copia obrigatoria, portanto sem gate experimental.
+- Conclusao: TCP confiavel com recepcao separada e fila diagnostica e o caminho
+  mais promissor. Nesta serie, `80 ms` foi o menor prebuffer observado sem
+  underflow na VM; `60 ms` e `70 ms` preservaram integridade, mas falharam como
+  playout continuo. Ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1
+  ou SYSVAD. Proximo passo recomendado: repetir queue8 para variancia e, em
+  paralelo, desenhar ring buffer real com margem configuravel antes do DSP.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R9-QUEUE8 repeticao nao promoveu margem
+
+- Rodada:
+  `resultados/dfn3_vm_transport_48k/runs/20260629-213620-dfn3-transport-48k-r9-tcp-native-receiver-queue8-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `QueueDiagnostic`, `QueueBufferBlocks=8`, `ProgressIntervalBlocks=100`,
+  `GuestLaunchMode=Start`.
+- Gate final: `check`.
+- Warning: `client_receive_stall_over_100ms`.
+- Integridade permaneceu perfeita: `6000/6000` blocos, perda `0`, sequencia
+  `0`, CRC `0`, framing `0`, hash origem/recebido
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Timing:
+  - host/send p99 `10,291 ms`, max `10,919 ms`;
+  - guest receive p99 `14,588 ms`, max `184,038 ms`;
+  - `1` stall acima de `100 ms`;
+  - stall dominante no bloco `796`, `header_wait_ms=184,005 ms`, envio host
+    normal e sem gap de scheduler acima de `30 ms` na janela.
+- Classificacao: `unaccounted_receive_or_nat`.
+- Fila/consumer: prebuffer `8` blocos (`80 ms`), `6` underflows, profundidade
+  minima `0`, media `17,074`, maxima `113`.
+- `progress.json` terminou em `completed` e `guest_exit_code=0`.
+- Teardown: a VM ficou na tela de atualizacao/desligamento do Windows e exigiu
+  `forced_poweroff`; a auditoria final confirmou `poweroff`, snapshot
+  `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard/drag-and-drop
+  desabilitados e NIC NAT.
+- Decisao: queue8 nao esta promovido. A arquitetura TCP confiavel com recepcao
+  separada continua promissora, mas `80 ms` deve ser tratado como margem fragil.
+  Ainda nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD.
+
+## 2026-06-29 - VM-DFN3-TRANSPORT-48K-R9-QUEUE12 absorveu sem underflow, mas nao promoveu
+
+- Tentativa operacional abortada:
+  `resultados/dfn3_vm_transport_48k/runs/20260629-224057-dfn3-transport-48k-r9-tcp-native-receiver-queue12-diagnostic`.
+- Motivo: `Guest Additions or interactive logon did not become ready`; a rodada
+  nao chegou ao transporte e nao gerou `server.json`, `client.json`, traces, hash
+  ou gate. Nao usar como resultado experimental.
+- Rodada valida:
+  `resultados/dfn3_vm_transport_48k/runs/20260629-225852-dfn3-transport-48k-r9-tcp-native-receiver-queue12-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `QueueDiagnostic`, `QueueBufferBlocks=12`, `ProgressIntervalBlocks=100`,
+  `GuestLaunchMode=Start`.
+- Gate final: `check`.
+- Warning: `client_receive_stall_over_100ms`.
+- Integridade permaneceu perfeita: `6000/6000` blocos, perda `0`, sequencia
+  `0`, CRC `0`, framing `0`, hash origem/recebido
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Timing:
+  - host/send p99 `10,035 ms`, max `10,279 ms`;
+  - guest receive p99 `17,611 ms`, max `593,981 ms`;
+  - `1` stall acima de `100 ms`;
+  - stall dominante no bloco `2892`, `header_wait_ms=593,950 ms`, envio host
+    normal e sem gap de scheduler acima de `30 ms` na janela.
+- Classificacao: `unaccounted_receive_or_nat`.
+- Fila/consumer: prebuffer `12` blocos (`120 ms`), `0` underflows, profundidade
+  minima `1`, media `13,713`, maxima `75`.
+- Teardown da rodada valida: limpo, sem poweroff forcado; VM final em
+  `poweroff`, snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`,
+  clipboard/drag-and-drop desabilitados e NIC NAT.
+- Decisao: queue12 mostra que a separacao recepcao/consumo absorve jitter, mas
+  nao deve ser promovida diretamente porque acumulou backlog de ate `75` blocos
+  para sobreviver ao outlier. Proxima etapa: ring buffer real com limite de
+  profundidade, politica de recuperacao/drop e telemetria de latencia efetiva,
+  ainda sem DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD.
+
+## 2026-06-30 - VM-DFN3-TRANSPORT-48K-R10-RING desenhou buffer real limitado
+
+- Implementacao:
+  - receptor nativo ganhou `--ring-diagnostic`,
+    `--ring-capacity-blocks` e `--ring-prebuffer-blocks`;
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1` ganhou `-RingDiagnostic`,
+    `-RingCapacityBlocks` e `-RingPrebufferBlocks`;
+  - o modo ring e mutuamente exclusivo com `QueueDiagnostic`;
+  - o producer mantem validacao de sequencia, CRC e hash;
+  - o consumer separado consome a cada `10 ms`;
+  - overflow/atraso excessivo aplica politica `drop_oldest`;
+  - underflow aplica `recover_with_silence` diagnostico;
+  - o analisador marca ring como diagnostico por design e adiciona warnings
+    para drops, recoveries, underflows e alcance do limite de latencia.
+- Telemetria adicionada:
+  - capacidade, prebuffer e limite de latencia;
+  - fill level minimo/medio/maximo;
+  - drops de overflow;
+  - recoveries/underflows;
+  - `ring_playout_latency_ms_*`;
+  - `consumer_deadline_lateness_ms_*`;
+  - campos por bloco em `consumer_trace.json`.
+- Validacoes:
+  - `python -m compileall scripts/audio/host_guest_pcm_stream_dfn48.py scripts/audio/analyze_dfn48_vm_transport.py`;
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - build Release do receptor nativo com runtime estatico (`/MT`);
+  - smoke host-only em `tmp/dfn48_ring_local_smoke`.
+- Smoke host-only:
+  - parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+    `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`;
+  - gate `check`, apenas por `ring_buffer_diagnostic_not_realtime_gate`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - hash origem/recebido
+    `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`;
+  - overflow drops `0`;
+  - recoveries/underflows `0`;
+  - fill minimo/media/maximo `1` / `8,994` / `9` blocos;
+  - latencia de playout p99 `81,603 ms`, max `82,142 ms`;
+  - consumer deadline lateness p99 `0,412 ms`, max `0,997 ms`.
+- Decisao:
+  - nao houve acoplamento com DeepFilterNet3 dentro da VM, ponte PCM v1,
+    SYSVAD, driver ou RNNoise;
+  - a proxima rodada VM deve ser conservadora, com `Transport=tcp`,
+    `ClientImplementation=Native`, `sink=memory`, `BlocksPerPacket=1`,
+    `GuestLaunchMode=Start`, `RingCapacityBlocks=12` e
+    `RingPrebufferBlocks=8`;
+  - nao promover se houver latencia acumulada no limite, drops, recoveries ou
+    underflows.
+
+## 2026-06-30 - VM-DFN3-TRANSPORT-48K-R10-RING VM revelou atraso do consumer
+
+- Rodada VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260630-222946-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `ProgressIntervalBlocks=100`, `GuestLaunchMode=Start`.
+- Preflight: `ready=true`, `failures=0`, `warnings=0`, snapshot
+  `checkpoint45-causal-wpt-validated`, runtime
+  `C:\PTC3527-Private\vm_runtime`.
+- Gate final: `check`.
+- Warnings: `ring_buffer_diagnostic_not_realtime_gate`,
+  `ring_buffer_overflow_drops`, `ring_buffer_recoveries`,
+  `ring_buffer_underflows`, `ring_buffer_reached_latency_cap`.
+- Integridade: `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`.
+- Hash origem/recebido:
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send: p99 `10,180 ms`, max `10,569 ms`, sem stalls acima de `20 ms`.
+- Guest receive: p99 `13,822 ms`, max `70,085 ms`, `0` stalls acima de
+  `100 ms`.
+- Ring/consumer:
+  - overflow drops `103`;
+  - recoveries/underflows `103`;
+  - profundidade maxima `12/12`;
+  - latencia de playout p99 `87,842 ms`, max `120,139 ms`;
+  - consumer deadline lateness p99 `152,040 ms`, max `394,744 ms`.
+- Diagnostico:
+  - transporte logico segue correto;
+  - os dois stalls de recepcao acima de `50 ms` foram classificados como
+    `unaccounted_receive_or_nat`;
+  - a simulacao posthoc de chegada indicava absorcao com `6` blocos, mas o
+    consumer real teve pausas de scheduler e executou deadlines vencidos em
+    rajada;
+  - o ring cumpriu a funcao de impedir latencia ilimitada, mas expôs perda de
+    cadencia do consumer no convidado.
+- Teardown: limpo, `forced_poweroff_used=false`; VM final em `poweroff`,
+  snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+  drag-and-drop desabilitados, NIC NAT.
+- Decisao:
+  - nao promover `RingCapacityBlocks=12`/`RingPrebufferBlocks=8`;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: politica diagnostica de ressincronizacao do
+    consumer quando `deadline_lateness_ms` exceder limite explicito, separando
+    atraso de chegada, drop por limite de latencia e atraso do consumidor.
+
+## 2026-06-30 - VM-DFN3-TRANSPORT-48K-R10-RING-RESYNC testou ressincronizacao
+
+- Implementacao:
+  - receptor nativo ganhou `--ring-resync-lateness-ms`;
+  - orquestrador ganhou `-RingResyncLatenessMs`;
+  - a politica `shift_schedule_to_now` desloca os proximos deadlines quando o
+    consumer acorda com `deadline_lateness_ms` acima do limite;
+  - o analisador passou a registrar `ring_buffer_consumer_resyncs`.
+- Validacoes:
+  - `python -m compileall scripts/audio/host_guest_pcm_stream_dfn48.py scripts/audio/analyze_dfn48_vm_transport.py`;
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - build Release do receptor nativo com runtime estatico (`/MT`);
+  - smoke host-only em `tmp/dfn48_ring_resync_local_smoke`.
+- Smoke host-only com `RingResyncLatenessMs=40`:
+  - gate `check`, apenas por `ring_buffer_diagnostic_not_realtime_gate`;
+  - drops `0`;
+  - recoveries/underflows `0`;
+  - resyncs `0`;
+  - latencia de playout p99 `80,552 ms`, max `81,078 ms`.
+- Rodada VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260630-224628-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `RingResyncLatenessMs=40`, `ProgressIntervalBlocks=100`,
+  `GuestLaunchMode=Start`.
+- Gate final: `check`.
+- Integridade: `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`.
+- Hash origem/recebido:
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Guest receive: p99 `16,561 ms`, max `181,180 ms`, `1` stall acima de
+  `100 ms`.
+- Ring/consumer:
+  - overflow drops `260`;
+  - recoveries/underflows `260`;
+  - resyncs `26`;
+  - profundidade maxima `12/12`;
+  - latencia de playout p99 `115,709 ms`, max `125,275 ms`;
+  - consumer deadline lateness p99 `25,556 ms`, max `393,831 ms`.
+- Interpretacao:
+  - resync reduziu o p99 de lateness do consumer frente a rodada sem resync,
+    mas nao promoveu playout;
+  - os resyncs ocorreram com ring cheio, exigindo drops para manter o limite de
+    latencia;
+  - por ser um teste finito, deslocar a agenda empurrou parte do playout para
+    alem do fim da transmissao, gerando recoveries de cauda.
+- Teardown: limpo, `forced_poweroff_used=false`; VM final em `poweroff`,
+  snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+  drag-and-drop desabilitados, NIC NAT.
+- Decisao:
+  - nao promover `resync40`;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: isolar cadencia do consumer com prioridade de
+    thread/processo e/ou timer dedicado antes de aumentar margem de buffer.
+
+## 2026-07-01 - VM-DFN3-TRANSPORT-48K-R10-WAITABLE-TIMER isolou consumer mas nao NAT
+
+- Implementacao:
+  - receptor nativo ganhou `--consumer-wait-mode hybrid|waitable_timer`;
+  - receptor nativo ganhou `--consumer-thread-priority normal|above_normal|highest|time_critical`;
+  - orquestrador ganhou `-ConsumerWaitMode` e `-ConsumerThreadPriority`;
+  - `progress.json` registra `consumer_priority_applied` e
+    `consumer_waitable_timer_created`.
+- Validacoes anteriores a VM:
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - build Release do receptor nativo;
+  - smoke host-only em `tmp/dfn48_ring_waittimer_local_smoke`.
+- Smoke host-only com ring12/pre8/resync40/waitable timer/highest:
+  - gate `check`, apenas por `ring_buffer_diagnostic_not_realtime_gate`;
+  - drops `0`;
+  - recoveries/underflows `0`;
+  - resyncs `0`;
+  - latencia de playout p99 `82,625 ms`, max `83,869 ms`;
+  - consumer deadline lateness p99 `1,134 ms`, max `2,363 ms`.
+- Rodada VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-001024-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-waitwaitabletimer-priohighest-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `RingResyncLatenessMs=40`, `ConsumerWaitMode=waitable_timer`,
+  `ConsumerThreadPriority=highest`, `ProgressIntervalBlocks=100`,
+  `GuestLaunchMode=Start`.
+- Preflight: `ready=true`, `failures=0`, `warnings=0`, snapshot
+  `checkpoint45-causal-wpt-validated`, runtime
+  `C:\PTC3527-Private\vm_runtime`.
+- Gate final: `check`.
+- Warnings: `client_receive_stall_over_100ms`,
+  `ring_buffer_diagnostic_not_realtime_gate`, `ring_buffer_overflow_drops`,
+  `ring_buffer_recoveries`, `ring_buffer_underflows`,
+  `ring_buffer_consumer_resyncs`, `ring_buffer_reached_latency_cap`.
+- Integridade: `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`.
+- Hash origem/recebido:
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Confirmacao no convidado:
+  - `consumer_priority_applied=true`;
+  - `consumer_waitable_timer_created=true`.
+- Host/send: p99 `10,030 ms`, max `10,657 ms`.
+- Guest receive: p99 `15,237 ms`, max `552,461 ms`, `1` stall acima de
+  `100 ms`.
+- Ring/consumer:
+  - overflow drops `585`;
+  - recoveries/underflows `585`;
+  - resyncs `55`;
+  - profundidade maxima `12/12`;
+  - latencia de playout p99 `118,874 ms`, max `132,298 ms`;
+  - consumer deadline lateness p99 `32,449 ms`, max `552,801 ms`.
+- Diagnostico:
+  - o waitable timer e prioridade `highest` foram aplicados e funcionaram bem
+    no smoke host-only;
+  - a VM ainda teve stall de recepcao/NAT de aproximadamente `552 ms`,
+    classificado como `unaccounted_receive_or_nat`;
+  - o ring limitado conteve a latencia via `drop_oldest` e
+    `recover_with_silence`, mas isso significa perda diagnostica, nao promocao.
+- Teardown: limpo, `forced_poweroff_used=false`; VM final em `poweroff`,
+  snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+  drag-and-drop desabilitados, NIC NAT.
+- Decisao:
+  - nao promover waitable timer/highest como solucao;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: investigar o stall `unaccounted_receive_or_nat`
+    antes de aumentar buffers ou tratar ring12/pre8 como caminho de producao.
+
+## 2026-07-01 - VM-DFN3-TRANSPORT-48K-R10-NAT/SCHED confirmou gargalo de outliers
+
+- Analise local da janela do maior stall da rodada `waitable_timer/highest`:
+  - host manteve envio regular a cada `10 ms`;
+  - guest ficou cerca de `552 ms` sem receber cabecalhos TCP;
+  - apos a pausa, dezenas de blocos foram recebidos em rajada;
+  - `TCP_NODELAY` ja estava ativo nos dois lados.
+- Rodada diagnostica com reducao de taxa de pacotes:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-002426-dfn3-transport-48k-r9-tcp-native-receiver-batch2-diagnostic-ring12-pre8-resync40-waitwaitabletimer-priohighest-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=2`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `RingResyncLatenessMs=40`, `ConsumerWaitMode=waitable_timer`,
+  `ConsumerThreadPriority=highest`, `GuestLaunchMode=Start`.
+- Resultado batch2:
+  - gate `check`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - max receive interval `96,693 ms`, sem stall acima de `100 ms`;
+  - `3` stalls acima de `50 ms`;
+  - classes: `1` `guest_scheduler_correlated`, `2` `unaccounted_receive_or_nat`;
+  - ring drops `328`;
+  - recoveries/underflows `328`;
+  - resyncs `49`;
+  - playout latency p99 `116,508 ms`, max `611,530 ms`;
+  - consumer lateness p99 `33,304 ms`, max `723,548 ms`.
+- Implementacao adicional:
+  - receptor nativo ganhou `--process-priority normal|above_normal|high|realtime`;
+  - orquestrador ganhou `-ReceiverProcessPriority`;
+  - `progress.json` e `client.json` registram `process_priority` e
+    `process_priority_applied`.
+- Validacoes:
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - build Release do receptor nativo;
+  - `python -m compileall` dos scripts de transporte/analise;
+  - smoke host-only em `tmp/dfn48_ring_proc_high_local_smoke`.
+- Smoke host-only com `process_priority=high`:
+  - gate `check`, apenas por `ring_buffer_diagnostic_not_realtime_gate`;
+  - drops/recoveries/underflows/resyncs `0`;
+  - `process_priority_applied=true`;
+  - playout latency p99 `81,755 ms`;
+  - consumer lateness p99 `1,236 ms`.
+- Rodada VM com prioridade de processo:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-003416-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-waitwaitabletimer-priohighest-prochigh-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `RingResyncLatenessMs=40`, `ConsumerWaitMode=waitable_timer`,
+  `ConsumerThreadPriority=highest`, `ReceiverProcessPriority=high`,
+  `GuestLaunchMode=Start`.
+- Resultado process high:
+  - gate `check`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - `process_priority=high`, `process_priority_applied=true`;
+  - guest receive p99 `14,997 ms`, max `290,142 ms`, `2` stalls acima de
+    `100 ms`;
+  - classes: `1` `guest_scheduler_correlated`, `1` `unaccounted_receive_or_nat`;
+  - ring drops `565`;
+  - recoveries/underflows `565`;
+  - resyncs `36`;
+  - playout latency p99 `118,036 ms`, max `399,763 ms`;
+  - consumer lateness p99 `27,456 ms`, max `620,868 ms`.
+- Teardown das duas VMs: limpo, `forced_poweroff_used=false`; VM final em
+  `poweroff`, snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`,
+  clipboard e drag-and-drop desabilitados, NIC NAT.
+- Decisao:
+  - reduzir pacotes ajudou o pior stall de recepcao, mas nao estabilizou o
+    playout;
+  - prioridade de processo `high` tambem nao promoveu a fase;
+  - integridade TCP nativa segue perfeita e promissora, mas baixa latencia esta
+    bloqueada por outliers de scheduler/recepcao;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: testar afinidade/isolamento do processo da VM ou
+    rota de transporte alternativa ao NAT antes de aumentar buffers.
+
+## 2026-07-01 - VM-DFN3-TRANSPORT-48K-R10-AFFINITY testou isolamento da VM
+
+- Implementacao:
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1` ganhou `-VmProcessAffinityMask`;
+  - ganhou tambem `-VmProcessPriority unchanged|Normal|AboveNormal|High|RealTime`;
+  - o wrapper grava `vm_process_scheduling.json` com PID, mascara/prioridade
+    solicitadas, valores efetivos e erro, se houver;
+  - `deployment_manifest.json` e `host_result.json` registram os novos
+    parametros.
+- Validacao previa:
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`.
+- Rodada VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-005021-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-waitwaitabletimer-priohighest-prochigh-vmaffF0000-vmprioHigh-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `RingResyncLatenessMs=40`, `ConsumerWaitMode=waitable_timer`,
+  `ConsumerThreadPriority=highest`, `ReceiverProcessPriority=high`,
+  `VmProcessAffinityMask=0xF0000`, `VmProcessPriority=High`,
+  `GuestLaunchMode=Start`.
+- Confirmacao host:
+  - processo `VirtualBoxVM`, PID `53020`;
+  - `affinity_applied=true`, `effective_affinity_mask=0xF0000`;
+  - `priority_applied=true`, `effective_priority=High`.
+- Gate final: `check`.
+- Integridade: `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`.
+- Hash origem/recebido:
+  `e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae`.
+- Host/send: p99 `10,029 ms`, max `10,898 ms`.
+- Guest receive: p99 `20,648 ms`, max `76,382 ms`, `0` stalls acima de
+  `100 ms`, `2` stalls acima de `50 ms`.
+- Diagnostico:
+  - classes: `1` `guest_scheduler_correlated`, `1` `unaccounted_receive_or_nat`;
+  - scheduler probe no guest ainda registrou max `485,653 ms`;
+  - a simulacao posthoc indicou absorcao com `8` blocos, mas o consumer real
+    continuou sofrendo pausas.
+- Ring/consumer:
+  - overflow drops `453`;
+  - recoveries/underflows `453`;
+  - resyncs `57`;
+  - profundidade maxima `12/12`;
+  - latencia de playout p99 `119,088 ms`, max `154,464 ms`;
+  - consumer deadline lateness p99 `37,635 ms`, max `480,843 ms`.
+- Teardown: limpo, `forced_poweroff_used=false`; VM final em `poweroff`,
+  snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+  drag-and-drop desabilitados, NIC NAT.
+- Decisao:
+  - afinidade/prioridade do processo da VM reduziram o pior stall de recepcao,
+    mas nao estabilizaram o playout;
+  - nao promover `VmProcessAffinityMask=0xF0000`/`VmProcessPriority=High`;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: comparar rota sem NAT ou matriz pequena de
+    afinidades, mantendo todas as rodadas como diagnosticas.
+
+## 2026-07-01 - VM-DFN3-TRANSPORT-48K-R10-PRE-READ separou pausa de thread e NAT
+
+- Implementacao:
+  - receptor nativo passou a registrar `read_start_qpc_ns` e
+    `pre_read_gap_ms` no `client_trace.json`;
+  - `client.json` passou a incluir estatisticas `pre_read_gap_ms_*`;
+  - analisador passou a classificar stalls como
+    `client_receiver_thread_pre_recv_gap` quando a pausa ocorre antes da
+    chamada a `recv`;
+  - receptor nativo ganhou `--receiver-thread-priority`;
+  - orquestrador ganhou `-ReceiverThreadPriority`.
+- Validacoes:
+  - `python -m compileall scripts/audio/host_guest_pcm_stream_dfn48.py scripts/audio/analyze_dfn48_vm_transport.py`;
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`;
+  - build Release do receptor nativo.
+- Reanalise da rodada de afinidade anterior:
+  - o stall da sequencia `3800`, antes `unaccounted_receive_or_nat`, passou a
+    `client_receiver_thread_pre_recv_gap`;
+  - intervalo `76,382 ms`;
+  - `header_wait_ms=0,011 ms`;
+  - `pre_read_gap_ms=76,362 ms`.
+- Rodada VM com telemetria medida:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-010404-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-waitwaitabletimer-priohighest-prochigh-vmaffF0000-vmprioHigh-diagnostic`.
+- Resultado da rodada com telemetria:
+  - gate `check`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - receive p99 `14,734 ms`, max `69,195 ms`;
+  - `0` stalls acima de `100 ms`, `2` acima de `50 ms`;
+  - `pre_read_gap_ms` p99 `0,704 ms`, max `63,254 ms`;
+  - classes: `1` `client_receiver_thread_pre_recv_gap`, `1`
+    `unaccounted_receive_or_nat`;
+  - ring drops/recoveries `810`, resyncs `65`;
+  - teardown limpo.
+- Tentativa abortada:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-010950-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-waitwaitabletimer-priohighest-rxpriohighest-prochigh-vmaffF0000-vmprioHigh-diagnostic`.
+  - objetivo: combinar `ReceiverThreadPriority=highest` com afinidade da VM;
+  - falha antes da coleta: Windows negou `ProcessorAffinity` para
+    `VirtualBoxVM`;
+  - teardown limpo, `forced_poweroff_used=false`, snapshot restaurado.
+- Rodada VM isolando apenas `ReceiverThreadPriority=highest`, sem afinidade da
+  VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-011440-dfn3-transport-48k-r9-tcp-native-receiver-ring12-pre8-resync40-waitwaitabletimer-priohighest-rxpriohighest-prochigh-diagnostic`.
+- Resultado:
+  - gate `check`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - receive p99 `13,664 ms`, max `154,765 ms`;
+  - `6` stalls acima de `50 ms`, `3` acima de `100 ms`;
+  - `pre_read_gap_ms` p99 `0,779 ms`, max `57,141 ms`;
+  - classes: `1` `client_receiver_thread_pre_recv_gap`, `2`
+    `guest_scheduler_correlated`, `3` `unaccounted_receive_or_nat`;
+  - ring drops/recoveries `469`, resyncs `31`;
+  - teardown limpo, `forced_poweroff_used=false`; VM final em `poweroff`,
+    snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+    drag-and-drop desabilitados, NIC NAT.
+- Decisao:
+  - manter `pre_read_gap_ms` como telemetria diagnostica;
+  - nao promover `ReceiverThreadPriority=highest`;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: comparar rota sem NAT ou voltar a afinidade da
+    VM apenas quando a alteracao de `ProcessorAffinity` estiver permitida.
+
+## 2026-07-01 - VM-DFN3-TRANSPORT-48K-R10-HOSTONLY comparou rota sem NAT
+
+- Implementacao:
+  - `scripts/vm/Invoke-Dfn3TransportVm.ps1` ganhou `-GuestConnectHost`;
+  - ganhou tambem `-TemporaryHostOnlyAdapterName`, que ativa NIC2 host-only
+    temporariamente antes da partida da VM;
+  - `host_result.json`, `deployment_manifest.json` e `teardown_result.json`
+    registram a rota e `nic2`.
+- Ambiente:
+  - host-only existente: `VirtualBox Host-Only Ethernet Adapter`;
+  - IP do host: `192.168.56.1`;
+  - DHCP host-only ativo em `192.168.56.101-254`;
+  - VM base: `nic1=nat`, `nic2=none`.
+- Validacao previa:
+  - parse limpo de `scripts/vm/Invoke-Dfn3TransportVm.ps1`.
+- Rodada VM:
+  `resultados/dfn3_vm_transport_48k/runs/20260701-012549-dfn3-transport-48k-r9-tcp-native-receiver-guesthost192p168p56p1-hostonly-ring12-pre8-resync40-waitwaitabletimer-priohighest-prochigh-diagnostic`.
+- Parametros: TCP, receptor nativo, `sink=memory`,
+  `GuestConnectHost=192.168.56.1`, `TemporaryHostOnlyAdapterName=VirtualBox Host-Only Ethernet Adapter`,
+  `BlocksPerPacket=1`, `RingDiagnostic`, `RingCapacityBlocks=12`,
+  `RingPrebufferBlocks=8`, `RingResyncLatenessMs=40`,
+  `ConsumerWaitMode=waitable_timer`, `ConsumerThreadPriority=highest`,
+  `ReceiverProcessPriority=high`, `GuestLaunchMode=Start`.
+- Resultado:
+  - gate `check`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - receive p99 `14,845 ms`, max `116,378 ms`;
+  - `14` stalls acima de `20 ms`, `1` acima de `50 ms`, `1` acima de
+    `100 ms`;
+  - `pre_read_gap_ms` p99 `1,143 ms`, max `23,591 ms`;
+  - unico stall acima de `50 ms`: `guest_scheduler_correlated`, sequencia
+    `961`, intervalo `116,378 ms`, `header_wait_ms=116,294 ms`,
+    `pre_read_gap_ms=0,008 ms`, scheduler gap max `106,761 ms`;
+  - ring drops/recoveries `564`, resyncs `66`;
+  - playout latency p99 `119,022 ms`;
+  - consumer deadline lateness p99 `44,476 ms`.
+- Teardown: limpo, `forced_poweroff_used=false`; VM final em `poweroff`,
+  snapshot `checkpoint45-causal-wpt-validated`, `audio_in=on`, clipboard e
+  drag-and-drop desabilitados, `nic1=nat`, `nic2=none`.
+- Decisao:
+  - host-only reduziu a ambiguidade e removeu `unaccounted_receive_or_nat`
+    nesta rodada, mas nao estabilizou baixa latencia;
+  - NAT nao e a unica causa do bloqueio;
+  - manter rota host-only como diagnostico, nao como promocao;
+  - nao acoplar DeepFilterNet3 dentro da VM, ponte PCM v1 ou SYSVAD;
+  - proximo passo recomendado: focar scheduler/afinidade quando permitido ou
+    priorizar validacao fora do VirtualBox/NEM.
+
+## 2026-07-01 - DFN3-TRANSPORT-48K-R11-LOCAL-LOOPBACK validou baseline nativo
+
+- Escopo:
+  - teste user-mode no host Windows;
+  - sem VM;
+  - sem SYSVAD;
+  - sem ponte PCM v1;
+  - sem driver;
+  - sem alterar BIOS, Secure Boot, Hyper-V ou configuracao de boot;
+  - servidor Python e receptor C++ nativo via TCP `127.0.0.1`.
+- Observacao operacional:
+  - a primeira tentativa dentro do caminho do OneDrive falhou antes do teste
+    porque o receptor nativo usa `argv` estreito no Windows e nao criou
+    diretorios com caracteres acentuados no caminho;
+  - as rodadas validas foram gravadas em
+    `C:\PTC3527-Private\local_loopback_runs\`.
+- Rodada transport-only:
+  `C:\PTC3527-Private\local_loopback_runs\20260701-020331-dfn3-local-loopback-transport-only`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`, sem
+  ring/consumer.
+- Resultado transport-only:
+  - gate `accepted`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - receive p99 `10,152 ms`;
+  - receive max `11,052 ms`;
+  - stalls acima de `20/50/100 ms`: `0/0/0`;
+  - scheduler max `4,500 ms`.
+- Rodada ring diagnostic:
+  `C:\PTC3527-Private\local_loopback_runs\20260701-020131-dfn3-local-loopback-ring12-pre8-resync40`.
+- Parametros: TCP, receptor nativo, `sink=memory`, `BlocksPerPacket=1`,
+  `RingDiagnostic`, `RingCapacityBlocks=12`, `RingPrebufferBlocks=8`,
+  `RingResyncLatenessMs=40`, `ConsumerWaitMode=waitable_timer`,
+  `ConsumerThreadPriority=highest`, `ReceiverProcessPriority=high`.
+- Resultado ring:
+  - gate `check`, apenas por `ring_buffer_diagnostic_not_realtime_gate`;
+  - integridade `6000/6000`, perda `0`, sequencia `0`, CRC `0`, framing `0`;
+  - receive p99 `10,153 ms`;
+  - receive max `10,819 ms`;
+  - stalls acima de `20/50/100 ms`: `0/0/0`;
+  - ring drops `0`;
+  - recoveries/underflows `0`;
+  - resyncs `0`;
+  - playout latency p99 `80,987 ms`;
+  - consumer deadline lateness p99 `0,977 ms`;
+  - consumer interval max `11,507 ms`;
+  - scheduler max `4,413 ms`.
+- Decisao:
+  - o baseline nativo confirmou que o transporte/receptor C++ mantem cadencia
+    no host Windows quando VirtualBox/NEM e removido;
+  - a fase VM fica congelada como integridade funcional validada, mas tempo
+    real nao validavel de forma confiavel no VirtualBox/NEM;
+  - os outliers da VM nao devem ser atribuidos ao protocolo/ring/receptor sem
+    nova evidencia;
+  - proximo passo recomendado: medir DFN3 inline em user-mode usando o baseline
+    nativo antes de qualquer retorno a SYSVAD/driver.
+
+## 2026-07-01 - DFN3-LOCAL-R12-INLINE-USERMODE validou custo nativo do DFN3
+
+- Escopo:
+  - host Windows, user-mode;
+  - sem VM;
+  - sem SYSVAD;
+  - sem ponte PCM v1;
+  - sem driver;
+  - sem alterar BIOS, Secure Boot, Hyper-V ou configuracao de boot;
+  - DeepFilterNet3 C API persistente em worker/ring.
+- Comando:
+  `powershell -NoProfile -ExecutionPolicy Bypass -File tmp\dfn_native\wasapi_worker_bench\run_b3_pre_vm.ps1`.
+- Artefatos:
+  `tmp\dfn_native\wasapi_worker_bench\results\b3_mixed_60s_worker\`;
+  resumo em `resultados\dfn3_local_dfn_inline\README.md`.
+- Parametros:
+  - `df.dll` em `tmp\t_release\x86_64-pc-windows-msvc\release\df.dll`;
+  - modelo `tmp\dfn_native\DeepFilterNet3_onnx.tar.gz`;
+  - frame DFN3 de `480` amostras, `10 ms` a 48 kHz;
+  - `post_filter_beta=1.0`;
+  - `atten_lim=100.0`;
+  - worker e callback com MMCSS;
+  - render mudo;
+  - input composto de `60 s`.
+- Resultado bruto:
+  - gate `PASS`;
+  - frames DFN3 `6000`;
+  - worker mean `0,982 ms`;
+  - worker p95 `1,801 ms`;
+  - worker p99 `2,189 ms`;
+  - worker p999 `2,617 ms`;
+  - worker max `5,168 ms`;
+  - worker acima de `4/8/10 ms`: `1/0/0`;
+  - callback p99 `0,043 ms`;
+  - callback p999 `0,087 ms`;
+  - callback max `0,155 ms`;
+  - underflow `0`;
+  - ring minimo antes do callback `480` amostras.
+- Resultado estavel B3, ignorando apenas o primeiro frame do worker:
+  - gate estavel `PASS`;
+  - frames no gate estavel `5999`;
+  - worker p99 `2,188 ms`;
+  - worker p999 `2,598 ms`;
+  - worker max `3,957 ms`;
+  - worker acima de `4/8/10 ms`: `0/0/0`;
+  - callback p99 `0,043 ms`;
+  - underflow `0`.
+- Decisao:
+  - o custo nativo do DeepFilterNet3 C API esta aprovado em user-mode;
+  - combinado com R11, o host validou transporte/receptor/ring e custo DFN3;
+  - o bloqueio restante da trilha VM continua sendo ambiente
+    VirtualBox/NEM/scheduler/rede, nao DFN3 basico;
+  - retorno a ponte PCM v1/SYSVAD deve iniciar nova fase controlada.
+
+## 2026-07-01 - DFN3-LOCAL-R13-PCM-BRIDGE-SIM aprovou stub pre-ponte
+
+- Escopo:
+  - host Windows, user-mode;
+  - sem VM;
+  - sem SYSVAD;
+  - sem driver;
+  - sem abrir a ponte PCM v1 real;
+  - sem alterar BIOS, Secure Boot, Hyper-V, test-signing ou configuracao de
+    boot;
+  - reutilizacao do contrato Python `PtcPcmBridgeClient` e
+    `BridgePacedWriter` com backend simulado em memoria.
+- Implementacao:
+  - novo script `scripts/audio/dfn3_pcm_bridge_simulator.py`;
+  - entrada DFN3 48 kHz ja produzida pela bancada R12:
+    `tmp\dfn_native\wasapi_worker_bench\results\b3_mixed_60s_worker\output_full_raw48.wav`;
+  - conversao deterministica de `48 kHz/480 samples/10 ms` para o contrato PCM
+    v1 `16 kHz/320 samples/20 ms`;
+  - backend simulado com fila de driver, consumo a cada `20 ms`, estatisticas
+    compativeis com `IOCTL_PTC_PCM_GET_STATS`, hash de payload aceito e
+    contadores de underrun/overrun/rejeicao/erro de sequencia.
+- Validacoes:
+  - `python -m compileall scripts/audio/dfn3_pcm_bridge_simulator.py`;
+  - smoke de `20` blocos com `bridge_target_depth=6`, `bridge_user_queue=16`;
+  - rodada principal de `60 s` em
+    `resultados\dfn3_pcm_bridge_simulator\`;
+  - variantes diagnosticas em
+    `resultados\dfn3_pcm_bridge_simulator_depth2_queue16\` e
+    `resultados\dfn3_pcm_bridge_simulator_depth6\`.
+- Rodada principal:
+  - comando:
+    `python scripts/audio/dfn3_pcm_bridge_simulator.py --output-dir resultados\dfn3_pcm_bridge_simulator`;
+  - `bridge_target_depth=2`;
+  - `bridge_user_queue=4`;
+  - `bridge_poll_interval_ms=2`;
+  - `timeBeginPeriod(1)` aplicado;
+  - prioridade de processo `high` aplicada;
+  - prioridade da thread de submissao `highest` aplicada;
+  - writer thread com MMCSS aplicado.
+- Resultado principal:
+  - gate `PASS`;
+  - blocos PCM v1 esperados/enviados/aceitos: `3000/3000/3000`;
+  - blocos consumidos no snapshot final: `2998`;
+  - profundidade final do backend simulado: `2` blocos;
+  - drops da fila de usuario `0`;
+  - underruns `0`;
+  - overruns `0`;
+  - rejeicoes `0`;
+  - erros de sequencia `0`;
+  - hash aceito igual ao payload PCM16 esperado;
+  - submit interval p99 `20,172 ms`, max `25,001 ms`;
+  - submit call p99 `0,107 ms`;
+  - profundidade media/p95/max `1,5 / 2 / 2` blocos;
+  - residencia p95/max na fila de usuario `2,743 / 3,368 ms`;
+  - latencia estimada de ponte `42,743 ms`;
+  - consumer lateness p99/max `2,537 / 2,810 ms`.
+- Variantes diagnosticas:
+  - depth2/fila16: gate `PASS`, `3000/3000` enviados/aceitos, sem drops,
+    underruns, overruns, rejeicoes ou erro de sequencia, hash correto;
+  - depth6/fila16: gate `PASS`, `3000/3000` enviados/aceitos, sem drops,
+    underruns, overruns, rejeicoes ou erro de sequencia, hash correto, mas
+    latencia estimada de ponte maior (`122,759 ms`).
+- Decisao:
+  - R13 aprova o stub user-mode pre-ponte para o caminho
+    `DFN3 48 kHz -> adaptacao PCM v1 16 kHz -> writer -> consumidor simulado`;
+  - o teste nao valida SYSVAD, WaveRT, PortCls, IOCTL real, endpoint de captura
+    ou latencia fisica ponta a ponta;
+  - nao promove nenhuma configuracao de VM para tempo real;
+  - proximo passo recomendado: somente com decisao explicita, reabrir uma
+    bancada controlada da ponte PCM v1 real dentro da VM/lab, preservando a
+    separacao entre custo DFN3, pacing user-mode e comportamento do driver.
+
+## 2026-07-01 - DFN3/SYSVAD-R14-BRIDGE-REAL-VM reabriu ponte v1 sem DFN3
+
+- Escopo:
+  - clone `PTC3527-SYSVAD-LAB-FAST`;
+  - snapshot esperado `checkpoint45-causal-wpt-validated`;
+  - ponte PCM v1 real exercitada dentro da VM;
+  - sem DeepFilterNet3 dentro da VM;
+  - sem modificar driver/SYSVAD/ponte real;
+  - sem instalar driver no host;
+  - sem alterar BIOS, Secure Boot, Hyper-V, TESTSIGNING ou boot.
+- Preflight:
+  - comando:
+    `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\vm\Test-VmAutomationPreflight.ps1 -RuntimeRoot C:\PTC3527-Private\vm_runtime -OrchestratorPath scripts\vm\Invoke-HostPacedPcmVm.ps1 -AudioRun`;
+  - resultado final `ready=true`, falhas `0`, warnings `0`;
+  - clone em `poweroff`, snapshot aprovado, `audio_in=on`, clipboard e
+    drag-and-drop desabilitados, NIC1 NAT.
+- Ajuste operacional:
+  - `scripts\vm\Invoke-HostPacedPcmVm.ps1` passou a exigir a DLL RNNoise apenas
+    quando algum cenario usa metodo `rnnoise`;
+  - `scripts\vm\guest\Invoke-HostPacedEndpointScenario.ps1` passou a exigir a
+    DLL somente quando `-Method rnnoise`;
+  - motivacao: remover dependencia falsa nos cenarios `bypass` que exercitam
+    apenas a ponte real;
+  - parse PowerShell limpo nos dois scripts.
+- Rodada `EndpointDiagnostic`:
+  - run:
+    `resultados\sysvad_checkpoint46_reopened\host_paced_pcm\runs\20260701-101012-host-paced-endpointdiagnostic`;
+  - comando:
+    `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\vm\Invoke-HostPacedPcmVm.ps1 -RuntimeRoot C:\PTC3527-Private\vm_runtime -Mode EndpointDiagnostic -DurationSeconds 20`;
+  - `host_result`: `succeeded=true`, `bridge_exercised=true`,
+    `pipeline_modified=false`, default capture do host inalterado, clone final
+    em `poweroff` no snapshot aprovado;
+  - cliente recebeu `1000/1000` blocos, sequencia `0`, CRC `0`, framing `0`;
+  - bypass p99 `1,728 ms`, max `5,235 ms`;
+  - writer submeteu `1000`, enviou `831`, com `169` drops locais;
+  - driver aceitou `831`, consumiu `829`;
+  - write errors `0`, rejected requests `0`, sequence errors do driver `0`;
+  - underruns do driver `147`;
+  - classificacao:
+    `transient_scheduling_pauses_with_queue_overflow`.
+- Rodada `EndpointCaptureEvent`:
+  - run:
+    `resultados\sysvad_checkpoint46_reopened\host_paced_pcm\runs\20260701-101500-host-paced-endpointcaptureevent`;
+  - comando:
+    `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\vm\Invoke-HostPacedPcmVm.ps1 -RuntimeRoot C:\PTC3527-Private\vm_runtime -Mode EndpointCaptureEvent -DurationSeconds 20`;
+  - `host_result`: `succeeded=true`, clone final restaurado;
+  - gate `completed`;
+  - classificacao `capture_event_not_confirmed`;
+  - pernas `yield`: `998/1000` enviados nas duas pernas, drops `2` e `2`,
+    underruns `33` e `23`;
+  - pernas `event`: `953/1000` e `969/1000` enviados, drops `47` e `31`,
+    underruns `124` e `67`.
+- Rodada `EndpointScheduling`:
+  - run:
+    `resultados\sysvad_checkpoint46_reopened\host_paced_pcm\runs\20260701-102253-host-paced-endpointscheduling`;
+  - comando:
+    `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\vm\Invoke-HostPacedPcmVm.ps1 -RuntimeRoot C:\PTC3527-Private\vm_runtime -Mode EndpointScheduling -DurationSeconds 20`;
+  - `host_result`: `succeeded=true`, clone final restaurado;
+  - gate `completed`;
+  - classificacao
+    `writer_wakeup_mitigated_consumer_cadence_deficit_remains`;
+  - writer normal: `867/1000` enviados com `133` drops e `165` underruns na
+    primeira perna; `968/1000` enviados com `32` drops e `106` underruns na
+    segunda;
+  - writer MMCSS: `961/1000` enviados com `39` drops e `141` underruns;
+    `973/1000` enviados com `27` drops e `122` underruns.
+- Decisao:
+  - a ponte PCM v1 real foi reaberta e aceitou blocos sem erros de contrato,
+    escrita, rejeicao ou sequencia;
+  - as rodadas nao promovem tempo real porque a VM ainda apresenta pausas de
+    scheduler/cadencia e deficit no consumidor/endpoint;
+  - nao acoplar DFN3 a ponte real dentro desta VM como gate de baixa latencia;
+  - o proximo teste de integracao final deve ocorrer em instalacao Windows
+    nativa/lab dedicada ou ambiente virtual com garantias temporais melhores;
+  - ate la, manter aprovados como caminho tecnico principal os gates host-native
+    user-mode R11, R12 e R13.
+
+## 2026-07-01 - DFN3-LOCAL-R15-CPP-PCM-BRIDGE-SIM aproximou fluxo final sem driver
+
+- Escopo:
+  - host Windows nativo, user-mode;
+  - sem VM;
+  - sem driver;
+  - sem SYSVAD;
+  - sem abrir a ponte PCM v1 real;
+  - sem alterar BIOS, Secure Boot, Hyper-V, TESTSIGNING ou boot.
+- Objetivo:
+  - executar um ensaio incremental alem do R13, removendo o pacing Python;
+  - manter DeepFilterNet3 real via C API persistente;
+  - testar worker/ring C++ e adaptacao para contrato PCM v1
+    `16 kHz/320 samples/20 ms`;
+  - simular driver PCM v1 com target depth `2`, fila de driver e consumidor
+    periodico de `20 ms`.
+- Implementacao:
+  - nova bancada versionavel em
+    `scripts\native\dfn3_pcm_bridge_sim_bench\`;
+  - executavel:
+    `scripts\native\dfn3_pcm_bridge_sim_bench\bin\dfn3_pcm_bridge_sim_bench.exe`;
+  - artefatos principais em
+    `resultados\dfn3_pcm_bridge_cpp_simulator\`;
+  - repeticao de confirmacao em
+    `resultados\dfn3_pcm_bridge_cpp_simulator_repeat1\`;
+  - documentacao:
+    `resultados\dfn3_pcm_bridge_cpp_simulator\README.md`.
+- Build e smoke:
+  - build Release CMake/NMake aprovado;
+  - smoke inicial de `100` blocos no prototipo: gate `PASS`, `100/100`
+    aceitos, underruns `0`,
+    worker p99 `0,699 ms`, worker max `3,734 ms`.
+  - smoke da fonte versionavel em
+    `tmp\dfn3_pcm_bridge_cpp_smoke_versioned`: gate `PASS`, `100/100`
+    aceitos, underruns `0`, worker p99 `0,753 ms`, worker max `0,787 ms`.
+- Rodada principal:
+  - comando:
+    `scripts\native\dfn3_pcm_bridge_sim_bench\bin\dfn3_pcm_bridge_sim_bench.exe --output-dir resultados\dfn3_pcm_bridge_cpp_simulator`;
+  - gate `CHECK`;
+  - motivo: `worker_max_over_10ms`;
+  - blocos PCM v1 aceitos `3000/3000`;
+  - worker frames `6000`;
+  - underruns `0`;
+  - overruns `0`;
+  - rejeicoes `0`;
+  - erros de sequencia `0`;
+  - profundidade final/max `2/2`;
+  - hash PCM16
+    `144017e02a1731141f1abc0f44571f4c635a2cb24ef5af197922daf2773aa227`;
+  - worker p99 `2,943 ms`;
+  - worker p999 `3,851 ms`;
+  - worker max `11,786 ms`;
+  - um unico frame acima de `10 ms`, no frame `285`;
+  - bridge write interval p99/max `20,261 / 20,766 ms`;
+  - consumer lateness p99/max `0,993 / 1,188 ms`.
+- Repeticao de confirmacao:
+  - comando:
+    `scripts\native\dfn3_pcm_bridge_sim_bench\bin\dfn3_pcm_bridge_sim_bench.exe --output-dir resultados\dfn3_pcm_bridge_cpp_simulator_repeat1`;
+  - gate `PASS`;
+  - blocos PCM v1 aceitos `3000/3000`;
+  - underruns, overruns, rejeicoes e erros de sequencia `0`;
+  - worker p99 `3,093 ms`;
+  - worker p999 `3,807 ms`;
+  - worker max `6,234 ms`;
+  - frames acima de `8 ms`: `0`;
+  - frames acima de `10 ms`: `0`;
+  - bridge write interval p99/max `20,247 / 20,881 ms`;
+  - hash PCM16 igual ao da rodada principal.
+- Decisao:
+  - R15 valida a menor bancada adicional util sem instalacao de driver:
+    DFN3 real C++ nativo, worker/ring e simulador PCM v1;
+  - a rodada principal teve um outlier bruto isolado de CPU/scheduler, absorvido
+    pelo ring e sem impacto funcional;
+  - a repeticao passou no gate rigido, indicando que o outlier nao formou um
+    padrao recorrente na bancada;
+  - nao ha novo indicio para atribuir risco principal ao protocolo local, ao
+    custo basico do DFN3, ao ring user-mode ou ao empacotamento PCM v1 simulado;
+  - o proximo salto que valida SYSVAD/ponte real de ponta a ponta continua
+    dependendo de Windows nativo/lab dedicado ou de ambiente virtual com
+    garantias temporais melhores.

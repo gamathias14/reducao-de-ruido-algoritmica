@@ -8,7 +8,7 @@
 \renewcommand{\contentsname}{SUMÁRIO}
 \renewcommand{\refname}{REFERÊNCIAS}
 
-\newcommand{\tituloProjeto}{Protótipo de Redução de Ruído Local para Voz Humana no Windows: Avaliação Algorítmica, RNNoise e Microfone Virtual}
+\newcommand{\tituloProjeto}{Protótipo de Redução de Ruído Local para Voz Humana no Windows: Avaliação Algorítmica, RNNoise, DeepFilterNet3 e Microfone Virtual}
 \newcommand{\orientadorProjeto}{Juan Luis Poletti Soto}
 \newcommand{\alunoA}{Augusto Massayoshi Yojo de Lima}
 \newcommand{\alunoB}{Gabriel Almeida Mathias}
@@ -144,7 +144,7 @@
 \\[.75\baselineskip]
 Orientador: \orientadorProjeto
 \\
-14 de junho de 2026
+1 de julho de 2026
 
 \par%
 }
@@ -152,7 +152,7 @@ Orientador: \orientadorProjeto
 \vfill
 
 \begin{citacaolonga}
-    Relatório de fechamento acadêmico da disciplina PTC3527, consolidando a evolução do benchmark algorítmico, a seleção perceptual do RNNoise, a integração com microfone virtual no Windows, os limites temporais encontrados no ambiente virtualizado e o protocolo de validação futura em Windows nativo.
+    Relatório de fechamento acadêmico da disciplina PTC3527, consolidando a evolução do benchmark algorítmico, a seleção perceptual do RNNoise, a trilha complementar DeepFilterNet3/SYSVAD, a integração com microfone virtual no Windows, os limites temporais encontrados no ambiente virtualizado e o protocolo de validação futura em Windows nativo.
 \end{citacaolonga}
 
 \vfill
@@ -206,7 +206,7 @@ Orientador: \orientadorProjeto
 
 O projeto de formatura \textit{\tituloProjeto} foi desenvolvido na disciplina PTC3527 -- Anteprojeto de Formatura em Telecomunicações, sob orientação do professor \orientadorProjeto, pelo grupo composto por \alunoA, \alunoB\ e \alunoC. O integrante \alunoC\ foi incorporado ao grupo após a primeira apresentação, mantendo-se a continuidade do anteprojeto e ampliando a capacidade de execução técnica na etapa experimental.
 
-A proposta situa-se em processamento digital de sinais e telecomunicações, com foco específico em redução de ruído aplicada a voz humana no Windows. Diferentemente do escopo inicialmente apresentado, que tratava genericamente de sinais unidimensionais no tempo, o trabalho foi delimitado para fala contaminada por ruído acústico, processamento causal local e disponibilização do sinal tratado a aplicativos externos por meio de um microfone virtual. O fechamento integra benchmark algorítmico, seleção perceptual do RNNoise, transporte PCM, driver SYSVAD e diagnóstico de continuidade temporal.
+A proposta situa-se em processamento digital de sinais e telecomunicações, com foco específico em redução de ruído aplicada a voz humana no Windows. Diferentemente do escopo inicialmente apresentado, que tratava genericamente de sinais unidimensionais no tempo, o trabalho foi delimitado para fala contaminada por ruído acústico, processamento causal local e disponibilização do sinal tratado a aplicativos externos por meio de um microfone virtual. O fechamento integra benchmark algorítmico, seleção perceptual do RNNoise, reabertura controlada da trilha DeepFilterNet3, transporte PCM, driver SYSVAD e diagnóstico de continuidade temporal.
 
 \section{Contextualização da reformulação do escopo}
 
@@ -240,9 +240,9 @@ Plataforma & Ambiente de execução pouco delimitado. & Windows, com processamen
 
 \section{Resumo do projeto}
 
-O projeto estudou e implementou redução de ruído local para voz humana no Windows. O trabalho começou com uma comparação reprodutível entre métodos baseados em Transformada de Fourier de Curto Tempo (STFT) e Transformada Wavelet, avançou para estimadores causais por blocos e incorporou sistemas da literatura, como OM-LSA/IMCRA, RNNoise, WebRTC APM NS e DeepFilterNet3. A decisão final combinou métricas objetivas, custo computacional, causalidade, memória, latência algorítmica e escuta controlada.
+O projeto estudou e implementou redução de ruído local para voz humana no Windows. O trabalho começou com uma comparação reprodutível entre métodos baseados em Transformada de Fourier de Curto Tempo (STFT) e Transformada Wavelet, avançou para estimadores causais por blocos e incorporou sistemas da literatura, como OM-LSA/IMCRA, RNNoise, WebRTC APM NS e DeepFilterNet3. A decisão final combinou métricas objetivas, custo computacional, causalidade, memória, latência algorítmica e escuta controlada. Na etapa posterior, a trilha DeepFilterNet3 foi reaberta não como substituição imediata da decisão perceptual, mas como rota de integração técnica a 48 kHz com C API persistente, worker/ring e preparação para o contrato PCM v1.
 
-O RNNoise foi selecionado como candidato principal e integrado de forma persistente ao pipeline causal. A saída processada foi transportada por blocos PCM16, mono, a 16 kHz, por uma interface PCM v1 até um driver SYSVAD modificado, capaz de expor um endpoint virtual de captura. DSP, transporte e endpoint foram validados em gates separados. A continuidade temporal ponta a ponta, entretanto, não foi comprovada no VirtualBox/NEM; por isso, o resultado é classificado como protótipo acadêmico integrado, com validação temporal futura em Windows nativo.
+O RNNoise foi selecionado como candidato perceptual principal e integrado de forma persistente ao pipeline causal. A saída processada foi transportada por blocos PCM16, mono, a 16 kHz, por uma interface PCM v1 até um driver SYSVAD modificado, capaz de expor um endpoint virtual de captura. Em paralelo, o DeepFilterNet3 foi exercitado em baselines nativos no host e em simuladores de ponte PCM v1. DSP, transporte e endpoint foram validados em gates separados. A continuidade temporal ponta a ponta, entretanto, não foi comprovada no VirtualBox/NEM; por isso, o resultado é classificado como protótipo acadêmico integrado, com validação temporal futura em Windows nativo.
 
 \subsection{Objetivo geral}
 
@@ -931,7 +931,7 @@ Os arquivos de áudio de demonstração foram salvos em \texttt{resultados/audio
 
 A investigação começou com métodos clássicos, interpretáveis e reproduzíveis. A subtração espectral STFT causal adaptativa tornou-se o primeiro baseline operacional por blocos; o Wiener causal foi mantido como alternativa menos agressiva. A DWT limiarizada mostrou ganhos pequenos, e a busca Wavelet mais ampla identificou configurações WPT em quadros objetivamente competitivas. Uma WPT causal posterior passou em gates instrumentais, mas foi rejeitada na escuta pré-ponte contra o baseline STFT. Esse resultado impediu a promoção de uma configuração apenas porque suas métricas de tonalidade eram favoráveis.
 
-Em seguida, foi criado um harness comum para sistemas da literatura, com registro de versão, licença, taxa nativa, framing, causalidade, atraso por impulso, RTF, memória e hashes das misturas. Foram avaliados OM-LSA/IMCRA, RNNoise, WebRTC APM Noise Suppression e DeepFilterNet3, sempre com o baseline STFT como referência. O WebRTC APM foi rejeitado na configuração oficial testada por regressões de SNR e SI-SDR; o DeepFilterNet3 foi rejeitado pelo custo de memória e pela dominância do RNNoise na maior parte dos eixos. RNNoise e OM-LSA/IMCRA formaram a fronteira final pública.
+Em seguida, foi criado um harness comum para sistemas da literatura, com registro de versão, licença, taxa nativa, framing, causalidade, atraso por impulso, RTF, memória e hashes das misturas. Foram avaliados OM-LSA/IMCRA, RNNoise, WebRTC APM Noise Suppression e DeepFilterNet3, sempre com o baseline STFT como referência. O WebRTC APM foi rejeitado na configuração oficial testada por regressões de SNR e SI-SDR; o DeepFilterNet3 não foi promovido naquele momento pelo custo de memória e pela dominância perceptual do RNNoise na maior parte dos eixos. RNNoise e OM-LSA/IMCRA formaram a fronteira final pública. Posteriormente, porém, o DeepFilterNet3 foi reaberto como rota de engenharia: a pergunta deixou de ser apenas qual algoritmo vencia o benchmark perceptual e passou a incluir se o custo real do DFN3 persistente, em C++ nativo, caberia no desenho de worker/ring e no contrato PCM v1 antes de qualquer nova instalação de driver.
 
 \begin{table}[!htbp]
 \centering
@@ -965,7 +965,7 @@ A arquitetura separa o algoritmo, o transporte e a exposição do dispositivo. O
     seta/.style={->, very thick, draw=blue!55!black}
 ]
 \node[bloco] (fonte) at (0,0) {Fonte ou\\replay controlado};
-\node[bloco] (dsp) at (3.6,0) {DSP causal\\STFT ou RNNoise};
+\node[bloco] (dsp) at (3.6,0) {DSP causal\\STFT, RNNoise\\ou DFN3};
 \node[bloco] (pcm) at (7.2,0) {PCM16 mono\\16 kHz, 20 ms};
 \node[bloco] (controle) at (10.8,0) {Interface de controle\\e protocolo PCM v1};
 \node[bloco] (driver) at (14.4,0) {Ring buffer\\SYSVAD/WaveRT};
@@ -1012,6 +1012,44 @@ Ponte PCM v1 e SYSVAD & Tom de 440 Hz capturado com formato e duração corretos
 \end{tabularx}
 \end{table}
 \FloatBarrier
+
+\subsection{Trilha complementar DeepFilterNet3/SYSVAD}
+
+Depois da validação inicial do RNNoise e da constatação de que a VM não fornecia um critério temporal confiável, foi aberta uma trilha complementar com DeepFilterNet3. O objetivo não foi substituir automaticamente o candidato perceptual principal, mas mapear se uma solução neural mais pesada poderia ser integrada de forma controlada ao caminho final, preservando a separação metodológica entre custo do DSP, transporte, ponte PCM v1, driver e endpoint.
+
+A primeira etapa dessa trilha transmitiu, para a VM, o material de entrada a 48 kHz no enquadramento nativo do DeepFilterNet3: 480 amostras por bloco, ou 10 ms. Nas rodadas relevantes, a integridade funcional foi perfeita: 6.000 blocos recebidos de 6.000 enviados, sem perda, erro de sequência, erro de CRC, erro de framing ou divergência de hash. Mesmo assim, apareceram lacunas de recepção, pausas do scheduler do convidado e intervalos de consumidor muito acima do orçamento de tempo real. O resultado foi decisivo metodologicamente: a VM validou integridade de transporte, mas não pôde ser usada como gate de baixa latência.
+
+Para separar esse achado do código do receptor, foi executado um baseline nativo no host Windows, sem VM, sem driver, sem SYSVAD e sem ponte PCM real. O servidor Python e o receptor C++ comunicaram por TCP em \texttt{127.0.0.1}; tanto a rodada \textit{transport-only} quanto a rodada com ring diagnóstico preservaram 6.000 blocos de 6.000, sem stalls relevantes, perdas, drops, recoveries, \textit{underflows} ou resyncs. Em seguida, o DeepFilterNet3 foi medido em user-mode por C API persistente, com worker/ring e entrada de 60 s. O gate bruto passou, e o gate estável também: 6.000 frames de 10 ms, worker p99 de aproximadamente 2,188 ms, pior caso estável de 3,957 ms, callback p99 de 0,043 ms e \textit{underflow} zero.
+
+A etapa seguinte aproximou a saída do DFN3 do contrato final da ponte PCM v1. Primeiro foi usado um simulador em Python reaproveitando o cliente e o writer da ponte: a saída DFN3 a 48 kHz foi convertida deterministicamente para blocos PCM16 mono de 320 amostras a 16 kHz, consumidos por um backend simulado a cada 20 ms. A rodada principal enviou e aceitou 3.000 blocos de 3.000, sem drops, \textit{underruns}, \textit{overruns}, rejeições, erros de sequência ou divergência de hash. Depois foi criada uma bancada C++ nativa, versionada em \path{scripts/native/dfn3_pcm_bridge_sim_bench/}, que executa DFN3 real, worker/ring, adaptação PCM v1 e consumidor simulado no mesmo processo. A repetição completa dessa bancada passou: 3.000 blocos aceitos de 3.000, \textit{underruns} zero, worker p99 de 3,093 ms, pior caso de 6,234 ms e intervalo de escrita p99 próximo de 20,247 ms. A primeira rodada completa havia ficado em \texttt{CHECK} por um único outlier bruto de 11,786 ms no worker, absorvido pelo ring e sem impacto funcional.
+
+\begin{table}[!htbp]
+\centering
+\caption{Cronologia técnica da trilha DeepFilterNet3/SYSVAD após a validação inicial.}
+\label{tab:dfn3-cronologia}
+\footnotesize
+\setstretch{1.02}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.3cm}X>{\raggedright\arraybackslash}p{3.1cm}}
+\toprule
+\textbf{Etapa} & \textbf{Evidência principal} & \textbf{Conclusão} \\
+\midrule
+VM DFN3 transporte 48 kHz & 6.000/6.000 blocos, perda zero, sequência/CRC/framing zero e hashes corretos; porém stalls e pausas de scheduler no convidado. & Integridade funcional aprovada; VM não promovida para baixa latência. \\
+\addlinespace
+Loopback nativo local & Transporte e ring no host Windows com 6.000/6.000 blocos, sem stalls relevantes, drops, recoveries, \textit{underflows} ou resyncs. & Receptor, ring e transporte local não explicam as falhas da VM. \\
+\addlinespace
+DFN3 inline nativo & 60 s, 6.000 frames de 10 ms; worker p99 2,188 ms, pior estável 3,957 ms, callback p99 0,043 ms e \textit{underflow} zero. & Custo básico do DFN3 aprovado com folga no host. \\
+\addlinespace
+Simulador PCM v1 em Python & 3.000/3.000 blocos aceitos, hash correto, drops e \textit{underruns} zero; intervalo de submissão p99 20,172 ms. & Contrato PCM v1 e pacing user-mode aprovados sem driver. \\
+\addlinespace
+Ponte PCM v1 real na VM & Ponte abriu e aceitou blocos sem erro de contrato, rejeição ou sequência; ainda houve drops locais e \textit{underruns} associados à cadência da VM. & Ponte real funcional, mas VM continua sem valor como gate temporal. \\
+\addlinespace
+Simulador C++ nativo & Repetição completa com 3.000/3.000 blocos, \textit{underruns} zero, worker p99 3,093 ms e pior caso 6,234 ms. & Menor bancada adicional sem driver aprovada; próximo salto exige Windows nativo/lab. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\FloatBarrier
+
+Essa cronologia reduz o espaço de hipóteses. Não há evidência, nos testes executados, de que o bloqueio principal esteja no protocolo local, no receptor C++, no ring user-mode, no transporte local, no empacotamento PCM v1 simulado ou no custo básico do DeepFilterNet3. O que permanece sem validação é exatamente a parte que não pode ser demonstrada com segurança dentro da VM atual: instalação nativa do SYSVAD, ponte PCM v1 real em ambiente físico, continuidade do endpoint e latência ponta a ponta. Portanto, as próximas atividades do semestre seguinte devem começar por uma bancada Windows nativa, isolada e recuperável, antes de qualquer alegação de baixa latência real.
 
 \subsection{Diagnóstico da cadência física e consumo WaveRT}
 
@@ -1065,6 +1103,7 @@ Não se deve apresentar uma captura longa na VM como prova de tempo real ponta a
     \item Os resultados de custo do DSP não podem ser confundidos com o comportamento temporal do driver, do endpoint ou do dispositivo físico.
     \item A latência algorítmica foi medida ou estimada por componentes; a latência física ponta a ponta não foi comprovada.
     \item O endpoint virtual foi validado funcionalmente, mas não passou um gate de continuidade prolongada na VM.
+    \item A trilha DeepFilterNet3 foi aprovada em user-mode nativo e em simuladores de ponte PCM v1, mas ainda não foi validada com SYSVAD instalado em Windows nativo.
     \item O contrafactual reforça uma limitação ambiental, mas não certifica o driver.
     \item Binários, datasets e áudio privado permanecem fora do repositório; a reprodução integral exige obter dependências em suas fontes oficiais.
 \end{itemize}
@@ -1083,13 +1122,13 @@ Um driver de teste pode causar tela azul ou impedir a inicialização; por isso,
     \item medir baseline HDA ou microfone físico;
     \item instalar o SYSVAD de forma controlada;
     \item validar tom determinístico, PCM v1 e captura do endpoint;
-    \item executar matriz pareada bypass/RNNoise;
+    \item executar matriz pareada bypass/RNNoise e, em seguida, a variante DeepFilterNet3 já aprovada em user-mode;
     \item exigir zero perda e zero \textit{underrun} em repetições prolongadas;
     \item medir latência física;
     \item somente então usar fala controlada e escuta cega.
 \end{enumerate}
 
-A migração não exige reimplementar a arquitetura. Devem ser reutilizados sem alteração inicial o RNNoise persistente, o framing de 20 ms, o protocolo PCM v1, a ponte usuário-driver, o ring buffer, a política de \textit{underrun}, a UI e os analisadores. As adaptações concentram-se em recompilar e assinar o SYSVAD para a bancada, instalar e reverter o pacote, enumerar dispositivos, selecionar o backend de captura e substituir a automação do VirtualBox por execução local.
+A migração não exige reimplementar a arquitetura. Devem ser reutilizados sem alteração inicial o RNNoise persistente, a bancada DeepFilterNet3 C++ nativa, o framing de 20 ms, o protocolo PCM v1, a ponte usuário-driver, o ring buffer, a política de \textit{underrun}, a UI e os analisadores. As adaptações concentram-se em recompilar e assinar o SYSVAD para a bancada, instalar e reverter o pacote, enumerar dispositivos, selecionar o backend de captura e substituir a automação do VirtualBox por execução local.
 
 Para preservar a validade da comparação, a primeira rodada nativa deve manter polling, profundidades de fila, política de descarte e demais parâmetros congelados na VM. Se o baseline físico e o SYSVAD forem contínuos, a hipótese de limitação do VirtualBox/NEM ganha força. Se apenas o SYSVAD falhar, a investigação deve se concentrar em WaveRT/PortCls, timer ou callback, consumo do ring buffer e captura do endpoint. Se baseline físico e SYSVAD falharem, o foco passa a scheduler, DPC/ISR, energia, backend e drivers do host. Somente após essa classificação é permitido recalibrar filas ou períodos, sempre em ensaios pareados.
 
@@ -1097,9 +1136,9 @@ Para preservar a validade da comparação, a primeira rodada nativa deve manter 
 
 O cronograma anterior previa continuidade de uma revisão sistemática ampla sobre redução de ruído em sinais unidimensionais. O desvio principal foi a interrupção dessa abrangência para reformular o projeto em torno de voz humana. Esse desvio é justificado pelo feedback recebido e pela necessidade de tornar o anteprojeto mais defensável, mensurável e conectado a uma implementação realista.
 
-A mudança exigiu reescrever objetivos, público-alvo, questionário, referências e cronograma. Em compensação, reduziu riscos relevantes: evitou uma revisão apenas descritiva, permitiu comparação sob condições controladas e produziu critérios objetivos para decidir a integração. A execução avançou além do planejamento inicial, incluindo benchmark de literatura, avaliação perceptual, RNNoise persistente, transporte cadenciado, ponte PCM v1, SYSVAD e instrumentação temporal.
+A mudança exigiu reescrever objetivos, público-alvo, questionário, referências e cronograma. Em compensação, reduziu riscos relevantes: evitou uma revisão apenas descritiva, permitiu comparação sob condições controladas e produziu critérios objetivos para decidir a integração. A execução avançou além do planejamento inicial, incluindo benchmark de literatura, avaliação perceptual, RNNoise persistente, reabertura técnica do DeepFilterNet3, transporte cadenciado, ponte PCM v1, SYSVAD e instrumentação temporal.
 
-O principal desvio técnico posterior foi a passagem de uma comparação algorítmica isolada para a construção de um microfone virtual no Windows. Essa escolha respondeu melhor ao objetivo de disponibilizar o áudio tratado a aplicativos externos e permitiu validar interfaces, filas e comportamento do endpoint. O limite encontrado no VirtualBox/NEM foi mantido como resultado negativo relevante, em vez de ser ocultado por buffers ou edição de áudio. O andamento é considerado adequado para um protótipo acadêmico integrado, com a validação nativa e a medição física de latência explicitamente transferidas para trabalho futuro.
+O principal desvio técnico posterior foi a passagem de uma comparação algorítmica isolada para a construção de um microfone virtual no Windows. Essa escolha respondeu melhor ao objetivo de disponibilizar o áudio tratado a aplicativos externos e permitiu validar interfaces, filas e comportamento do endpoint. Na reta final, a rota DeepFilterNet3/SYSVAD acrescentou uma evidência importante: fora da VM, o transporte local, o ring e o custo do DFN3 ficaram dentro do orçamento; dentro da VM, a integridade permaneceu correta, mas a cadência continuou contaminada por outliers de scheduler e recepção. O limite encontrado no VirtualBox/NEM foi mantido como resultado negativo relevante, em vez de ser ocultado por buffers ou edição de áudio. O andamento é considerado adequado para um protótipo acadêmico integrado, com a validação nativa e a medição física de latência explicitamente transferidas para trabalho futuro.
 
 \section{Próximos passos técnicos}
 
@@ -1107,6 +1146,7 @@ O fechamento acadêmico encerra a investigação temporal exploratória na VM. O
 
 \begin{enumerate}
     \item preservar RNNoise como candidato principal e OM-LSA/IMCRA como reserva, sem reabrir varreduras post-hoc;
+    \item preservar a trilha DeepFilterNet3 como candidato técnico complementar, usando a bancada C++ nativa e os resultados de simulador PCM v1 como ponto de partida;
     \item ampliar a avaliação perceptual com material público ou autorizado, mais ouvintes e protocolo cego;
     \item reproduzir os benchmarks públicos em outro computador a partir dos scripts, manifestos e versões registradas;
     \item preparar uma bancada Windows nativa isolada, recuperável e separada do computador principal;
@@ -1114,8 +1154,9 @@ O fechamento acadêmico encerra a investigação temporal exploratória na VM. O
     \item executar baseline físico antes da instalação do SYSVAD;
     \item repetir primeiro a configuração congelada da VM, sem retuning, para localizar o gargalo por comparação;
     \item validar transporte e endpoint com sinal determinístico, exigindo zero perda e zero \textit{underrun};
+    \item repetir a cadeia DFN3 user-mode \(\rightarrow\) ponte PCM v1 real \(\rightarrow\) SYSVAD somente depois do baseline físico e da prova determinística da ponte;
     \item medir latência física ponta a ponta por loopback ou método equivalente;
-    \item somente depois liberar matriz de fala controlada bypass/RNNoise e escuta cega do endpoint.
+    \item somente depois liberar matriz de fala controlada bypass/RNNoise/DFN3 e escuta cega do endpoint.
 \end{enumerate}
 
 \section{Questionário extensionista refinado}
@@ -1124,7 +1165,7 @@ O fechamento acadêmico encerra a investigação temporal exploratória na VM. O
 
 O público-alvo passa a ser composto por pessoas afetadas por ruído em comunicação por voz: estudantes em aulas remotas, profissionais em reuniões online, usuários de chamadas de voz, pessoas que gravam áudio, trabalhadores em ambientes ruidosos, participantes de jogos online, docentes, pesquisadores e profissionais de engenharia ou tecnologia interessados em processamento local de voz.
 
-O formulário foi concebido para participação voluntária, sem coleta obrigatória de nome, documento, endereço, voz gravada ou dado sensível. As respostas devem ser analisadas de forma agregada e usadas para orientar escolhas técnicas: ruídos de teste, latência-alvo, agressividade de supressão, importância de operação offline, privacidade, custo computacional, compatibilidade e acessibilidade. O questionário não substitui o benchmark experimental; ele traduz percepção de usuários em requisitos de projeto.
+O formulário foi concebido para participação voluntária, sem coleta obrigatória de nome, documento, endereço, voz gravada ou dado sensível. As respostas devem ser analisadas de forma agregada e usadas para orientar escolhas técnicas: ruídos de teste, latência-alvo, agressividade de supressão, escolha perceptual entre candidatos, importância de operação offline, privacidade, custo computacional, compatibilidade e acessibilidade. O questionário não substitui o benchmark experimental; ele traduz percepção de usuários em requisitos de projeto. A implementação operacional pode ser gerada por Google Apps Script para facilitar a criação, edição e reorganização das perguntas e seções no Google Forms.
 
 \subsection{Questionário proposto}
 
@@ -1135,7 +1176,7 @@ O formulário foi concebido para participação voluntária, sem coleta obrigat�
 Este questionário integra a atividade extensionista da disciplina PTC3527 -- Anteprojeto de Formatura em Telecomunicações, da Escola Politécnica da USP. O projeto investiga redução de ruído local para voz humana no Windows, combinando avaliação de algoritmos, processamento causal e integração com um microfone virtual. A participação é voluntária. Não é necessário informar nome, documento, endereço ou enviar gravações de voz. As respostas serão analisadas de forma agregada e usadas para orientar requisitos técnicos do projeto.
 \end{blocoFormulario}
 
-\secaoQuestionario{Bloco 1 -- Contexto de uso}
+\secaoQuestionario{Bloco 1 -- Contexto de uso e relevância do problema}
 
 \begin{perguntaFormulario}{Em quais situações o ruído mais prejudica sua comunicação por voz?}
 \orientacaoResposta{Múltipla seleção.}
@@ -1182,7 +1223,7 @@ Este questionário integra a atividade extensionista da disciplina PTC3527 -- An
 \usoPergunta{ajustar a ênfase entre latência, qualidade final e inteligibilidade para sistemas automáticos.}
 \end{perguntaFormulario}
 
-\secaoQuestionario{Bloco 2 -- Requisitos técnicos}
+\secaoQuestionario{Bloco 2 -- Critérios técnicos e requisitos do sistema}
 
 \begin{perguntaFormulario}{Quais características você considera mais importantes em uma solução de redução de ruído de voz?}
 \orientacaoResposta{Escolha até três opções.}
@@ -1200,17 +1241,31 @@ Este questionário integra a atividade extensionista da disciplina PTC3527 -- An
 \usoPergunta{definir pesos qualitativos para comparar qualidade, custo computacional, privacidade, estabilidade e integração com aplicativos Windows.}
 \end{perguntaFormulario}
 
-\begin{perguntaFormulario}{Qual atraso máximo você considera aceitável em uma comunicação por voz ao vivo?}
+\begin{perguntaFormulario}{Após ouvir exemplos comparáveis, qual método de redução de ruído você preferiria que fosse priorizado no protótipo?}
 \orientacaoResposta{Escolha única.}
 \begin{opcoesFormulario}
-    \item Imperceptível
-    \item Até 50 ms
-    \item Até 100 ms
-    \item Mais de 100 ms
-    \item Não sei avaliar
+    \item RNNoise, candidato principal selecionado no benchmark
+    \item OM-LSA/IMCRA, reserva com maior preservação perceptual
+    \item STFT causal adaptativa, baseline operacional de referência
+    \item WebRTC APM NS
+    \item DeepFilterNet3
+    \item Wavelet/WPT causal
+    \item Não sei avaliar sem ouvir mais exemplos
 \end{opcoesFormulario}
-\usoPergunta{orientar tamanho de janelas, buffers, salto da STFT, tamanho de blocos e meta de atraso para comunicação ao vivo.}
+\usoPergunta{validar com o público a escolha perceptual entre RNNoise, reservas e alternativas que não avançaram na seleção técnica.}
 \end{perguntaFormulario}
+
+% \begin{perguntaFormulario}{Qual atraso máximo você considera aceitável em uma comunicação por voz ao vivo?}
+% \orientacaoResposta{Escolha única.}
+% \begin{opcoesFormulario}
+%     \item Imperceptível
+%     \item Até 50 ms
+%     \item Até 100 ms
+%     \item Mais de 100 ms
+%     \item Não sei avaliar
+% \end{opcoesFormulario}
+% \usoPergunta{orientar tamanho de janelas, buffers, salto da STFT, tamanho de blocos e meta de atraso para comunicação ao vivo.}
+% \end{perguntaFormulario}
 
 \begin{perguntaFormulario}{Você aceitaria pequena perda de naturalidade da voz em troca de maior remoção de ruído?}
 \orientacaoResposta{Escala de 1 a 5.}
@@ -1221,7 +1276,7 @@ Este questionário integra a atividade extensionista da disciplina PTC3527 -- An
 \begin{perguntaFormulario}{O que seria pior em uma solução de redução de ruído?}
 \orientacaoResposta{Escolha única.}
 \begin{opcoesFormulario}
-    \item Deixar ruído demais
+    % \item Deixar ruído demais
     \item Deixar a voz artificial ou metálica
     \item Cortar partes da fala
     \item Gerar atraso perceptível
@@ -1230,13 +1285,60 @@ Este questionário integra a atividade extensionista da disciplina PTC3527 -- An
 \usoPergunta{identificar qual tipo de erro deve receber maior atenção na análise qualitativa e nos ajustes de parâmetros.}
 \end{perguntaFormulario}
 
-\secaoQuestionario{Bloco 3 -- Privacidade, acesso e implantação}
+\secaoQuestionario{Bloco 3 -- Acessibilidade e inclusão}
+
+\begin{perguntaFormulario}{Quais fatores poderiam dificultar o uso de uma solução desse tipo por diferentes públicos?}
+\orientacaoResposta{Múltipla seleção.}
+\begin{opcoesFormularioDuasColunas}
+    \item Instalação de driver
+    \item Necessidade de internet
+    \item Configuração complicada
+    \item Alto uso de CPU ou memória
+    \item Interface complexa
+    \item Falta de compatibilidade
+    \item Falta de documentação
+    \item Dificuldade para pessoas com deficiência auditiva, visual ou motora
+    \opcaoCampo{Outro}
+\end{opcoesFormularioDuasColunas}
+\usoPergunta{informar requisitos de instalação, compatibilidade, simplicidade operacional e acessibilidade no Windows.}
+\end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Em quais contextos uma ferramenta local de redução de ruído poderia ampliar o acesso à comunicação por voz?}
+\orientacaoResposta{Múltipla seleção.}
+\begin{opcoesFormularioDuasColunas}
+    \item Aulas remotas
+    \item Reuniões de trabalho
+    \item Atendimento ao público
+    \item Ambientes compartilhados
+    \item Pessoas com equipamentos simples
+    \item Pessoas com conexão instável
+    \item Produção de conteúdo educacional
+    \opcaoCampo{Outro}
+\end{opcoesFormularioDuasColunas}
+\usoPergunta{relacionar o protótipo a cenários de inclusão, acesso e comunicação em condições técnicas limitadas.}
+\end{perguntaFormulario}
+
+\secaoQuestionario{Bloco 4 -- Sustentabilidade}
 
 \begin{perguntaFormulario}{Você considera importante que a solução funcione sem internet?}
 \orientacaoResposta{Escala de 1 a 5.}
 \escalaCinco{Pouco importante}{Muito importante}
-\usoPergunta{justificar processamento local e avaliar a relevância de evitar dependência de nuvem.}
+\usoPergunta{justificar processamento local, reduzir dependência de infraestrutura externa e avaliar a relevância de evitar nuvem.}
 \end{perguntaFormulario}
+
+\begin{perguntaFormulario}{Uma solução de redução de ruído deveria funcionar bem em computadores comuns ou mais antigos?}
+\orientacaoResposta{Escala de 1 a 5.}
+\escalaCinco{Pouco importante}{Muito importante}
+\usoPergunta{orientar limites de CPU, memória e energia para evitar uma solução restrita a máquinas de alto desempenho.}
+\end{perguntaFormulario}
+
+% \begin{perguntaFormulario}{O uso de CPU e memória deveria influenciar a escolha do método de redução de ruído?}
+% \orientacaoResposta{Escala de 1 a 5.}
+% \escalaCinco{Pouco importante}{Muito importante}
+% \usoPergunta{relacionar qualidade de áudio com custo computacional, estabilidade e execução contínua no Windows.}
+% \end{perguntaFormulario}
+
+\secaoQuestionario{Bloco 5 -- Ética e privacidade}
 
 \begin{perguntaFormulario}{Você se sentiria confortável enviando sua voz para processamento em nuvem?}
 \orientacaoResposta{Escolha única.}
@@ -1248,28 +1350,18 @@ Este questionário integra a atividade extensionista da disciplina PTC3527 -- An
 \usoPergunta{orientar a discussão sobre privacidade, processamento local e ausência de coleta de voz no projeto.}
 \end{perguntaFormulario}
 
-\begin{perguntaFormulario}{Quais fatores poderiam dificultar o uso de uma solução desse tipo?}
-\orientacaoResposta{Múltipla seleção.}
-\begin{opcoesFormularioDuasColunas}
-    \item Instalação de driver
-    \item Necessidade de internet
-    \item Configuração complicada
-    \item Alto uso de CPU ou memória
-    \item Interface complexa
-    \item Falta de compatibilidade
-    \item Falta de documentação
+\begin{perguntaFormulario}{Que cuidado ético você considera indispensável em uma solução que processa voz?}
+\orientacaoResposta{Escolha até duas opções.}
+\begin{opcoesFormulario}
+    \item Não gravar nem armazenar a voz do usuário
+    \item Explicar claramente quando o áudio está sendo processado
+    \item Permitir desligar o processamento a qualquer momento
+    \item Evitar envio automático de áudio a serviços externos
+    \item Usar apenas dados públicos ou autorizados nos testes
     \opcaoCampo{Outro}
-\end{opcoesFormularioDuasColunas}
-\usoPergunta{informar requisitos de instalação, compatibilidade, simplicidade operacional e acessibilidade no Windows.}
+\end{opcoesFormulario}
+\usoPergunta{definir salvaguardas de consentimento, transparência, processamento local e uso responsável de dados de voz.}
 \end{perguntaFormulario}
-
-\begin{perguntaFormulario}{O uso de CPU e memória deveria influenciar a escolha do método de redução de ruído?}
-\orientacaoResposta{Escala de 1 a 5.}
-\escalaCinco{Pouco importante}{Muito importante}
-\usoPergunta{relacionar qualidade de áudio com custo computacional, estabilidade e execução contínua no Windows.}
-\end{perguntaFormulario}
-
-\secaoQuestionario{Bloco 4 -- Pergunta aberta}
 
 \begin{perguntaFormulario}{Qual problema relacionado a ruído em voz você considera mais importante resolver?}
 \campoAberto{Resposta aberta.}
@@ -1296,7 +1388,7 @@ Baseline & Medir HDA ou microfone físico com tom determinístico e captura WASA
 \addlinespace
 Endpoint & Instalar o SYSVAD de forma controlada; validar IOCTLs, PCM v1, tom de 440 Hz, silêncio após parada e captura por cliente externo. & Prova funcional reproduzível, sem tela azul, corrupção de estado ou dependência de áudio privado. \\
 \addlinespace
-Continuidade & Repetir matriz pareada bypass/RNNoise em execuções prolongadas, com sequência monotônica e telemetria de fila, perdas e \textit{underruns}. & Zero perda, zero \textit{underrun} e ausência de pausas anômalas nas repetições predefinidas. \\
+Continuidade & Repetir matriz pareada bypass/RNNoise em execuções prolongadas e, depois, a rota DeepFilterNet3 já aprovada em user-mode, com sequência monotônica e telemetria de fila, perdas e \textit{underruns}. & Zero perda, zero \textit{underrun} e ausência de pausas anômalas nas repetições predefinidas. \\
 \addlinespace
 Latência física & Medir o percurso ponta a ponta com loopback ou instrumentação externa, separando atraso algorítmico, de driver e de dispositivo. & Distribuição de latência física com p50, p95, p99 e pior caso, incluindo incerteza de medição. \\
 \addlinespace
@@ -1328,6 +1420,10 @@ STFT ou Wavelet exigir parâmetros demais & Risco de comparação injusta. & Sep
 \addlinespace
 Latência incompatível com comunicação ao vivo & Atraso perceptível e inviabilidade de uso contínuo. & Separar latência algorítmica, latência de driver e latência de dispositivo; executar baseline nativo e medir o percurso físico por loopback ou instrumentação equivalente. \\
 \addlinespace
+Ambiente virtual produzir falso bloqueio temporal & Descartar indevidamente uma arquitetura funcional por pausas de scheduler, NAT ou endpoint emulado. & Usar a VM apenas como evidência de integridade funcional; promover baixa latência somente após baseline e repetição em Windows nativo/lab dedicado. \\
+\addlinespace
+DeepFilterNet3 exigir custo maior no caminho real & \textit{Underruns} ou buffers excessivos quando o DFN3 for acoplado ao driver real. & Preservar a bancada C++ worker/ring como gate pré-driver; repetir primeiro com simulador, depois com ponte real nativa e contadores de fila antes de fala controlada. \\
+\addlinespace
 Instalação do driver comprometer a máquina & Tela azul, falha de inicialização ou estado difícil de reverter. & Usar bancada secundária ou SSD restaurável, registrar boot e certificados e ensaiar remoção do pacote antes dos testes de fala. \\
 \addlinespace
 Subconjunto ambiental ainda ser pequeno ou correlacionado & Validade externa limitada e risco de superestimar desempenho em poucos cenários. & Ampliar ambientes e canais DEMAND, usar segmentos separados para validação/teste e manter os ruídos sintéticos apenas como controle. \\
@@ -1346,15 +1442,15 @@ Wavelet ficar subajustada & Conclusão injusta contra a abordagem Wavelet. & Tes
 
 \section{Considerações finais}
 
-O projeto evoluiu de uma comparação inicial entre STFT e Wavelet para um protótipo acadêmico integrado, com benchmark público, avaliação perceptual, processamento causal, transporte por blocos e microfone virtual no Windows. Essa evolução não apagou os resultados negativos: a DWT permaneceu limitada, a WPT causal foi rejeitada perceptualmente, o WebRTC APM e o DeepFilterNet3 não foram selecionados nesta bateria, e o baseline STFT revelou ruído metalizado na escuta.
+O projeto evoluiu de uma comparação inicial entre STFT e Wavelet para um protótipo acadêmico integrado, com benchmark público, avaliação perceptual, processamento causal, transporte por blocos e microfone virtual no Windows. Essa evolução não apagou os resultados negativos: a DWT permaneceu limitada, a WPT causal foi rejeitada perceptualmente, o WebRTC APM não foi selecionado nesta bateria, o baseline STFT revelou ruído metalizado na escuta e o DeepFilterNet3 não superou o RNNoise como candidato perceptual principal no momento da seleção. A etapa final, entretanto, mostrou que o DFN3 continua tecnicamente viável como rota complementar, pois seu custo básico em C++ nativo e seu acoplamento a simuladores PCM v1 passaram nos gates de user-mode.
 
-O RNNoise foi aprovado como candidato principal porque combinou supressão objetiva forte, custo compatível com blocos de 20 ms e preferência na escuta cega pré-ponte. O processamento persistente passou no host e na VM; o transporte host-convidado preservou 1.000 blocos por perna sem erros de protocolo; e a ponte PCM v1 alimentou um endpoint SYSVAD funcional. Essas evidências permitem afirmar que o algoritmo, o transporte e a integração básica funcionam.
+O RNNoise foi aprovado como candidato principal porque combinou supressão objetiva forte, custo compatível com blocos de 20 ms e preferência na escuta cega pré-ponte. O processamento persistente passou no host e na VM; o transporte host-convidado preservou 1.000 blocos por perna sem erros de protocolo; e a ponte PCM v1 alimentou um endpoint SYSVAD funcional. Em complemento, a trilha DeepFilterNet3 preservou 6.000/6.000 blocos no transporte a 48 kHz, passou no baseline nativo de loopback, processou 60 s em worker/ring com p99 de cerca de 2,2 ms e passou em simuladores PCM v1 de 3.000 blocos. Essas evidências permitem afirmar que os algoritmos, o transporte e a integração básica funcionam em suas camadas isoladas.
 
-O limite decisivo apareceu depois do DSP. O consumo WaveRT e a captura do endpoint no VirtualBox/NEM apresentaram atrasos esparsos, descartes e \textit{underruns}. O contrafactual com HDA mostrou que um endpoint não modificado também sofreu notificações tardias repetidas. O resultado reforça uma limitação global do ambiente virtualizado, mas não prova a correção do driver SYSVAD. Por isso, a escuta ponta a ponta baseada em capturas com lacunas permaneceu bloqueada.
+O limite decisivo apareceu depois do DSP. O consumo WaveRT e a captura do endpoint no VirtualBox/NEM apresentaram atrasos esparsos, descartes e \textit{underruns}. O contrafactual com HDA mostrou que um endpoint não modificado também sofreu notificações tardias repetidas. As rodadas DFN3 reforçaram o mesmo diagnóstico: quando a VM é removida, transporte, ring e custo do DFN3 ficam estáveis; quando a ponte real é reaberta dentro da VM, a integridade permanece, mas a cadência volta a sofrer com drops e \textit{underruns}. O resultado reforça uma limitação global do ambiente virtualizado, mas não prova a correção do driver SYSVAD. Por isso, a escuta ponta a ponta baseada em capturas com lacunas permaneceu bloqueada.
 
 A contribuição acadêmica principal é a separação metodológica entre qualidade do DSP, integração funcional e continuidade temporal. A demonstração final deve refletir essa separação, combinando um A/B audível pré-ponte, um sinal sintético no microfone virtual e evidências técnicas de transporte e escrita no driver. Não há base para declarar produto pronto, distribuição segura, zero perda ou baixa latência física ponta a ponta.
 
-O próximo passo tecnicamente responsável é uma validação em Windows nativo, em bancada isolada e recuperável. Ela deve começar por baseline físico, instalação controlada do SYSVAD e sinal determinístico; exigir zero perda e zero \textit{underrun}; medir latência física; e somente então avançar para fala controlada e escuta cega. Até esse gate, o resultado final permanece: \textbf{protótipo acadêmico integrado, funcional em suas camadas isoladas e limitado temporalmente no ambiente virtualizado}.
+O próximo passo tecnicamente responsável é uma validação em Windows nativo, em bancada isolada e recuperável. Ela deve começar por baseline físico, instalação controlada do SYSVAD e sinal determinístico; exigir zero perda e zero \textit{underrun}; repetir a cadeia RNNoise e a cadeia DeepFilterNet3 já validadas em user-mode; medir latência física; e somente então avançar para fala controlada e escuta cega. Até esse gate, o resultado final permanece: \textbf{protótipo acadêmico integrado, funcional em suas camadas isoladas, com rota DFN3 preparada para continuação e limitado temporalmente no ambiente virtualizado}.
 
 \newpage
 \addcontentsline{toc}{section}{Referências}
