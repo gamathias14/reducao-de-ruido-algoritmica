@@ -979,51 +979,46 @@ h1 {
   }
 }
 
+/* Slide "filmstrip" estilo galeria: card que sai e card que entra se movem em
+   sincronia, encostados, ocupando toda a largura da viewport. Sem escala/opacidade
+   para leitura horizontal forte (o overflow: hidden do viewport recorta as bordas). */
 @keyframes wizard-step-enter-forward {
   from {
-    opacity: 0;
-    transform: translateX(54px) scale(0.985);
+    transform: translateX(100%);
   }
 
   to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 }
 
 @keyframes wizard-step-exit-forward {
   from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 
   to {
-    opacity: 0;
-    transform: translateX(-34px) scale(0.985);
+    transform: translateX(-100%);
   }
 }
 
 @keyframes wizard-step-enter-backward {
   from {
-    opacity: 0;
-    transform: translateX(-54px) scale(0.985);
+    transform: translateX(-100%);
   }
 
   to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 }
 
 @keyframes wizard-step-exit-backward {
   from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateX(0);
   }
 
   to {
-    opacity: 0;
-    transform: translateX(34px) scale(0.985);
+    transform: translateX(100%);
   }
 }
 
@@ -1191,7 +1186,7 @@ h1 {
 }
 
 .questionnaire-active .wizard-step.is-entering {
-  animation: wizard-step-enter-forward 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: wizard-step-enter-forward 440ms cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 .questionnaire-active .wizard-step.is-exiting {
@@ -1199,8 +1194,12 @@ h1 {
   inset: 0;
   z-index: 2;
   width: 100%;
+  /* Alinha verticalmente com o card que entra (centralizado pelo viewport)
+     para que o filmstrip deslize na mesma altura. */
+  align-content: center;
   pointer-events: none;
-  animation: wizard-step-exit-forward 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  /* Mesma duração e easing do enter -> os dois cards deslizam encostados. */
+  animation: wizard-step-exit-forward 440ms cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 .questionnaire-active .wizard-viewport[data-direction="backward"] .wizard-step.is-entering {
