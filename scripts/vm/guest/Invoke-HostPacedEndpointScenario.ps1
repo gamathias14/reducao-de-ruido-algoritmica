@@ -50,12 +50,14 @@ foreach ($path in @(
     $probe,
     $schedulerProbe,
     $capture,
-    $dll,
     $app
 )) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Required endpoint artifact is missing: $path"
     }
+}
+if ($Method -eq "rnnoise" -and -not (Test-Path -LiteralPath $dll)) {
+    throw "Required endpoint artifact is missing: $dll"
 }
 
 Remove-Item -LiteralPath $results, $archive -Recurse -Force `

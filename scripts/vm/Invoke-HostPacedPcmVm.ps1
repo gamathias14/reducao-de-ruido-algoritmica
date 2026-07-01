@@ -638,6 +638,9 @@ $Scenarios = if ($Mode -eq "EndpointCaptureEvent") {
     )
 }
 $EffectiveDurationSeconds = [double]$DurationSeconds
+$NeedsRnnoiseDll = @(
+    $Scenarios | Where-Object { [string]$_.Method -eq "rnnoise" }
+).Count -gt 0
 
 function Invoke-VBox {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
@@ -964,12 +967,14 @@ foreach ($path in @(
     $StreamProbe,
     $SchedulerProbe,
     $Analyzer,
-    $Dll,
     $UnattendPath
 )) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Required artifact is missing: $path"
     }
+}
+if ($NeedsRnnoiseDll -and -not (Test-Path -LiteralPath $Dll -PathType Leaf)) {
+    throw "Required RNNoise artifact is missing: $Dll"
 }
 if ($EndpointMode) {
     foreach ($path in @(
@@ -1028,7 +1033,10 @@ if ($EndpointMode) {
         throw "Required endpoint analyzer is missing: $EndpointAnalyzer"
     }
 }
-if ((Get-FileHash -LiteralPath $Dll -Algorithm SHA256).Hash -ne $ExpectedDllHash) {
+if (
+    $NeedsRnnoiseDll -and
+    (Get-FileHash -LiteralPath $Dll -Algorithm SHA256).Hash -ne $ExpectedDllHash
+) {
     throw "RNNoise DLL hash differs from the frozen v0.2 artifact."
 }
 if ($DurationSeconds -lt 1) {
@@ -1088,7 +1096,10 @@ if ($EndpointMode) {
     New-Item -ItemType Directory -Force -Path $PrivateRunResult | Out-Null
 }
 New-PythonBundle
-$deploymentFiles = @($StreamProbe, $SchedulerProbe, $Bundle, $Dll)
+$deploymentFiles = @($StreamProbe, $SchedulerProbe, $Bundle)
+if ($NeedsRnnoiseDll) {
+    $deploymentFiles += $Dll
+}
 if ($EndpointMode) {
     $deploymentFiles += @($CaptureExe, $EndpointGuestScript)
 }
