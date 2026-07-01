@@ -36,9 +36,13 @@
 
 html {
   scroll-behavior: smooth;
-  /* Reserva a calha da barra de rolagem em todas as telas para que a largura
-     (e o footer centralizado) fique idêntica entre a tela de consentimento,
-     que rola, e as telas de perguntas, que usam overflow: hidden. */
+  /* Reserva a calha da barra de rolagem em TODAS as telas para que a largura
+     (e o header/footer full-width) fique idêntica entre a tela de consentimento,
+     que rola, e as telas de perguntas, que usam overflow: hidden no body.
+     overflow-y: scroll torna o html o container de rolagem e impede que o
+     overflow:hidden do body seja propagado para a viewport (o que zeraria a
+     calha e mudaria a largura). scrollbar-gutter reforça em navegadores modernos. */
+  overflow-y: scroll;
   scrollbar-gutter: stable;
 }
 
