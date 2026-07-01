@@ -1780,6 +1780,12 @@ h1 {
     padding: 8px;
   }
 
+  .questionnaire-active .audio-card audio {
+    height: 44px;
+    min-height: 44px;
+    margin-top: 0.45em;
+  }
+
   .questionnaire-active .footer-inner {
     grid-template-columns: 46px minmax(0, 1fr);
     gap: 12px;
