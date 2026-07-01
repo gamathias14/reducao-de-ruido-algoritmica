@@ -154,7 +154,7 @@ audio {
   grid-template-columns: minmax(0, 1fr) 108px;
   gap: 22px;
   align-items: center;
-  max-width: var(--max-width);
+  max-width: var(--questionnaire-frame-width);
   margin: 0 auto;
   padding: 14px 22px;
 }
@@ -242,12 +242,15 @@ h1 {
 
 .page-shell {
   /* Linha 1fr do app-shell: rola internamente (consentimento); nas perguntas o
-     modo ativo troca para overflow: hidden. Cabeçalho/rodapé ficam fora daqui. */
+     modo ativo troca para overflow: hidden. Cabeçalho/rodapé ficam fora daqui.
+     A largura do shell é a mesma moldura do wizard ativo: 22px de respiro de
+     cada lado e conteúdo central de 1460px, para intro/consentimento e cards
+     de perguntas começarem e terminarem nas mesmas colunas. */
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
-  max-width: var(--max-width);
+  max-width: var(--questionnaire-frame-width);
   margin: 0 auto;
   padding: 24px 22px 40px;
 }
@@ -1082,7 +1085,7 @@ h1 {
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 11px;
   align-items: center;
-  max-width: var(--max-width);
+  max-width: var(--questionnaire-frame-width);
   margin: 0 auto;
   padding: 7px 22px;
 }
