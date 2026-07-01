@@ -721,12 +721,12 @@ h1 {
 .scale-option {
   display: inline-grid;
   grid-template-columns: auto auto;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
   min-height: 38px;
   padding: 7px 10px;
-  border: 1px solid transparent;
-  border-radius: 999px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   background: var(--surface-subtle);
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
@@ -1410,6 +1410,13 @@ h1 {
   margin-top: 0;
 }
 
+/* Marcador da escala 1-5 mais compacto e coeso entre desktop e mobile:
+   círculo menor para não empurrar o número para a direita. */
+.questionnaire-active .scale-option input[type="radio"] {
+  inline-size: 0.95em;
+  block-size: 0.95em;
+}
+
 /* A linha "Outro" ocupa a largura toda e nao entra na altura uniforme das opcoes. */
 .questionnaire-active .other-row {
   grid-column: 1 / -1;
@@ -1812,8 +1819,6 @@ h1 {
     justify-content: center;
     min-height: 48px;
     padding: 10px 8px;
-    border-color: var(--border);
-    border-radius: 12px;
   }
 
   .scale-option input[type="radio"] {
