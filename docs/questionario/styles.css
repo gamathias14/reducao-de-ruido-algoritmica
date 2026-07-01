@@ -600,6 +600,17 @@ h1 {
   font-style: italic;
 }
 
+.choice-limit-feedback {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.choice-limit-feedback.is-warning {
+  color: #8a4b12;
+}
+
 .option-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -623,6 +634,16 @@ h1 {
 .option-row:hover {
   border-color: #c7d0dd;
   background: #f8fafc;
+}
+
+.option-row.is-disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.option-row.is-disabled:hover {
+  border-color: transparent;
+  background: var(--surface-subtle);
 }
 
 .option-row:has(input:checked),
@@ -804,7 +825,16 @@ h1 {
 }
 
 .audio-play-icon {
-  transform: translateX(1px);
+  display: grid;
+  place-items: center;
+  inline-size: 60%;
+  block-size: 60%;
+}
+
+.audio-play-icon svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
 }
 
 .audio-progress-range {
@@ -1346,6 +1376,11 @@ h1 {
   font-size: 0.9em;
 }
 
+.questionnaire-active .choice-limit-feedback {
+  margin-top: 0.55em;
+  font-size: 0.82em;
+}
+
 .questionnaire-active .option-grid {
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   align-items: stretch; /* cards da mesma linha com altura igual */
@@ -1410,7 +1445,7 @@ h1 {
 
 .questionnaire-active .audio-list {
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 0.6em;
+  gap: 0.38em;
 }
 
 .questionnaire-active .audio-list .audio-card,
@@ -1419,43 +1454,50 @@ h1 {
 }
 
 .questionnaire-active .audio-card {
-  padding: 0.55em 0.6em;
+  display: grid;
+  grid-template-columns: minmax(5.4em, 0.7fr) minmax(0, 1.4fr);
+  gap: 0.38em;
+  align-items: center;
+  padding: 0.34em 0.44em;
 }
 
 .questionnaire-active .audio-card h4 {
-  margin-bottom: 0.3em;
-  font-size: 0.9em;
+  margin: 0;
+  font-size: 0.86em;
+  line-height: 1.18;
 }
 
 .questionnaire-active .audio-player {
-  min-height: 2.8em;
-  margin-top: 0.35em;
-  padding: 0.35em 0.55em;
+  min-height: 2em;
+  margin-top: 0;
+  padding: 0.14em 0.34em;
+  gap: 0.36em;
 }
 
 .questionnaire-active .audio-play-button {
-  inline-size: 2em;
-  block-size: 2em;
+  inline-size: 1.32em;
+  block-size: 1.32em;
 }
 
 .questionnaire-active .audio-time {
-  font-size: 0.78em;
+  font-size: 0.72em;
 }
 
 /* A etapa de audio (P5) e a mais alta: cabecalho/ajuda mais compactos
    para as alternativas caberem sem corte, mantendo o enunciado grande. */
 .questionnaire-active .audio-panel h3 {
-  padding: 0.4em 0.85em;
-  font-size: 1.02em;
+  padding: 0.26em 0.75em;
+  font-size: 0.96em;
 }
 
 .questionnaire-active .audio-body {
-  padding: 0.5em 0.85em;
+  padding: 0.34em 0.65em;
 }
 
 .questionnaire-active .audio-body .help-text {
-  margin-bottom: 0.35em;
-  font-size: 0.85em;
+  margin-bottom: 0.28em;
+  font-size: 0.8em;
+  line-height: 1.28;
 }
 
 .questionnaire-active .audio-meta {
@@ -1668,6 +1710,47 @@ h1 {
     padding: 14px;
   }
 
+  .questionnaire-active .audio-body {
+    padding: 8px 12px;
+  }
+
+  .questionnaire-active .audio-card {
+    grid-template-columns: minmax(4.3em, 0.58fr) minmax(0, 1.42fr);
+    gap: 0.32em;
+    padding: 0.3em 0.42em;
+  }
+
+  .questionnaire-active .audio-panel h3 {
+    padding: 0.28em 0.7em;
+    font-size: 0.82em;
+    line-height: 1.16;
+  }
+
+  .questionnaire-active .audio-body .help-text {
+    margin-bottom: 0.22em;
+    font-size: 0.68em;
+    line-height: 1.2;
+  }
+
+  .questionnaire-active .audio-card h4 {
+    font-size: 0.68em;
+  }
+
+  .questionnaire-active .audio-player {
+    min-height: 1.6em;
+    padding: 0.1em 0.28em;
+    gap: 0.28em;
+  }
+
+  .questionnaire-active .audio-play-button {
+    inline-size: 1.08em;
+    block-size: 1.08em;
+  }
+
+  .questionnaire-active .audio-time {
+    font-size: 0.6em;
+  }
+
   .question-card legend,
   .audio-panel h3 {
     padding: 12px 13px;
@@ -1852,17 +1935,17 @@ h1 {
 
   .questionnaire-active .audio-player {
     grid-template-columns: auto minmax(0, 1fr) auto;
-    min-height: 58px;
-    padding: 8px 10px;
+    min-height: 42px;
+    padding: 4px 7px;
   }
 
   .questionnaire-active .audio-play-button {
-    inline-size: 44px;
-    block-size: 44px;
+    inline-size: 30px;
+    block-size: 30px;
   }
 
   .questionnaire-active .audio-time {
-    font-size: 0.82em;
+    font-size: 0.7em;
   }
 
   .questionnaire-active .footer-inner {

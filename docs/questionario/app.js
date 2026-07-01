@@ -197,6 +197,14 @@
 
     if (question.type === "checkbox") {
       body.appendChild(renderOptionList(question, "checkbox"));
+      if (question.maxChoices) {
+        const feedback = el("p", "choice-limit-feedback", "", {
+          id: `${question.id}__choice_feedback`,
+          "aria-live": "polite",
+        });
+        feedback.hidden = true;
+        body.appendChild(feedback);
+      }
     } else if (question.type === "radio") {
       body.appendChild(renderOptionList(question, "radio"));
     } else if (question.type === "audio-choice") {
@@ -262,6 +270,70 @@
     }
 
     return wrapper;
+  }
+
+  function syncChoiceLimitState(question) {
+    if (!question || question.type !== "checkbox") {
+      return;
+    }
+
+    const inputs = Array.from(document.querySelectorAll(`input[name="${question.id}"][type="checkbox"]`));
+    if (!inputs.length) {
+      return;
+    }
+
+    const checkedInputs = inputs.filter((input) => input.checked);
+    const limitReached = Boolean(question.maxChoices && checkedInputs.length >= question.maxChoices);
+
+    inputs.forEach((input) => {
+      const shouldDisable = limitReached && !input.checked;
+      input.disabled = shouldDisable;
+      const row = input.closest(".option-row");
+      if (row) {
+        row.classList.toggle("is-disabled", shouldDisable);
+        row.setAttribute("aria-disabled", String(shouldDisable));
+      }
+    });
+
+    updateChoiceFeedback(question, checkedInputs);
+  }
+
+  function updateChoiceFeedback(question, checkedInputs) {
+    const feedback = document.getElementById(`${question.id}__choice_feedback`);
+    if (!feedback) {
+      return;
+    }
+
+    const otherNeedsText = isOtherSelectedWithoutText(question);
+    if (otherNeedsText) {
+      feedback.textContent = "Digite o texto em \"Outro\" para considerar essa opção.";
+      feedback.classList.add("is-warning");
+      feedback.hidden = false;
+      return;
+    }
+
+    if (question.maxChoices && checkedInputs.length >= question.maxChoices) {
+      feedback.textContent = `Limite de ${question.maxChoices} opções atingido. Desmarque uma opção para escolher outra.`;
+      feedback.classList.remove("is-warning");
+      feedback.hidden = false;
+      return;
+    }
+
+    feedback.textContent = "";
+    feedback.classList.remove("is-warning");
+    feedback.hidden = true;
+  }
+
+  function isOtherSelectedWithoutText(question) {
+    if (!question.other) {
+      return false;
+    }
+    const otherToggle = document.querySelector(`input[name="${question.id}"][value="__other__"]`);
+    if (!otherToggle || !otherToggle.checked) {
+      return false;
+    }
+    const otherText = document.querySelector(`input[name="${question.id}__other_text"]`);
+    return !otherText || !otherText.value.trim();
   }
 
   function renderAudioChoice(question) {
@@ -382,6 +454,16 @@
     return panel;
   }
 
+  // Triângulo com o centroide exatamente no centro do viewBox (2*x_base + x_ponta = 36),
+  // garantindo centralização óptica precisa dentro do círculo — sem depender do glifo da fonte.
+  const AUDIO_PLAY_SVG =
+    '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">' +
+    '<path d="M6 4.5 L6 19.5 L24 12 Z" /></svg>';
+  const AUDIO_PAUSE_SVG =
+    '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">' +
+    '<rect x="6.4" y="4.5" width="4.2" height="15" rx="1.2" />' +
+    '<rect x="13.4" y="4.5" width="4.2" height="15" rx="1.2" /></svg>';
+
   function buildAudioPlayer_(audio, label) {
     const player = el("div", "audio-player");
     player.setAttribute("role", "group");
@@ -391,7 +473,9 @@
     playButton.type = "button";
     playButton.className = "audio-play-button";
     playButton.setAttribute("aria-label", `Tocar ${label}`);
-    playButton.appendChild(el("span", "audio-play-icon", "▶", { "aria-hidden": "true" }));
+    const playIcon = el("span", "audio-play-icon", "", { "aria-hidden": "true" });
+    playIcon.innerHTML = AUDIO_PLAY_SVG;
+    playButton.appendChild(playIcon);
 
     const seek = document.createElement("input");
     seek.type = "range";
@@ -416,7 +500,7 @@
       playButton.setAttribute("aria-label", `${audio.paused ? "Tocar" : "Pausar"} ${label}`);
       const icon = playButton.querySelector(".audio-play-icon");
       if (icon) {
-        icon.textContent = audio.paused ? "▶" : "❚❚";
+        icon.innerHTML = audio.paused ? AUDIO_PLAY_SVG : AUDIO_PAUSE_SVG;
       }
     };
 
@@ -807,6 +891,9 @@
     progress.setAttribute("aria-valuenow", String(progressValue));
     progress.setAttribute("aria-valuetext", `${progressPercent}% concluído`);
     progressBar.style.width = `${progressPercent}%`;
+
+    const question = findQuestionById(currentStep.dataset.questionId);
+    syncChoiceLimitState(question);
   }
 
   function isCurrentStepReady() {
@@ -843,6 +930,9 @@
       return true;
     }
     if (!answer || isEmptyAnswer(answer)) {
+      return false;
+    }
+    if (isOtherSelectedWithoutText(question)) {
       return false;
     }
     if (question.type === "checkbox" && question.maxChoices && answer.value.length > question.maxChoices) {
@@ -985,6 +1075,9 @@
       const value = readQuestionAnswer(question);
       if (question.required && isEmptyAnswer(value)) {
         errors.push({ message: `Responda: ${question.title}`, targetId: question.id });
+      }
+      if (isOtherSelectedWithoutText(question)) {
+        errors.push({ message: `Preencha o campo "Outro" em: ${question.title}`, targetId: question.id });
       }
       if (question.type === "checkbox" && question.maxChoices && Array.isArray(value.value)) {
         if (value.value.length > question.maxChoices) {
