@@ -640,7 +640,7 @@
     nextStep.classList.add("is-entering");
 
     updateWizardState();
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    keepQuestionCardInFocus_(nextStep);
 
     const finish = () => {
       previousStep.hidden = true;
@@ -669,7 +669,7 @@
     }
 
     if (document.body.classList.contains("questionnaire-active")) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      keepQuestionCardInFocus_(state.wizardSteps[state.currentStepIndex]);
       window.setTimeout(() => focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]), 0);
       return;
     }
@@ -781,6 +781,25 @@
     if (focusable && typeof focusable.focus === "function") {
       focusable.focus({ preventScroll: true });
     }
+  }
+
+  function keepQuestionCardInFocus_(step) {
+    if (!step || !document.body.classList.contains("questionnaire-active")) {
+      return;
+    }
+
+    if (!isMobileWizardLayout_()) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      return;
+    }
+
+    const anchor = step.querySelector(".question-card, .audio-panel") || step;
+    const anchorTop = Math.max(0, window.pageYOffset + anchor.getBoundingClientRect().top - 8);
+    window.scrollTo({ top: anchorTop, left: 0, behavior: "auto" });
+  }
+
+  function isMobileWizardLayout_() {
+    return window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
   }
 
   function prefersReducedMotion_() {
