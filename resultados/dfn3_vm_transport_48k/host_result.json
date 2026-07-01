@@ -1,0 +1,15 @@
+﻿{
+    "timestamp":  "2026-06-29T13:33:14.5145772-03:00",
+    "run_id":  "20260629-132059-dfn3-transport-48k",
+    "phase":  "VM-DFN3-TRANSPORT-48K",
+    "transport_completed":  true,
+    "vm_transport_gate":  "check",
+    "orchestration_exit":  "teardown_timeout_recovered",
+    "succeeded":  true,
+    "failure":  null,
+    "result_root":  "C:\\Users\\augus\\OneDrive\\Documentos\\Work\\9_10\\PTC3527 - Anteprojeto de Formatura em Telecomunicações\\resultados\\dfn3_vm_transport_48k",
+    "sysvad_used":  false,
+    "pcm_bridge_v1_used":  false,
+    "rnnoise_used":  false,
+    "teardown_recovered":  true
+}

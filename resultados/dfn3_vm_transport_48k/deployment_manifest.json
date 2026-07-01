@@ -1,0 +1,41 @@
+﻿{
+    "timestamp":  "2026-06-29T13:21:01.3598249-03:00",
+    "run_id":  "20260629-132059-dfn3-transport-48k",
+    "phase":  "VM-DFN3-TRANSPORT-48K",
+    "vm_name":  "PTC3527-SYSVAD-LAB-FAST",
+    "expected_snapshot":  "checkpoint45-causal-wpt-validated",
+    "guest_root":  "C:\\PTC3527\\dfn3_transport_48k",
+    "source_wav":  {
+                       "path":  "C:\\Users\\augus\\OneDrive\\Documentos\\Work\\9_10\\PTC3527 - Anteprojeto de Formatura em Telecomunicações\\tmp\\dfn_native\\wasapi_worker_bench\\b3_inputs\\mixed_60s_capi_input48.wav",
+                       "sha256":  "EA70D6F888F089487E6277D7943576C215DFC331DE710201DD90A001D1F668EB",
+                       "copied_to_guest":  false
+                   },
+    "contract":  {
+                     "sample_rate":  48000,
+                     "channels":  1,
+                     "format":  "pcm_s16le",
+                     "frames_per_block":  480,
+                     "block_duration_ms":  10,
+                     "blocks_per_second":  100,
+                     "sysvad_used":  false,
+                     "pcm_bridge_v1_used":  false,
+                     "rnnoise_used":  false
+                 },
+    "files":  [
+                  {
+                      "name":  "host_guest_pcm_stream_dfn48.py",
+                      "path":  "C:\\Users\\augus\\OneDrive\\Documentos\\Work\\9_10\\PTC3527 - Anteprojeto de Formatura em Telecomunicações\\scripts\\audio\\host_guest_pcm_stream_dfn48.py",
+                      "sha256":  "CB34268128F8A0FBFADEE8DE1BAC20B330436A3E65DEBF88318FC6E86D518D2A"
+                  },
+                  {
+                      "name":  "analyze_dfn48_vm_transport.py",
+                      "path":  "C:\\Users\\augus\\OneDrive\\Documentos\\Work\\9_10\\PTC3527 - Anteprojeto de Formatura em Telecomunicações\\scripts\\audio\\analyze_dfn48_vm_transport.py",
+                      "sha256":  "42FD15F621FB3734F9F04A6DE3399C514BEBF00AB6603F4D9CB6C88198E8F9EB"
+                  },
+                  {
+                      "name":  "mixed_60s_capi_input48.wav",
+                      "path":  "C:\\Users\\augus\\OneDrive\\Documentos\\Work\\9_10\\PTC3527 - Anteprojeto de Formatura em Telecomunicações\\tmp\\dfn_native\\wasapi_worker_bench\\b3_inputs\\mixed_60s_capi_input48.wav",
+                      "sha256":  "EA70D6F888F089487E6277D7943576C215DFC331DE710201DD90A001D1F668EB"
+                  }
+              ]
+}

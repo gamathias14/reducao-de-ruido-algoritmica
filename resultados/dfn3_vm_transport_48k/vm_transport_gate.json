@@ -1,0 +1,63 @@
+{
+  "status": "check",
+  "phase": "VM-DFN3-TRANSPORT-48K",
+  "contract": {
+    "sample_rate": 48000,
+    "channels": 1,
+    "format": "pcm_s16le",
+    "frames_per_block": 480,
+    "block_duration_ms": 10.0,
+    "blocks_per_second": 100
+  },
+  "expected_duration_s": 60.0,
+  "expected_blocks": 6000,
+  "expected_samples": 2880000,
+  "failures": [],
+  "warnings": [
+    "server_send_p99_over_12ms",
+    "server_send_max_over_30ms",
+    "client_receive_stall_over_100ms"
+  ],
+  "payload_sha256": "e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae",
+  "source_payload_sha256": "e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae",
+  "reconstructed_wav": {
+    "channels": 1,
+    "sample_width_bytes": 2,
+    "sample_rate": 48000,
+    "frame_count": 2880000,
+    "duration_s": 60.0,
+    "sha256": "ea70d6f888f089487e6277d7943576c215dfc331de710201dd90a001d1f668eb"
+  },
+  "timing": {
+    "server_send_interval_ms_p99": 13.44732000000004,
+    "server_send_interval_ms_max": 36.2796,
+    "server_send_lateness_ms_p99": 7.246091000000004,
+    "server_send_lateness_ms_max": 30.2315,
+    "client_receive_interval_ms_p99": 18.721826000000007,
+    "client_receive_interval_ms_max": 442.9379,
+    "client_arrival_jitter_ms_p99": 8.721826000000009,
+    "client_arrival_jitter_ms_max": 432.9379,
+    "client_interval_stalls_over_20ms": 42,
+    "client_interval_stalls_over_50ms": 1,
+    "client_interval_stalls_over_100ms": 1,
+    "client_interval_bursts_under_5ms": 188
+  },
+  "integrity": {
+    "lost_blocks": 0,
+    "sequence_errors": 0,
+    "crc_errors": 0,
+    "framing_errors": 0,
+    "receiver_ack": {
+      "received": 6000,
+      "lost_blocks": 0,
+      "sequence_errors": 0,
+      "crc_errors": 0,
+      "framing_errors": 0
+    }
+  },
+  "queue": {
+    "type": "none",
+    "max_backlog_blocks": 0,
+    "note": "client writes each TCP block directly to the WAV sink"
+  }
+}

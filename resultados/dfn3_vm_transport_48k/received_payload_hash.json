@@ -1,0 +1,8 @@
+{
+  "status": "completed",
+  "payload_sha256": "e1a6a4774daa8049814126c0685aa5f7a54b0b41164feff8d5814260e1477dae",
+  "reconstructed_wav_sha256": "ea70d6f888f089487e6277d7943576c215dfc331de710201dd90a001d1f668eb",
+  "block_count": 6000,
+  "sample_count": 2880000,
+  "duration_s": 60.0
+}
