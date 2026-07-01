@@ -1,6 +1,6 @@
 window.QUESTIONARIO_CONFIG = {
   questionnaireId: "ptc3527-voice-denoise-extension-2026",
-  schemaVersion: "2026-07-01.1",
+  schemaVersion: "2026-07-01.2",
   title: "Questionário extensionista",
   subtitle: "Redução de ruído local para voz humana",
   projectTitle:
@@ -202,24 +202,6 @@ window.QUESTIONARIO_CONFIG = {
             "Falta de compatibilidade",
             "Falta de documentação",
             "Dificuldade para pessoas com deficiência auditiva, visual ou motora",
-          ],
-          other: true,
-        },
-        {
-          id: "q_contextos_inclusao",
-          type: "checkbox",
-          title:
-            "Em quais situações uma solução de redução de ruído poderia tornar a comunicação por voz mais acessível?",
-          helpText: "Múltipla seleção. Pense em clareza da fala, participação e inclusão.",
-          required: true,
-          options: [
-            "Aulas remotas",
-            "Reuniões de trabalho",
-            "Atendimento ao público",
-            "Ambientes compartilhados",
-            "Pessoas com equipamentos simples",
-            "Ambientes com pouca infraestrutura acústica",
-            "Produção de conteúdo educacional",
           ],
           other: true,
         },
