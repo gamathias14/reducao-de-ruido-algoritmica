@@ -13,6 +13,18 @@ do projeto. Ela foi pensada para funcionar no GitHub Pages sem etapa de build.
 - `assets/img/ptc_virtual_mic.svg`: icone oficial do projeto.
 - `assets/img/logopoli.svg` e `assets/img/logousp.svg`: marcas institucionais usadas no cabecalho e no rodape.
 
+## Harness visual local
+
+Para validar rapidamente o encaixe desktop/mobile, os cards iniciais apos o
+consentimento e a posicao real do rodape:
+
+```powershell
+python scripts/questionario_visual_harness.py
+```
+
+O harness usa Playwright em modo headless, nao envia respostas ao endpoint e
+salva prints e metricas em `output/questionario_visual/`.
+
 ## Publicacao no GitHub Pages
 
 1. Commitar esta pasta no repositorio.

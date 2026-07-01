@@ -22,7 +22,12 @@
   --shadow-soft: 0 6px 18px rgba(24, 29, 48, 0.07);
   --radius: 14px;
   --radius-sm: 10px;
-  --max-width: 1040px;
+  --max-width: 1640px;
+  /* Escala mestra do modo questionario: governada pela ALTURA (sem scroll),
+     com teto por largura. Reproduz o efeito de "zoom" do navegador por padrao. */
+  --ui-scale: clamp(1.05rem, min(2.4vh, 1.4vw), 1.55rem);
+  /* Gap constante entre o bloco da pergunta e a navegacao, em todas as etapas. */
+  --wizard-gap: 0.85rem;
 }
 
 * {
@@ -31,10 +36,18 @@
 
 html {
   scroll-behavior: smooth;
+  /* Reserva a calha da barra de rolagem em todas as telas para que a largura
+     (e o footer centralizado) fique idêntica entre a tela de consentimento,
+     que rola, e as telas de perguntas, que usam overflow: hidden. */
+  scrollbar-gutter: stable;
 }
 
 body {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   overflow-x: hidden;
   background:
@@ -43,8 +56,61 @@ body {
     linear-gradient(180deg, var(--background-warm) 0%, var(--background) 100%);
   color: var(--text);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.55;
+}
+
+body.questionnaire-active {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  font-size: var(--ui-scale);
+}
+
+/* Tela inicial (apresentacao + consentimento): abre com escala ampliada,
+   proxima ao efeito de "zoom", sem depender do zoom do navegador.
+   Como esta tela pode rolar, a escala aqui e generosa. */
+body:not(.questionnaire-active) {
+  font-size: clamp(18px, 1.2vw, 22px);
+}
+
+body:not(.questionnaire-active) .intro-panel,
+body:not(.questionnaire-active) .consent-panel {
+  padding: clamp(26px, 2.4vw, 40px);
+  margin-bottom: clamp(22px, 1.8vw, 30px);
+}
+
+body:not(.questionnaire-active) .intro-panel h2,
+body:not(.questionnaire-active) .consent-panel h2 {
+  font-size: 1.68em;
+}
+
+body:not(.questionnaire-active) .intro-panel p,
+body:not(.questionnaire-active) .consent-panel .check-row {
+  font-size: 1.02em;
+}
+
+body:not(.questionnaire-active) .notice-grid {
+  gap: 14px;
+  margin-top: 22px;
+}
+
+body:not(.questionnaire-active) .notice-grid p {
+  padding: 15px 16px;
+  font-size: 0.9em;
+}
+
+body:not(.questionnaire-active) .check-row {
+  gap: 16px;
+  margin-top: 18px;
+}
+
+body:not(.questionnaire-active) .check-row input {
+  inline-size: 1.4em;
+  block-size: 1.4em;
+  margin-top: 0.2em;
 }
 
 button,
@@ -78,6 +144,7 @@ audio {
 }
 
 .site-header {
+  flex: 0 0 auto;
   background: rgba(255, 255, 255, 0.94);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 0 rgba(24, 29, 48, 0.03);
@@ -85,12 +152,12 @@ audio {
 
 .header-inner {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 124px;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) 108px;
+  gap: 22px;
   align-items: center;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 26px 22px;
+  padding: 14px 22px;
 }
 
 .project-brand {
@@ -100,8 +167,8 @@ audio {
 }
 
 .project-logo {
-  width: 78px;
-  height: 78px;
+  width: 62px;
+  height: 62px;
   object-fit: contain;
   border-radius: 18px;
   box-shadow: 0 10px 22px rgba(24, 29, 48, 0.14);
@@ -109,7 +176,7 @@ audio {
 
 .project-usp-logo {
   width: auto;
-  height: 28px;
+  height: 24px;
   object-fit: contain;
   filter: grayscale(1);
   opacity: 0.58;
@@ -117,8 +184,8 @@ audio {
 
 .institution-lockup {
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 16px;
   align-items: center;
   min-width: 0;
 }
@@ -141,7 +208,7 @@ audio {
 }
 
 .institution-seal--poli {
-  height: 104px;
+  height: 82px;
   opacity: 0.88;
 }
 
@@ -163,21 +230,23 @@ p {
 
 h1 {
   margin: 0;
-  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-size: clamp(1.62rem, 2.6vw, 2.08rem);
   line-height: 1.12;
   letter-spacing: -0.025em;
 }
 
 .subtitle {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.94rem;
 }
 
 .page-shell {
+  flex: 1 1 auto;
+  width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 28px 22px 44px;
+  padding: 24px 22px 40px;
 }
 
 .intro-panel,
@@ -195,8 +264,8 @@ h1 {
 .consent-panel,
 .submit-panel,
 .local-experiment {
-  padding: 22px;
-  margin-bottom: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
 }
 
 .intro-panel h2,
@@ -205,7 +274,7 @@ h1 {
 .local-experiment h2,
 .block-heading h2 {
   margin: 0;
-  font-size: 1.34rem;
+  font-size: 1.48rem;
   line-height: 1.25;
   letter-spacing: -0.012em;
 }
@@ -296,7 +365,7 @@ h1 {
 .wizard-shell {
   display: grid;
   gap: 16px;
-  max-width: 920px;
+  max-width: 1460px;
   margin: 0 auto 22px;
 }
 
@@ -391,11 +460,11 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
+  gap: 9px;
+  min-height: 48px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
-  padding: 9px 15px;
+  padding: 10px 18px;
   cursor: pointer;
   font-weight: 750;
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
@@ -464,7 +533,7 @@ h1 {
 }
 
 .wizard-feedback {
-  max-width: 920px;
+  max-width: 1460px;
   margin: -4px auto 18px;
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -494,12 +563,12 @@ h1 {
   display: block;
   width: 100%;
   margin: 0;
-  padding: 13px 16px;
+  padding: 14px 18px;
   background: linear-gradient(180deg, #fbfcfe 0%, var(--surface-strong) 100%);
   border-bottom: 1px solid var(--border);
   color: var(--text);
   font-weight: 750;
-  font-size: 1.07rem;
+  font-size: 1.14rem;
   line-height: 1.35;
 }
 
@@ -515,7 +584,7 @@ h1 {
 
 .question-body,
 .audio-body {
-  padding: 16px;
+  padding: 18px;
 }
 
 .help-text {
@@ -534,10 +603,10 @@ h1 {
 .option-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 10px;
+  gap: 12px;
   align-items: start;
-  min-height: 42px;
-  padding: 9px 11px;
+  min-height: 48px;
+  padding: 11px 13px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: var(--surface-subtle);
@@ -565,8 +634,8 @@ h1 {
 .option-row input[type="checkbox"],
 .option-row input[type="radio"],
 .scale-option input[type="radio"] {
-  inline-size: 1.05rem;
-  block-size: 1.05rem;
+  inline-size: 1.16rem;
+  block-size: 1.16rem;
   margin-top: 0.23em;
   accent-color: var(--accent-green);
 }
@@ -589,7 +658,7 @@ h1 {
   width: 100%;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  padding: 9px 11px;
+  padding: 11px 13px;
   background: var(--surface);
   color: var(--text);
 }
@@ -850,7 +919,7 @@ h1 {
 .submission-status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-height: 1.5em;
   color: var(--muted);
 }
@@ -871,16 +940,16 @@ h1 {
 }
 
 .submission-status.success::before {
-  display: inline-grid;
-  width: 1.25em;
-  height: 1.25em;
-  place-items: center;
+  flex: 0 0 auto;
+  width: 1.65em;
+  height: 1.65em;
   border-radius: 50%;
-  background: var(--success);
-  color: #fff;
-  content: "✓";
-  font-size: 0.75em;
-  line-height: 1;
+  background:
+    var(--success)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+    center / 62% 62% no-repeat;
+  content: "";
+  box-shadow: 0 6px 14px rgba(23, 99, 58, 0.22);
   animation: submission-confirm 360ms ease-out both;
 }
 
@@ -911,7 +980,79 @@ h1 {
   }
 }
 
+@keyframes wizard-step-enter-forward {
+  from {
+    opacity: 0;
+    transform: translateX(54px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes wizard-step-exit-forward {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-34px) scale(0.985);
+  }
+}
+
+@keyframes wizard-step-enter-backward {
+  from {
+    opacity: 0;
+    transform: translateX(-54px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes wizard-step-exit-backward {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(34px) scale(0.985);
+  }
+}
+
+@keyframes feedback-overlay-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes feedback-card-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .site-footer {
+  flex: 0 0 auto;
+  margin-top: auto;
   border-top: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.92);
   color: var(--muted);
@@ -919,17 +1060,17 @@ h1 {
 
 .footer-inner {
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 11px;
   align-items: center;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 18px 22px;
+  padding: 7px 22px;
 }
 
 .footer-usp-logo {
   width: auto;
-  height: 42px;
+  height: 30px;
   object-fit: contain;
   filter: grayscale(1);
   opacity: 0.58;
@@ -937,7 +1078,8 @@ h1 {
 
 .site-footer p {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
 }
 
 .footer-contact {
@@ -952,6 +1094,355 @@ h1 {
 
 .footer-contact a:hover {
   text-decoration-color: var(--text);
+}
+
+.questionnaire-active .header-inner {
+  grid-template-columns: minmax(0, 1fr) 108px;
+  gap: 22px;
+  padding: 14px 22px;
+}
+
+.questionnaire-active .institution-lockup {
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.questionnaire-active .institution-seal--poli {
+  height: 82px;
+}
+
+.questionnaire-active .project-brand {
+  gap: 8px;
+}
+
+.questionnaire-active .project-logo {
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  box-shadow: 0 10px 22px rgba(24, 29, 48, 0.14);
+}
+
+.questionnaire-active .project-usp-logo {
+  height: 24px;
+}
+
+.questionnaire-active h1 {
+  font-size: clamp(1.62rem, 2.6vw, 2.08rem);
+}
+
+.questionnaire-active .eyebrow {
+  margin-top: 6px;
+  font-size: 0.86rem;
+}
+
+.questionnaire-active .subtitle {
+  margin-top: 6px;
+  font-size: 0.94rem;
+}
+
+.questionnaire-active .page-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px 22px 8px;
+}
+
+.questionnaire-active .intro-panel,
+.questionnaire-active .consent-panel {
+  display: none;
+}
+
+.questionnaire-active #questionnaire-form,
+.questionnaire-active #form-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.questionnaire-active .wizard-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: var(--wizard-gap);
+  width: min(100%, 1460px);
+  min-height: 0;
+  margin: 0 auto;
+}
+
+.questionnaire-active .wizard-viewport {
+  display: grid;
+  align-content: center;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.questionnaire-active .wizard-step {
+  min-height: 0;
+  overflow: visible;
+  align-content: start;
+}
+
+.questionnaire-active .wizard-step.is-entering,
+.questionnaire-active .wizard-step.is-exiting {
+  will-change: opacity, transform;
+}
+
+.questionnaire-active .wizard-step.is-entering {
+  animation: wizard-step-enter-forward 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.questionnaire-active .wizard-step.is-exiting {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  pointer-events: none;
+  animation: wizard-step-exit-forward 420ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.questionnaire-active .wizard-viewport[data-direction="backward"] .wizard-step.is-entering {
+  animation-name: wizard-step-enter-backward;
+}
+
+.questionnaire-active .wizard-viewport[data-direction="backward"] .wizard-step.is-exiting {
+  animation-name: wizard-step-exit-backward;
+}
+
+.questionnaire-active .wizard-step-context {
+  gap: 0.2em;
+  margin-bottom: 0.45em;
+  padding-bottom: 0.45em;
+}
+
+.questionnaire-active .block-kicker {
+  padding: 0.28em 0.7em;
+  font-size: 0.72em;
+}
+
+.questionnaire-active .wizard-step-context h2 {
+  font-size: 1.18em;
+}
+
+.questionnaire-active .wizard-step-context p {
+  font-size: 0.92em;
+}
+
+.questionnaire-active .wizard-question-count {
+  font-size: 0.85em;
+}
+
+.questionnaire-active .question-card,
+.questionnaire-active .audio-panel {
+  margin: 0.4em 0;
+}
+
+.questionnaire-active .question-card legend,
+.questionnaire-active .audio-panel h3 {
+  padding: 0.55em 0.85em;
+  font-size: 1.14em;
+}
+
+.questionnaire-active .question-body,
+.questionnaire-active .audio-body {
+  padding: 0.7em 0.85em;
+}
+
+.questionnaire-active .help-text {
+  margin-bottom: 0.55em;
+  font-size: 0.9em;
+}
+
+.questionnaire-active .option-grid {
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  align-items: stretch; /* cards da mesma linha com altura igual */
+  gap: 0.5em 0.75em;
+}
+
+.questionnaire-active .question-card[data-question-type="radio"] .option-grid,
+.questionnaire-active .question-card[data-question-type="audio-choice"] .option-grid {
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.questionnaire-active .option-row {
+  align-items: center; /* conteudo centralizado em cards de altura uniforme */
+  /* min-height em em maior compensa a fonte reduzida e mantem alvo de toque acessivel */
+  min-height: 2.6em;
+  padding: 0.45em 0.7em;
+  /* Alternativas ocupam menos espaco que o corpo/enunciado da pergunta. */
+  font-size: 0.86em;
+  line-height: 1.28;
+}
+
+.questionnaire-active .option-row input[type="checkbox"],
+.questionnaire-active .option-row input[type="radio"],
+.questionnaire-active .scale-option input[type="radio"] {
+  inline-size: 1.2em;
+  block-size: 1.2em;
+  margin-top: 0;
+}
+
+/* A linha "Outro" ocupa a largura toda e nao entra na altura uniforme das opcoes. */
+.questionnaire-active .other-row {
+  grid-column: 1 / -1;
+  grid-row: auto;
+}
+
+.questionnaire-active .other-row {
+  padding: 0.5em 0.75em;
+}
+
+.questionnaire-active .text-input,
+.questionnaire-active .textarea-input,
+.questionnaire-active .other-row input[type="text"] {
+  padding: 0.6em 0.8em;
+}
+
+.questionnaire-active .textarea-input {
+  min-height: 4.6em;
+}
+
+.questionnaire-active .scale-row {
+  gap: 0.65em;
+}
+
+.questionnaire-active .scale-options {
+  gap: 0.5em 0.6em;
+}
+
+.questionnaire-active .scale-option {
+  min-height: 2.4em;
+  padding: 0.45em 0.7em;
+}
+
+.questionnaire-active .audio-list {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.6em;
+}
+
+.questionnaire-active .audio-list .audio-card,
+.questionnaire-active .audio-list .audio-card[data-audio-id="noisy_reference"] {
+  grid-column: auto;
+}
+
+.questionnaire-active .audio-card {
+  padding: 0.55em 0.6em;
+}
+
+.questionnaire-active .audio-card h4 {
+  margin-bottom: 0.3em;
+  font-size: 0.9em;
+}
+
+.questionnaire-active .audio-card audio {
+  height: 28px;
+  margin-top: 0.3em;
+}
+
+/* A etapa de audio (P5) e a mais alta: cabecalho/ajuda mais compactos
+   para as alternativas caberem sem corte, mantendo o enunciado grande. */
+.questionnaire-active .audio-panel h3 {
+  padding: 0.4em 0.85em;
+  font-size: 1.02em;
+}
+
+.questionnaire-active .audio-body {
+  padding: 0.5em 0.85em;
+}
+
+.questionnaire-active .audio-body .help-text {
+  margin-bottom: 0.35em;
+  font-size: 0.85em;
+}
+
+.questionnaire-active .audio-meta {
+  display: none;
+}
+
+.questionnaire-active .audio-meta,
+.questionnaire-active .audio-placeholder {
+  font-size: 0.82em;
+}
+
+.questionnaire-active .audio-placeholder {
+  margin-top: 0.4em;
+  padding: 0.5em 0.6em;
+}
+
+.questionnaire-active .wizard-nav {
+  position: static;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 0.5em 0.85em;
+  border-radius: 12px;
+}
+
+.wizard-feedback--overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  max-width: none;
+  margin: 0;
+  padding: 24px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(237, 241, 246, 0.68);
+  box-shadow: none;
+  backdrop-filter: blur(4px);
+  animation: feedback-overlay-fade 180ms ease-out both;
+}
+
+.wizard-feedback--overlay .submission-status {
+  justify-content: center;
+  width: min(520px, 100%);
+  min-height: 112px;
+  padding: 24px 28px;
+  border: 1px solid rgba(23, 99, 58, 0.28);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 22px 52px rgba(24, 29, 48, 0.18);
+  color: var(--success);
+  font-size: 1rem;
+  line-height: 1.42;
+  text-align: center;
+  animation: feedback-card-pop 260ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.questionnaire-active .wizard-progress {
+  height: 5px;
+}
+
+.questionnaire-active .wizard-button {
+  min-height: 2.6em;
+  padding: 0.5em 1.1em;
+}
+
+.questionnaire-active .wizard-position {
+  font-size: 0.95em;
+}
+
+.questionnaire-active .footer-inner {
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 11px;
+  padding: 7px 22px;
+}
+
+.questionnaire-active .footer-usp-logo {
+  height: 30px;
+}
+
+.questionnaire-active .site-footer p {
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+.questionnaire-active .footer-contact {
+  margin-top: 1px !important;
 }
 
 :focus-visible {
@@ -1148,6 +1639,105 @@ h1 {
   .primary-button {
     width: 100%;
   }
+
+  body.questionnaire-active {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* No celular a restricao passa a ser a LARGURA: escala por vw. */
+    font-size: clamp(1.13rem, 4.6vw, 1.35rem);
+  }
+
+  .questionnaire-active .page-shell,
+  .questionnaire-active #questionnaire-form,
+  .questionnaire-active #form-root {
+    display: block;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .questionnaire-active .header-inner {
+    grid-template-columns: minmax(0, 1fr) 76px;
+    gap: 14px;
+    padding: 20px 16px;
+  }
+
+  .questionnaire-active .institution-lockup {
+    grid-template-columns: 66px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .questionnaire-active .institution-seal--poli {
+    height: 62px;
+  }
+
+  .questionnaire-active .project-logo {
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+  }
+
+  .questionnaire-active .project-usp-logo {
+    height: 22px;
+  }
+
+  .questionnaire-active h1 {
+    font-size: 1.62rem;
+  }
+
+  .questionnaire-active .eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .questionnaire-active .subtitle {
+    font-size: 0.86rem;
+  }
+
+  .questionnaire-active .page-shell {
+    padding: 10px 10px 8px;
+  }
+
+  .questionnaire-active .wizard-shell {
+    gap: 12px;
+    min-height: 0;
+    margin-bottom: 10px;
+  }
+
+  .questionnaire-active .wizard-viewport {
+    overflow: visible;
+  }
+
+  .questionnaire-active .wizard-step {
+    overflow: visible;
+  }
+
+  .questionnaire-active .wizard-step-context h2 {
+    font-size: 1rem;
+  }
+
+  .questionnaire-active .wizard-nav {
+    position: sticky;
+    bottom: 6px;
+    padding: 8px;
+  }
+
+  .questionnaire-active .footer-inner {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px 22px;
+  }
+
+  .questionnaire-active .footer-usp-logo {
+    height: 34px;
+  }
+
+  .questionnaire-active .site-footer p {
+    font-size: 0.84rem;
+  }
 }
 
 @media (max-width: 430px) {
@@ -1194,6 +1784,46 @@ h1 {
     height: 34px;
   }
 
+  .questionnaire-active .header-inner {
+    grid-template-columns: minmax(0, 1fr) 64px;
+    gap: 10px;
+  }
+
+  .questionnaire-active .project-brand {
+    justify-items: end;
+    gap: 6px;
+  }
+
+  .questionnaire-active .project-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+  }
+
+  .questionnaire-active .project-usp-logo {
+    height: 18px;
+  }
+
+  .questionnaire-active .institution-lockup {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .questionnaire-active .institution-seal--poli {
+    height: 44px;
+  }
+
+  .questionnaire-active .footer-inner {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+    padding: 16px 14px;
+  }
+
+  .questionnaire-active .footer-usp-logo {
+    height: 34px;
+  }
+
+  .questionnaire-active .page-shell,
   .page-shell {
     padding-inline: 10px;
   }

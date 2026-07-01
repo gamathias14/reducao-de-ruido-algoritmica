@@ -23,6 +23,7 @@
     wizardSteps: [],
     totalQuestions: 0,
     wizardUnlocked: false,
+    wizardAnimating: false,
   };
 
   document.addEventListener("DOMContentLoaded", init);
@@ -525,10 +526,16 @@
     const consent = document.getElementById("consent");
 
     prevButton.addEventListener("click", () => {
+      if (state.wizardAnimating) {
+        return;
+      }
       showWizardStep(state.currentStepIndex - 1, true);
     });
 
     nextButton.addEventListener("click", () => {
+      if (state.wizardAnimating) {
+        return;
+      }
       if (!isCurrentStepReady()) {
         focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]);
         return;
@@ -575,31 +582,105 @@
   }
 
   function showWizardStep(nextIndex, shouldScroll) {
-    if (!state.wizardSteps.length) {
+    if (!state.wizardSteps.length || state.wizardAnimating) {
       return;
     }
 
+    const previousIndex = state.currentStepIndex;
+    const previousStep = state.wizardSteps[previousIndex];
     const clampedIndex = Math.max(0, Math.min(nextIndex, state.wizardSteps.length - 1));
+    const nextStep = state.wizardSteps[clampedIndex];
+    const shouldAnimate = Boolean(
+      shouldScroll &&
+        state.wizardUnlocked &&
+        !prefersReducedMotion_() &&
+        previousStep &&
+        nextStep &&
+        previousStep !== nextStep,
+    );
     state.currentStepIndex = clampedIndex;
+
+    if (shouldAnimate) {
+      animateWizardTransition(previousStep, nextStep, clampedIndex > previousIndex ? "forward" : "backward");
+      return;
+    }
 
     state.wizardSteps.forEach((step, index) => {
       const isCurrent = index === state.currentStepIndex;
       step.hidden = !isCurrent;
       step.setAttribute("aria-hidden", String(!isCurrent));
+      step.classList.remove("is-entering", "is-exiting");
     });
 
     updateWizardState();
+    scheduleWizardFocus(shouldScroll);
+  }
 
-    if (shouldScroll) {
-      document.querySelector(".wizard-shell").scrollIntoView({
-        behavior: prefersReducedMotion_() ? "auto" : "smooth",
-        block: "start",
-      });
-      window.setTimeout(
-        () => focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]),
-        prefersReducedMotion_() ? 0 : 220,
-      );
+  function animateWizardTransition(previousStep, nextStep, direction) {
+    const viewport = document.getElementById("wizard-viewport");
+    state.wizardAnimating = true;
+    if (viewport) {
+      viewport.dataset.direction = direction;
     }
+
+    state.wizardSteps.forEach((step) => {
+      if (step !== previousStep && step !== nextStep) {
+        step.hidden = true;
+        step.setAttribute("aria-hidden", "true");
+        step.classList.remove("is-entering", "is-exiting");
+      }
+    });
+
+    previousStep.hidden = false;
+    nextStep.hidden = false;
+    previousStep.setAttribute("aria-hidden", "true");
+    nextStep.setAttribute("aria-hidden", "false");
+    previousStep.classList.add("is-exiting");
+    nextStep.classList.add("is-entering");
+
+    updateWizardState();
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+    const finish = () => {
+      previousStep.hidden = true;
+      previousStep.classList.remove("is-exiting");
+      nextStep.hidden = false;
+      nextStep.classList.remove("is-entering");
+      if (viewport) {
+        viewport.removeAttribute("data-direction");
+      }
+      state.wizardAnimating = false;
+      updateWizardState();
+      focusFirstInteractive_(nextStep);
+    };
+
+    nextStep.addEventListener("animationend", finish, { once: true });
+    window.setTimeout(() => {
+      if (state.wizardAnimating) {
+        finish();
+      }
+    }, 680);
+  }
+
+  function scheduleWizardFocus(shouldScroll) {
+    if (!shouldScroll) {
+      return;
+    }
+
+    if (document.body.classList.contains("questionnaire-active")) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      window.setTimeout(() => focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]), 0);
+      return;
+    }
+
+    document.querySelector(".wizard-shell").scrollIntoView({
+      behavior: prefersReducedMotion_() ? "auto" : "smooth",
+      block: "start",
+    });
+    window.setTimeout(
+      () => focusFirstInteractive_(state.wizardSteps[state.currentStepIndex]),
+      prefersReducedMotion_() ? 0 : 220,
+    );
   }
 
   function syncConsentGate(consentChecked, shouldScroll) {
@@ -609,6 +690,7 @@
     }
 
     state.wizardUnlocked = Boolean(consentChecked);
+    document.body.classList.toggle("questionnaire-active", state.wizardUnlocked);
     shell.hidden = !state.wizardUnlocked;
     if (!state.wizardUnlocked) {
       return;
@@ -633,9 +715,9 @@
     const progressValue = Math.min(state.currentStepIndex + 1, state.totalQuestions);
     const progressPercent = Math.round((progressValue / state.totalQuestions) * 100);
 
-    prevButton.disabled = state.currentStepIndex === 0;
+    prevButton.disabled = state.currentStepIndex === 0 || state.wizardAnimating;
     nextButton.hidden = false;
-    nextButton.disabled = !ready;
+    nextButton.disabled = !ready || state.wizardAnimating;
     nextButton.type = isLastQuestion ? "submit" : "button";
     nextButton.classList.toggle("is-ready", ready);
     nextButton.classList.toggle("wizard-button--submit", isLastQuestion);
@@ -734,7 +816,10 @@
         showSubmissionStatus("Enviando respostas...", "pending");
         const body = JSON.stringify(payload);
         if (queueSubmission(config.submission.endpoint, body)) {
-          showSubmissionStatus("Respostas enviadas. Obrigado pela contribuição.", "success");
+            showSubmissionStatus(
+            "Respostas enviadas. Obrigado pela contribuição. Você já pode fechar esta aba do questionário.",
+            "success",
+          );
           setSubmitButtonState(submitButton, "Enviado", "send");
           return;
         }
@@ -747,7 +832,10 @@
           },
           body,
         });
-        showSubmissionStatus("Respostas recebidas. Obrigado pela contribuição.", "success");
+        showSubmissionStatus(
+          "Respostas recebidas. Obrigado pela contribuição. Você já pode fechar esta aba do questionário.",
+          "success",
+        );
         setSubmitButtonState(submitButton, "Enviado", "send");
       } catch (error) {
         submitButton.disabled = false;
@@ -964,8 +1052,12 @@
 
   function showSubmissionStatus(message, kind) {
     const status = document.getElementById("submission-status");
+    const feedback = document.getElementById("wizard-feedback");
     status.textContent = message;
     status.className = `submission-status ${kind || ""}`.trim();
+    if (feedback) {
+      feedback.classList.toggle("wizard-feedback--overlay", kind === "success" && Boolean(message));
+    }
     setWizardFeedbackVisible(Boolean(message));
   }
 
@@ -973,6 +1065,9 @@
     const feedback = document.getElementById("wizard-feedback");
     if (feedback) {
       feedback.hidden = !visible;
+      if (!visible) {
+        feedback.classList.remove("wizard-feedback--overlay");
+      }
     }
   }
 
