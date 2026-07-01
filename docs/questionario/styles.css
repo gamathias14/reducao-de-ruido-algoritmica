@@ -23,6 +23,10 @@
   --radius: 14px;
   --radius-sm: 10px;
   --max-width: 1640px;
+  --wizard-content-width: 1460px;
+  --questionnaire-frame-width: calc(var(--wizard-content-width) + 44px);
+  --wizard-slide-duration: 340ms;
+  --wizard-slide-easing: cubic-bezier(0.22, 0.61, 0.36, 1);
   /* Escala mestra do modo questionario: governada pela ALTURA (sem scroll),
      com teto por largura. Reproduz o efeito de "zoom" do navegador por padrao. */
   --ui-scale: clamp(1.05rem, min(2.4vh, 1.4vw), 1.55rem);
@@ -364,7 +368,7 @@ h1 {
 .wizard-shell {
   display: grid;
   gap: 16px;
-  max-width: 1460px;
+  max-width: var(--wizard-content-width);
   margin: 0 auto 22px;
 }
 
@@ -532,7 +536,7 @@ h1 {
 }
 
 .wizard-feedback {
-  max-width: 1460px;
+  max-width: var(--wizard-content-width);
   margin: -4px auto 18px;
   padding: 12px 14px;
   border: 1px solid var(--border);
@@ -1114,6 +1118,7 @@ h1 {
 .questionnaire-active .header-inner {
   grid-template-columns: minmax(0, 1fr) 108px;
   gap: 22px;
+  max-width: var(--questionnaire-frame-width);
   padding: 14px 22px;
 }
 
@@ -1181,7 +1186,7 @@ h1 {
   flex-direction: column;
   flex: 1 1 auto;
   gap: var(--wizard-gap);
-  width: min(100%, 1460px);
+  width: min(100%, var(--wizard-content-width));
   min-height: 0;
   margin: 0 auto;
 }
@@ -1210,7 +1215,7 @@ h1 {
 }
 
 .questionnaire-active .wizard-step.is-entering {
-  animation: wizard-step-enter-forward 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: wizard-step-enter-forward var(--wizard-slide-duration) var(--wizard-slide-easing) both;
 }
 
 .questionnaire-active .wizard-step.is-exiting {
@@ -1223,7 +1228,7 @@ h1 {
   align-content: center;
   pointer-events: none;
   /* Mesma duração e easing do enter -> os dois cards deslizam encostados. */
-  animation: wizard-step-exit-forward 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: wizard-step-exit-forward var(--wizard-slide-duration) var(--wizard-slide-easing) both;
 }
 
 .questionnaire-active .wizard-viewport[data-direction="backward"] .wizard-step.is-entering {
@@ -1451,6 +1456,7 @@ h1 {
 .questionnaire-active .footer-inner {
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 11px;
+  max-width: var(--questionnaire-frame-width);
   padding: 7px 22px;
 }
 
@@ -1733,26 +1739,32 @@ h1 {
   }
 
   .questionnaire-active .wizard-shell {
+    --wizard-slide-duration: 260ms;
     gap: 12px;
     min-height: 0;
     margin-bottom: 10px;
   }
 
   .questionnaire-active .wizard-viewport {
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .questionnaire-active .wizard-step {
     overflow: visible;
   }
 
-  /* No celular a transição entre perguntas é um fade rápido (sem slide). */
-  .questionnaire-active .wizard-step.is-entering {
-    animation: wizard-step-fade-in 220ms ease-out both;
+  .questionnaire-active .wizard-step.is-exiting {
+    align-content: start;
   }
 
-  .questionnaire-active .wizard-step.is-exiting {
-    animation: wizard-step-fade-out 190ms ease-out both;
+  /* No celular mantemos o slide direcional, mas aliviamos pintura durante o
+     movimento para evitar engasgos em hardware/browser mais fraco. */
+  .questionnaire-active .wizard-step.is-entering .question-card,
+  .questionnaire-active .wizard-step.is-exiting .question-card,
+  .questionnaire-active .wizard-step.is-entering .audio-panel,
+  .questionnaire-active .wizard-step.is-exiting .audio-panel {
+    box-shadow: none;
   }
 
   .questionnaire-active .wizard-step-context h2 {
