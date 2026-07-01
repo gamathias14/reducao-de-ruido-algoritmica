@@ -760,10 +760,70 @@ h1 {
   font-size: 1rem;
 }
 
-.audio-card audio {
+.audio-card audio:not(.audio-native) {
   display: block;
   width: 100%;
   margin-top: 10px;
+}
+
+.audio-card .audio-native {
+  display: none;
+}
+
+.audio-player {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  min-height: 54px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.audio-play-button {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border: 1px solid var(--primary);
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.audio-play-button:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.audio-play-icon {
+  transform: translateX(1px);
+}
+
+.audio-progress-range {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--accent-green);
+  cursor: pointer;
+}
+
+.audio-progress-range:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.audio-time {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .audio-placeholder {
@@ -1367,9 +1427,19 @@ h1 {
   font-size: 0.9em;
 }
 
-.questionnaire-active .audio-card audio {
-  height: 28px;
-  margin-top: 0.3em;
+.questionnaire-active .audio-player {
+  min-height: 2.8em;
+  margin-top: 0.35em;
+  padding: 0.35em 0.55em;
+}
+
+.questionnaire-active .audio-play-button {
+  inline-size: 2em;
+  block-size: 2em;
+}
+
+.questionnaire-active .audio-time {
+  font-size: 0.78em;
 }
 
 /* A etapa de audio (P5) e a mais alta: cabecalho/ajuda mais compactos
@@ -1780,10 +1850,19 @@ h1 {
     padding: 8px;
   }
 
-  .questionnaire-active .audio-card audio {
-    height: 44px;
-    min-height: 44px;
-    margin-top: 0.45em;
+  .questionnaire-active .audio-player {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 58px;
+    padding: 8px 10px;
+  }
+
+  .questionnaire-active .audio-play-button {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+
+  .questionnaire-active .audio-time {
+    font-size: 0.82em;
   }
 
   .questionnaire-active .footer-inner {

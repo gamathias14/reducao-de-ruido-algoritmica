@@ -359,11 +359,12 @@
       card.appendChild(el("p", "audio-meta", noteText));
       if (item.src) {
         const audio = document.createElement("audio");
-        audio.controls = true;
         audio.preload = "metadata";
         audio.src = item.src;
         audio.dataset.audioId = item.id;
+        audio.className = "audio-native";
         card.appendChild(audio);
+        card.appendChild(buildAudioPlayer_(audio, item.publicLabel));
       } else {
         card.appendChild(
           el(
@@ -379,6 +380,85 @@
     body.appendChild(list);
     panel.appendChild(body);
     return panel;
+  }
+
+  function buildAudioPlayer_(audio, label) {
+    const player = el("div", "audio-player");
+    player.setAttribute("role", "group");
+    player.setAttribute("aria-label", `Player de áudio: ${label}`);
+
+    const playButton = document.createElement("button");
+    playButton.type = "button";
+    playButton.className = "audio-play-button";
+    playButton.setAttribute("aria-label", `Tocar ${label}`);
+    playButton.appendChild(el("span", "audio-play-icon", "▶", { "aria-hidden": "true" }));
+
+    const seek = document.createElement("input");
+    seek.type = "range";
+    seek.className = "audio-progress-range";
+    seek.min = "0";
+    seek.max = "1000";
+    seek.step = "1";
+    seek.value = "0";
+    seek.setAttribute("aria-label", `Progresso do áudio ${label}`);
+
+    const time = el("span", "audio-time", "0:00 / --:--");
+    player.appendChild(playButton);
+    player.appendChild(seek);
+    player.appendChild(time);
+
+    const update = () => {
+      const duration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+      const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+      seek.disabled = !duration;
+      seek.value = duration ? String(Math.round((current / duration) * 1000)) : "0";
+      time.textContent = `${formatAudioTime_(current)} / ${duration ? formatAudioTime_(duration) : "--:--"}`;
+      playButton.setAttribute("aria-label", `${audio.paused ? "Tocar" : "Pausar"} ${label}`);
+      const icon = playButton.querySelector(".audio-play-icon");
+      if (icon) {
+        icon.textContent = audio.paused ? "▶" : "❚❚";
+      }
+    };
+
+    playButton.addEventListener("click", async () => {
+      if (audio.paused) {
+        document.querySelectorAll("audio.audio-native").forEach((otherAudio) => {
+          if (otherAudio !== audio) {
+            otherAudio.pause();
+          }
+        });
+        try {
+          await audio.play();
+        } catch (error) {
+          console.warn("Não foi possível tocar o áudio do questionário.", error);
+        }
+      } else {
+        audio.pause();
+      }
+      update();
+    });
+
+    seek.addEventListener("input", () => {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        audio.currentTime = (Number(seek.value) / 1000) * audio.duration;
+      }
+    });
+
+    audio.addEventListener("loadedmetadata", update);
+    audio.addEventListener("durationchange", update);
+    audio.addEventListener("timeupdate", update);
+    audio.addEventListener("play", update);
+    audio.addEventListener("pause", update);
+    audio.addEventListener("ended", update);
+    update();
+    return player;
+  }
+
+  function formatAudioTime_(seconds) {
+    const safeSeconds = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
+    const minutes = Math.floor(safeSeconds / 60);
+    const rest = String(safeSeconds % 60).padStart(2, "0");
+    return `${minutes}:${rest}`;
   }
 
   function renderLocalExperiment() {
