@@ -112,6 +112,43 @@ body:not(.questionnaire-active) .check-row input {
   margin-top: 0.2em;
 }
 
+/* Desktop: a tela inicial (apresentação + consentimento) também cabe na
+   viewport sem rolagem vertical, espelhando o comportamento das perguntas.
+   A escala passa a ser governada pela altura (com piso e teto fixos) e o miolo
+   centraliza o conteúdo em vez de rolar internamente. No celular a página
+   continua rolando normalmente (media query max-width: 760px abaixo). */
+@media (min-width: 761px) {
+  body:not(.questionnaire-active) {
+    font-size: clamp(15px, 2.1vh, 20px);
+  }
+
+  body:not(.questionnaire-active) .page-shell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    padding-block: clamp(12px, 2vh, 24px);
+  }
+
+  body:not(.questionnaire-active) .intro-panel,
+  body:not(.questionnaire-active) .consent-panel {
+    padding: clamp(18px, 2.2vh, 40px);
+    margin-bottom: clamp(14px, 1.8vh, 24px);
+  }
+
+  body:not(.questionnaire-active) form#questionnaire-form {
+    margin-bottom: 0;
+  }
+
+  body:not(.questionnaire-active) .consent-panel {
+    margin-bottom: 0;
+  }
+
+  body:not(.questionnaire-active) .notice-grid {
+    margin-top: clamp(12px, 1.8vh, 22px);
+  }
+}
+
 button,
 input,
 textarea {
