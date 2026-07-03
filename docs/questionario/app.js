@@ -1006,10 +1006,7 @@
         showSubmissionStatus("Enviando respostas...", "pending");
         const body = JSON.stringify(payload);
         if (queueSubmission(config.submission.endpoint, body)) {
-            showSubmissionStatus(
-            "Respostas enviadas. Obrigado pela contribuição. Você já pode fechar esta aba do questionário.",
-            "success",
-          );
+          showSubmissionSuccess();
           setSubmitButtonState(submitButton, "Enviado", "send");
           return;
         }
@@ -1022,10 +1019,7 @@
           },
           body,
         });
-        showSubmissionStatus(
-          "Respostas recebidas. Obrigado pela contribuição. Você já pode fechar esta aba do questionário.",
-          "success",
-        );
+        showSubmissionSuccess();
         setSubmitButtonState(submitButton, "Enviado", "send");
       } catch (error) {
         submitButton.disabled = false;
@@ -1243,15 +1237,123 @@
     setWizardFeedbackVisible(false);
   }
 
-  function showSubmissionStatus(message, kind) {
+  function showSubmissionSuccess() {
+    showSubmissionStatus(
+      "Obrigado pela contribuição. Você também pode ajudar compartilhando este questionário com outras pessoas.",
+      "success",
+      { sharePrompt: true },
+    );
+  }
+
+  function showSubmissionStatus(message, kind, options) {
     const status = document.getElementById("submission-status");
     const feedback = document.getElementById("wizard-feedback");
-    status.textContent = message;
+    status.textContent = "";
     status.className = `submission-status ${kind || ""}`.trim();
+    if (kind === "success" && options && options.sharePrompt) {
+      status.classList.add("submission-status--success-card");
+      status.appendChild(renderSubmissionShareCard(message));
+    } else {
+      status.textContent = message;
+    }
     if (feedback) {
       feedback.classList.toggle("wizard-feedback--overlay", kind === "success" && Boolean(message));
     }
     setWizardFeedbackVisible(Boolean(message));
+  }
+
+  function renderSubmissionShareCard(message) {
+    const card = el("div", "submission-success-card");
+    const header = el("div", "submission-success-header");
+    header.appendChild(el("span", "submission-success-icon", "", { "aria-hidden": "true" }));
+    const headerText = el("div", "submission-success-heading");
+    headerText.appendChild(el("strong", "", "Respostas enviadas"));
+    headerText.appendChild(el("p", "", message));
+    header.appendChild(headerText);
+
+    const shareUrl = getQuestionnaireShareUrl();
+    const shareText = "Ajude uma pesquisa acadêmica da USP sobre redução de ruído de voz respondendo este questionário.";
+    const actions = el("div", "submission-share-actions", "", {
+      "aria-label": "Ações de compartilhamento do questionário",
+    });
+
+    if (navigator.share) {
+      const nativeButton = el("button", "primary-button share-action-button", "Compartilhar");
+      nativeButton.type = "button";
+      nativeButton.addEventListener("click", async () => {
+        try {
+          await navigator.share({ title: config.title, text: shareText, url: shareUrl });
+          setShareFeedback(card, "Compartilhamento aberto no dispositivo.");
+        } catch (error) {
+          if (!error || error.name !== "AbortError") {
+            setShareFeedback(card, "Não foi possível abrir o compartilhamento automático.");
+          }
+        }
+      });
+      actions.appendChild(nativeButton);
+    }
+
+    const copyButton = el("button", "secondary-button share-action-button", "Copiar link");
+    copyButton.type = "button";
+    copyButton.addEventListener("click", async () => {
+      const copied = await copyTextToClipboard(shareUrl);
+      setShareFeedback(card, copied ? "Link copiado." : "Não foi possível copiar automaticamente. Copie o link manualmente abaixo.");
+    });
+    actions.appendChild(copyButton);
+
+    const whatsappLink = el("a", "secondary-button share-action-button", "Enviar pelo WhatsApp", {
+      href: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+      target: "_blank",
+      rel: "noopener noreferrer",
+    });
+    actions.appendChild(whatsappLink);
+
+    const linkBox = el("p", "submission-share-link", shareUrl);
+    const feedback = el("p", "submission-share-feedback", "", { "aria-live": "polite" });
+    feedback.dataset.shareFeedback = "true";
+
+    card.append(header, actions, linkBox, feedback);
+    return card;
+  }
+
+  function getQuestionnaireShareUrl() {
+    const url = new URL(window.location.href);
+    url.hash = "";
+    return url.toString();
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        // Tenta fallback abaixo.
+      }
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
+    document.body.removeChild(textarea);
+    return copied;
+  }
+
+  function setShareFeedback(card, message) {
+    const feedback = card.querySelector("[data-share-feedback='true']");
+    if (feedback) {
+      feedback.textContent = message;
+    }
   }
 
   function setWizardFeedbackVisible(visible) {
