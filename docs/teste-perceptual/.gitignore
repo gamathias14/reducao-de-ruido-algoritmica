@@ -1,0 +1,10 @@
+media/
+*.wav
+*.flac
+*.mp3
+*.mkv
+*.mp4
+respostas/
+*private*
+*token*
+*_secret*
