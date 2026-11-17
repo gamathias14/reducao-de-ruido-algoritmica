@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#10141e">
+  <meta name="description" content="Escuta comparativa cega de três sinais de áudio da pesquisa Voice Control · PTC 3528, Poli-USP.">
+  <title>Escuta perceptual · Voice Control | PTC 3528</title>
+  <link rel="icon" type="image/svg+xml" href="assets/voice-control.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <header class="topbar">
+    <div class="shell header-flex">
+      <div class="brand">
+        <img src="assets/voice-control.svg" alt="Logotipo colorido do Voice Control" width="45" height="45">
+        <div><strong>Voice Control</strong><span>Poli-USP · PTC 3528</span></div>
+      </div>
+      <span class="header-pill"><span class="on-dot"></span> Avaliação perceptual · 2026</span>
+    </div>
+  </header>
+  <main id="conteudo" class="shell" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-art" aria-hidden="true">
+        <img src="assets/voice-control.svg" alt="" width="102" height="102">
+        <div class="hero-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div><div class="eyebrow"><span class="eyebrow-line"></span> PTC 3528 · Projeto de Formatura</div>
+      <h1 id="hero-title">A voz em primeiro plano.</h1>
+      <p>Você vai ajudar a avaliar como três versões do mesmo som se comportam em situações com fala e ruídos de fundo. Sem saber qual sistema está ouvindo, escolha a opção que funciona melhor para você.</p>
+      </div>
+    </section>
+    <div id="status" class="save-banner" role="status" aria-live="polite"><span class="status-dot"></span><span id="save-text">Preparando a avaliação…</span><span id="save-time"></span></div>
+    <section id="welcome" class="surface screen" aria-labelledby="intro-head">
+      <div class="section-head"><span class="step-badge">INÍCIO</span><h2 id="intro-head">Sua participação conta</h2><p>Três trechos de 16 segundos, com três alternativas por trecho. Uma única sessão de aproximadamente 5–7 minutos.</p></div>
+      <div class="intro-grid">
+        <div class="intro-step"><span>01</span><strong>Ouça A, B e C</strong><p>O mesmo instante em três versões, em ordem balanceada. Use fones e mantenha o volume.</p></div>
+        <div class="intro-step"><span>02</span><strong>Responda rapidamente</strong><p>Indique clareza, naturalidade, ruído residual e qual preferiria em uma chamada.</p></div>
+        <div class="intro-step"><span>03</span><strong>Registre sua avaliação</strong><p>Suas respostas ficam salvas no navegador e, quando o serviço estiver disponível, são confirmadas pelo servidor.</p></div>
+      </div>
+      <div class="notice"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3L20 6V12C20 17 16.6 20.5 12 22C7.4 20.5 4 17 4 12V6L12 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><p><strong>Como interpretar o teste.</strong> Os trechos foram selecionados de uma gravação espontânea, ainda sem confirmação da ocorrência de motocicletas. Os níveis foram aproximados antes da escuta; no trecho 2, a equiparação é incompleta. Esta avaliação é exploratória, com três participantes — não uma prova estatística de superioridade.</p></div>
+      <div class="start-form">
+        <div><label for="participant">Quem está avaliando?</label><select id="participant"><option value="">Selecione seu nome</option><option value="augusto">Augusto</option><option value="gabriel">Gabriel</option><option value="lucas">Lucas</option></select></div>
+        <div class="consent-line"><label><input type="checkbox" id="consent"> <span>Concordo em usar minhas respostas nesta avaliação acadêmica do TCC. Posso interromper a qualquer momento.</span></label></div>
+        <div class="start-actions"><button class="btn primary" id="begin" disabled>Começar avaliação <span aria-hidden="true">→</span></button><span class="hint">Os métodos só serão revelados após o encerramento da coleta.</span></div>
+      </div>
+    </section>
+    <section id="test" class="screen" hidden aria-labelledby="test-title">
+      <div class="progress-box"><div class="progress-top"><div class="eyebrow" id="progress-label"></div><span id="progress-ratio"></span></div><div class="progress-track"><span id="progress-bar"></span></div></div>
+      <div class="surface listen-box">
+        <div class="section-head compact"><span class="step-badge" id="scene-tag"></span><h2 id="test-title">Escute e compare</h2><p id="scene-description"></p></div>
+        <div class="triple" id="audio-cards" aria-label="Três versões do mesmo trecho"></div>
+        <div class="listening-tip" id="scene-tip"></div>
+      </div>
+      <div class="surface question-box" id="questions-box">
+        <div class="section-head compact"><span class="step-badge">RESPOSTA</span><h2>O que você percebeu?</h2><p>Escolha A, B ou C em cada critério. Empate e “não avaliável” são respostas válidas.</p></div>
+        <div id="questions"></div>
+        <div class="field-grid">
+          <fieldset class="context-group" id="audible-speech"><legend>Havia fala compreensível?</legend><div class="choice-inline" data-field="speech"><button data-value="sim" type="button">Sim</button><button data-value="parcial" type="button">Parcialmente</button><button data-value="nao" type="button">Não</button></div></fieldset>
+          <fieldset class="context-group" id="audible-noise"><legend>Havia ruído perceptível durante a fala?</legend><div class="choice-inline" data-field="overlap"><button data-value="sim" type="button">Sim</button><button data-value="nao" type="button">Não</button><button data-value="incerto" type="button">Não sei</button></div></fieldset>
+        </div>
+        <fieldset class="context-group motorcycle-context"><legend>Você identificou som de motocicleta?</legend><div class="choice-inline" data-field="motorcycle"><button data-value="sim" type="button">Sim</button><button data-value="nao" type="button">Não</button><button data-value="incerto" type="button">Não sei</button></div></fieldset>
+        <div class="note-row"><label for="remark">O que mais chamou sua atenção? <span>(opcional)</span></label><textarea id="remark" rows="2" maxlength="320" placeholder="Ex.: a voz ficou metálica em B; o ruído desaparece nas pausas, mas volta durante a fala…"></textarea></div>
+        <div class="navigation"><button class="btn ghost" id="back">← Voltar</button><button class="btn primary" id="next" disabled>Próximo trecho <span aria-hidden="true">→</span></button></div>
+        <p class="inline-validation" id="validation" role="alert"></p>
+      </div>
+    </section>
+    <section id="finish" class="surface screen" hidden aria-labelledby="finish-title">
+      <div class="finish-badge" aria-hidden="true">✓</div>
+      <span class="step-badge">AVALIAÇÃO CONCLUÍDA</span><h2 id="finish-title">Obrigado pela contribuição!</h2>
+      <p>Suas escolhas serão utilizadas apenas na análise exploratória do Voice Control. A identidade dos métodos será preservada até o fechamento da coleta.</p>
+      <div class="final-info" id="final-info"></div>
+      <div class="finish-actions">
+        <button id="send" class="btn primary" type="button">Enviar e confirmar gravação <span aria-hidden="true">→</span></button>
+        <button id="export" class="btn secondary" type="button">Baixar cópia JSON</button>
+        <button id="copy" class="btn ghost" type="button">Copiar respostas</button>
+      </div>
+      <div class="receipt" id="receipt" role="status" aria-live="polite"></div>
+      <p class="privacy-footer">Caso o serviço remoto esteja indisponível, o arquivo JSON exportado preserva suas respostas. Não envie o áudio a terceiros nem publique os trechos. Você pode voltar e ajustar respostas antes do envio.</p>
+      <button class="link-button" id="review" type="button">← Revisar respostas</button>
+    </section>
+  </main>
+  <footer class="shell footer"><span>Voice Control · Escola Politécnica da Universidade de São Paulo · 2026</span><span>Projeto acadêmico · Uso restrito à equipe</span></footer>
+  <script src="config.js"></script>
+  <script src="app.js" defer></script>
+</body></html>
