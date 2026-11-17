@@ -2,7 +2,7 @@
 
 Instrumento interno de pesquisa exploratória para Augusto, Gabriel e Lucas, com identidade visual oficial do Voice Control. Foi desenvolvido para integrar o site do repositório de Gabriel, `gamathias14/reducao-de-ruido-algoritmica`, hospedado em GitHub Pages (`main/docs`).
 
-**Estado atual (17/11/2026):** interface e backend implantados em projeto Supabase dedicado, três convites individuais registrados somente por hash e nove áudios em bucket privado. QA remota verificou acesso restrito, recuperação dos nove áudios com SHA-256 idêntico e fluxo completo no Chrome sem salvar votos sintéticos. A gravação de uma **resposta humana real com recibo** ainda não foi efetuada; não afirmar recebimento antecipadamente.
+**Estado atual (17/11/2026):** site publicado em GitHub Pages a partir de `main/docs` (PR #3 integrado), backend ativo no projeto Supabase dedicado, três convites individuais registrados somente por hash e nove áudios em bucket privado. QA remota verificou acesso restrito, recuperação dos nove áudios com SHA-256 idêntico e fluxo completo no Chrome tanto na prévia quanto no domínio público, sem salvar votos sintéticos. A gravação de uma **resposta humana real com recibo** ainda não foi efetuada; não afirmar recebimento antecipadamente.
 
 ## Estrutura
 
@@ -52,7 +52,7 @@ Servidor Python: `project/continuacao_tcc_20261117/validacao_w261_20261117/captu
 5. **Feito:** Edge Function `ptc3528-perceptual` implantada com `verify_jwt=false` e verificação obrigatória de token longo SHA-256 no próprio servidor. Segredo de serviço Supabase é utilizado somente no ambiente protegido da função, nunca no JavaScript público.
 6. **Verificado parcialmente:** token inválido = 401, origem não permitida = 403, troca de participante = 403, autorização dos três convites para suas próprias fontes, nove URLs assinadas e nove WAVs com hash igual. POST com dados inválidos = 400. **Pendente de validação com a primeira resposta humana real:** POST bem-sucedido com recibo, idempotência de repetição e rejeição de nova submissão diferente. Não inserir respostas sintéticas na coleta oficial.
 7. **Feito na branch:** `config.js` com `backend.enabled=true` e URL HTTPS do projeto dedicado. O Chrome reproduziu os nove áudios privados e concluiu todos os passos em prévia local com servidor real, sem enviar respostas fictícias. **A confirmar após o merge:** mesma experiência no GitHub Pages público, com convite no fragmento de URL (`#convite=`).
-8. A finalizar: inspecionar commit atualizado, publicar em `main` após QA, confirmar GitHub Pages e disponibilizar convites individuais por canal privado.
+8. **Feito:** PR #3 integrado ao `main`, GitHub Pages confirmou HTTP 200 e Chrome em produção reproduziu as 9 alternativas sem erros; links individuais estão no arquivo privado `LINKS_PRIVADOS_W261.txt` no ASUS para distribuição 1:1. Nenhum token, áudio, manifesto ou resposta está commitado no GitHub.
 
 **Não enviar os WAVs para `docs/` no repo, releases do GitHub ou outro servidor público.** O GitHub Pages é público independentemente de os links não serem divulgados.
 
@@ -62,7 +62,7 @@ Servidor Python: `project/continuacao_tcc_20261117/validacao_w261_20261117/captu
 - Todos os nove WAVs reproduziram; três cenas preenchidas; validações de escolhas A/B/C e contextos aceitas.
 - Ao recarregar após a primeira cena, a sessão foi retomada automaticamente na segunda.
 - A conclusão exibiu três cenas completas e salvamento local; posteriormente o frontend foi ligado ao backend real. O Chrome confirmou que o botão de envio fica habilitado com convite válido, sem registrar falsos recibos.
-- Sem exceções JavaScript. Arquivos WAV ficaram fora do repositório.
+- Sem exceções JavaScript na prévia ou em produção. Arquivos WAV ficaram fora do repositório, no bucket privado e no ASUS.
 - Backend TypeScript passou por `deno lint` e `deno check` locais; serviço implantado e acessos de leitura testados remotamente. O primeiro POST válido com recibo aguarda avaliação real.
 
 ## Privacidade e integridade científica
