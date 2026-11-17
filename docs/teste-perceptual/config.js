@@ -7,11 +7,11 @@ window.VOICE_CONTROL_PERCEPTUAL = Object.freeze({
   schemaVersion: "1.0.0",
   storagePrefix: "voice-control-perceptual-w261-v1",
   backend: {
-    url: "",
+    url: "https://jcmceskyxupmzmgqpvvc.supabase.co/functions/v1/ptc3528-perceptual",
     method: "POST",
     // O backend deverá confirmar JSON {ok:true,receiptId:string,receivedAt:string}
     // e autenticar tokens de convite no servidor; ausência de resposta !== sucesso.
-    enabled: false
+    enabled: true
   },
   people: [
     {id:"augusto", name:"Augusto"},

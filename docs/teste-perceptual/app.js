@@ -17,7 +17,8 @@
   let submitting = false;
   let privateMedia = null;
   const userParams = new URLSearchParams(location.search);
-  const invite = userParams.get("convite") || "";
+  // Tokens somente no fragmento (#), fora do HTTP request e de logs do servidor.
+  const invite = new URLSearchParams(location.hash.slice(1)).get("convite") || "";
   const participantIndex = (id) => CFG.people.findIndex(p => p.id === id);
 
   const esc = (s) => String(s || "").replace(/[&<>"']/g, ch => ({
@@ -113,7 +114,7 @@
     if(!invite)throw new Error("Este link não contém o convite individual necessário.");
     const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),16000);
     try {
-      const response=await fetch(CFG.backend.url+"?op=media",{
+      const response=await fetch(CFG.backend.url+"?op=media&participant="+encodeURIComponent(participant),{
         method:"GET",headers:{"X-Invite":invite},mode:"cors",
         redirect:"error",signal:controller.signal
       });
