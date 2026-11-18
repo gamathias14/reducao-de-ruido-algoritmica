@@ -139,7 +139,7 @@
       storageOkay = true;
       lastSave = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
       if (state.receipt) status("Resposta confirmada no servidor. Também salva neste navegador.","remote");
-      else status("Rascunho salvo neste navegador · envio remoto ainda não confirmado.");
+      else status("Rascunho salvo neste navegador. Envio remoto ainda não confirmado.");
       return true;
     }catch(err){
       storageOkay = false;
@@ -163,8 +163,8 @@
   function view(id){
     ["welcome","test","finish"].forEach(k=>$(k).hidden=k!==id);
     window.scrollTo({top:0,behavior:"instant"});
-    document.title = id==="test" ? "Trecho "+(currentIndex+1)+" de 3 · Voice Control" :
-      "Escuta perceptual · Voice Control | PTC 3528";
+    document.title = id==="test" ? "Trecho "+(currentIndex+1)+" de 3 | Voice Control" :
+      "Escuta perceptual | Voice Control | PTC 3528";
   }
   function btnGlyph(paused){
     return paused
@@ -339,15 +339,14 @@
   function renderScene(){
     stopPlayers();audios=[];
     const s=CFG.scenes[currentIndex];
-    $("progress-label").textContent="Escuta comparativa · "+(currentIndex+1)+" / 3";
+    $("progress-label").textContent="Escuta comparativa | "+(currentIndex+1)+" / 3";
     $("progress-ratio").textContent=Math.round(currentIndex/3*100)+"%";
     $("progress-bar").style.width=(currentIndex/3*100)+"%";
     $("scene-tag").textContent="TRECHO "+String(currentIndex+1).padStart(2,"0");
     $("test-title").textContent=s.title;
-    $("scene-description").textContent="Três versões do mesmo intervalo · "+s.timeLabel;
+    $("scene-description").textContent="Três versões do mesmo intervalo | "+s.timeLabel;
     $("scene-tip").textContent=s.warning;
-    $("next").innerHTML=currentIndex===2?"Concluir avaliação <span aria-hidden='true'>✓</span>":
-      "Próximo trecho <span aria-hidden='true'>→</span>";
+    $("next").textContent=currentIndex===2?"Concluir avaliação":"Próximo trecho";
     $("back").disabled=currentIndex===0;
     renderPlayers();renderQuestions();enableNext();
     view("test");
@@ -390,7 +389,7 @@
         return;
       }finally{
         $("begin").disabled=false;
-        $("begin").textContent=loadLocal(p)?"Retomar avaliação →":"Começar avaliação →";
+        $("begin").textContent=loadLocal(p)?"Retomar avaliação":"Começar avaliação";
       }
     }
     $("begin-help").classList.remove("error");
@@ -438,12 +437,42 @@
       <strong>Trechos avaliados:</strong> 3 de 3<br>
       <strong>Respostas por trecho:</strong> 4 escolhas comparativas, 3 confirmações de contexto e observação opcional.<br>
       <strong>Identificação dos métodos:</strong> mantida em manifesto privado, fora desta página.</p>`;
-    const text=state.receipt ? "Resposta já confirmada pelo servidor: "+state.receipt.receiptId :
-      CFG.backend.enabled&&CFG.backend.url ? "Concluído no navegador. Envie para registrar com confirmação." :
-      "Concluído e salvo neste navegador. Ainda não existe servidor remoto configurado; exporte a cópia JSON.";
-    $("receipt").textContent=text;
-    $("send").disabled=!!state.receipt || !CFG.backend.enabled || !CFG.backend.url;
-    $("review").hidden=!!state.receipt;
+
+    const receipt=$("receipt");
+    const confirmed=Boolean(state.receipt?.receiptId && state.receipt?.receivedAt);
+    receipt.classList.toggle("is-success",confirmed);
+    receipt.replaceChildren();
+    $("send").hidden=confirmed;
+    $("send").disabled=confirmed || !CFG.backend.enabled || !CFG.backend.url;
+    $("review").hidden=confirmed;
+    $("finish-stage").textContent=confirmed?"ENVIO CONFIRMADO":"AVALIAÇÃO CONCLUÍDA";
+    $("finish-title").textContent=confirmed?"Avaliação salva no servidor":"Obrigado pela contribuição!";
+    $("finish-description").textContent=confirmed
+      ? "Sua participação foi recebida e registrada. Não é necessário enviar novamente."
+      : "Os três trechos estão concluídos. Envie suas respostas ao servidor para obter um comprovante.";
+    if(confirmed){
+      const mark=document.createElement("span");
+      mark.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M7 12.5 10.5 16 17 8.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const details=document.createElement("div");
+      const title=document.createElement("strong");
+      title.textContent="Recebimento confirmado no Supabase";
+      const id=document.createElement("span");
+      id.className="receipt-meta";
+      id.textContent="Comprovante: "+state.receipt.receiptId;
+      const date=document.createElement("span");
+      date.className="receipt-meta";
+      const when=new Date(state.receipt.receivedAt);
+      date.textContent="Registrado em: "+(Number.isFinite(when.getTime())?when.toLocaleString("pt-BR"):"data registrada pelo servidor");
+      const info=document.createElement("p");
+      info.className="receipt-instruction";
+      info.textContent="As respostas já estão salvas. É possível baixar uma cópia JSON, se desejar.";
+      details.append(title,id,date,info);
+      receipt.append(mark,details);
+    }else{
+      receipt.textContent=CFG.backend.enabled&&CFG.backend.url
+        ? "Respostas concluídas neste navegador, ainda não enviadas ao servidor."
+        : "O servidor não está configurado. Exporte o JSON para preservar as respostas.";
+    }
     $("send").title=(!CFG.backend.enabled||!CFG.backend.url)?"Envio remoto não configurado nesta prévia":"Enviar respostas e aguardar recibo";
     view("finish");
     $("progress-bar").style.width="100%";
@@ -462,14 +491,14 @@
     a.href=url;a.download="ptc3528-w261-"+participant+"-"+state.sessionId.slice(0,8)+".json";
     document.body.append(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-    $("receipt").textContent=state.receipt ?
-      "Resposta confirmada no servidor. Cópia JSON exportada.":
-      "Cópia JSON baixada. ATENÇÃO: exportar não equivale a enviar suas respostas ao servidor.";
+    $("secondary-feedback").textContent=state.receipt ?
+      "Cópia JSON exportada. O registro no servidor permanece confirmado.":
+      "Cópia JSON baixada. Atenção: exportar não equivale a enviar suas respostas ao servidor.";
   }
   async function copyFile(){
     try{await navigator.clipboard.writeText(JSON.stringify(toPayload(),null,2));
-      $("receipt").textContent="Conteúdo copiado. Colar e enviar manualmente não equivale a confirmação de recebimento automático.";}
-    catch{$("receipt").textContent="Cópia indisponível neste navegador; utilize Baixar cópia JSON.";}
+      $("secondary-feedback").textContent="Conteúdo copiado. Isso não substitui o envio automático ao servidor.";}
+    catch{$("secondary-feedback").textContent="Cópia indisponível neste navegador; utilize Baixar cópia JSON.";}
   }
   async function submit(){
     if(submitting||state.receipt)return;
@@ -494,9 +523,10 @@
       if(data?.ok!==true || !data.receiptId || !data.receivedAt)
         throw new Error("Servidor não confirmou o armazenamento da resposta.");
       state.receipt={receiptId:String(data.receiptId),receivedAt:String(data.receivedAt)};
-      $("review").hidden=true;
       persist();
-      $("receipt").textContent="Salvo no servidor com sucesso! Comprovante: "+state.receipt.receiptId+" · "+new Date(state.receipt.receivedAt).toLocaleString("pt-BR");
+      showFinish();
+      $("receipt").scrollIntoView({behavior:"smooth",block:"center"});
+      $("receipt").focus({preventScroll:true});
     }catch(error){
       $("receipt").textContent="Envio não confirmado ("+error.message+"). Suas respostas permanecem no navegador: tente novamente ou exporte JSON.";
       status("Envio remoto não confirmado; dados locais preservados.","error");
@@ -522,7 +552,7 @@
     const toggle=()=>{
       const p=$("participant").value;
       const valid=CFG.people.some(x=>x.id===p);
-      $("begin").textContent=loadLocal(p)?"Retomar avaliação →":"Começar avaliação →";
+      $("begin").textContent=loadLocal(p)?"Retomar avaliação":"Começar avaliação";
       const help=$("begin-help");
       help.classList.remove("error");
       help.textContent=!valid ? "Selecione seu nome no menu para começar." :
@@ -545,8 +575,8 @@
     $("copy").addEventListener("click",copyFile);
     $("send").addEventListener("click",submit);
     status(CFG.backend.enabled&&CFG.backend.url ?
-      "Rascunho local · servidor disponível após confirmação de envio.":
-      "Prévia local · respostas persistem neste navegador, sem envio remoto.");
+      "Rascunho local. Envio ao servidor disponível na conclusão.":
+      "Prévia local. Respostas persistem neste navegador, sem envio remoto.");
     toggle();
   }
   initialize();

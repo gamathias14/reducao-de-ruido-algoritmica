@@ -6,8 +6,8 @@
   <meta name="color-scheme" content="dark">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#10141e">
-  <meta name="description" content="Escuta comparativa cega de três sinais de áudio da pesquisa Voice Control · PTC 3528, Poli-USP.">
-  <title>Escuta perceptual · Voice Control | PTC 3528</title>
+  <meta name="description" content="Escuta comparativa cega de três sinais de áudio da pesquisa Voice Control | PTC 3528, Poli-USP.">
+  <title>Escuta perceptual | Voice Control | PTC 3528</title>
   <link rel="icon" type="image/svg+xml" href="assets/voice-control.svg">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -17,9 +17,9 @@
     <div class="shell header-flex">
       <div class="brand">
         <img src="assets/voice-control.svg" alt="Logotipo colorido do Voice Control" width="45" height="45">
-        <div><strong>Voice Control</strong><span>Poli-USP · PTC 3528</span></div>
+        <div><strong>Voice Control</strong><span>Poli-USP | PTC 3528</span></div>
       </div>
-      <span class="header-pill"><span class="on-dot"></span> Avaliação perceptual · 2026</span>
+      <span class="header-pill"><span class="on-dot"></span> Avaliação perceptual | 2026</span>
     </div>
   </header>
   <main id="conteudo" class="shell" tabindex="-1">
@@ -27,7 +27,7 @@
       <div class="hero-art" aria-hidden="true">
         <img src="assets/voice-control.svg" alt="" width="102" height="102">
       </div>
-      <div><div class="eyebrow"><span class="eyebrow-line"></span> PTC 3528 · Projeto de Formatura</div>
+      <div><div class="eyebrow"><span class="eyebrow-line"></span> PTC 3528 | Projeto de Formatura</div>
       <h1 id="hero-title">A voz em primeiro plano.</h1>
       <p>Você vai ajudar a avaliar como três versões do mesmo som se comportam em situações com fala e ruídos de fundo. Sem saber qual sistema está ouvindo, escolha a opção que funciona melhor para você.</p>
       </div>
@@ -54,15 +54,15 @@
               <svg class="vc-chevron" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div id="participant-options" class="vc-select-options" role="listbox" aria-labelledby="participant-label" hidden>
-              <button type="button" id="participant-option-augusto" role="option" data-value="augusto" aria-selected="false" tabindex="-1">Augusto <span class="vc-option-check" aria-hidden="true">✓</span></button>
-              <button type="button" id="participant-option-gabriel" role="option" data-value="gabriel" aria-selected="false" tabindex="-1">Gabriel <span class="vc-option-check" aria-hidden="true">✓</span></button>
-              <button type="button" id="participant-option-lucas" role="option" data-value="lucas" aria-selected="false" tabindex="-1">Lucas <span class="vc-option-check" aria-hidden="true">✓</span></button>
+              <button type="button" id="participant-option-augusto" role="option" data-value="augusto" aria-selected="false" tabindex="-1">Augusto <svg class="vc-option-check" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button type="button" id="participant-option-gabriel" role="option" data-value="gabriel" aria-selected="false" tabindex="-1">Gabriel <svg class="vc-option-check" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button type="button" id="participant-option-lucas" role="option" data-value="lucas" aria-selected="false" tabindex="-1">Lucas <svg class="vc-option-check" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
           </div>
           <small id="participant-help" class="participant-help">Escolha seu nome para registrar a avaliação corretamente.</small>
         </div>
         <div class="consent-line"><label><input type="checkbox" id="consent"> <span>Concordo em usar minhas respostas nesta avaliação acadêmica do TCC. Posso interromper a qualquer momento.</span></label></div>
-        <div class="start-actions"><button class="btn primary" id="begin">Começar avaliação <span aria-hidden="true">→</span></button><span class="hint" id="begin-help" role="status" aria-live="polite">Selecione seu nome e aceite o termo para começar.</span></div>
+        <div class="start-actions"><button class="btn primary" id="begin">Começar avaliação</button><span class="hint" id="begin-help" role="status" aria-live="polite">Selecione seu nome e aceite o termo para começar.</span></div>
       </div>
     </section>
     <section id="test" class="screen" hidden aria-labelledby="test-title">
@@ -81,26 +81,27 @@
         </div>
         <fieldset class="context-group motorcycle-context"><legend>Você identificou som de motocicleta?</legend><div class="choice-inline" data-field="motorcycle"><button data-value="sim" type="button">Sim</button><button data-value="nao" type="button">Não</button><button data-value="incerto" type="button">Não sei</button></div></fieldset>
         <div class="note-row"><label for="remark">O que mais chamou sua atenção? <span>(opcional)</span></label><textarea id="remark" rows="2" maxlength="320" placeholder="Ex.: a voz ficou metálica em B; o ruído desaparece nas pausas, mas volta durante a fala…"></textarea></div>
-        <div class="navigation"><button class="btn ghost" id="back">← Voltar</button><button class="btn primary" id="next" disabled>Próximo trecho <span aria-hidden="true">→</span></button></div>
+        <div class="navigation"><button class="btn ghost" id="back">Voltar</button><button class="btn primary" id="next" disabled>Próximo trecho</button></div>
         <p class="inline-validation" id="validation" role="alert"></p>
       </div>
     </section>
     <section id="finish" class="surface screen" hidden aria-labelledby="finish-title">
-      <div class="finish-badge" aria-hidden="true">✓</div>
-      <span class="step-badge">AVALIAÇÃO CONCLUÍDA</span><h2 id="finish-title">Obrigado pela contribuição!</h2>
-      <p>Suas escolhas serão utilizadas apenas na análise exploratória do Voice Control. A identidade dos métodos será preservada até o fechamento da coleta.</p>
+      <div class="finish-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="step-badge" id="finish-stage">AVALIAÇÃO CONCLUÍDA</span><h2 id="finish-title">Obrigado pela contribuição!</h2>
+      <p id="finish-description">Suas escolhas serão utilizadas apenas na análise exploratória do Voice Control. A identidade dos métodos será preservada até o fechamento da coleta.</p>
       <div class="final-info" id="final-info"></div>
+      <div class="receipt" id="receipt" role="status" aria-live="polite" tabindex="-1"></div>
       <div class="finish-actions">
-        <button id="send" class="btn primary" type="button">Enviar e confirmar gravação <span aria-hidden="true">→</span></button>
+        <button id="send" class="btn primary" type="button">Enviar e confirmar gravação</button>
         <button id="export" class="btn secondary" type="button">Baixar cópia JSON</button>
         <button id="copy" class="btn ghost" type="button">Copiar respostas</button>
       </div>
-      <div class="receipt" id="receipt" role="status" aria-live="polite"></div>
+      <p id="secondary-feedback" class="secondary-feedback" role="status" aria-live="polite"></p>
       <p class="privacy-footer">Caso o serviço remoto esteja indisponível, o arquivo JSON exportado preserva suas respostas. Não envie o áudio a terceiros nem publique os trechos. Você pode voltar e ajustar respostas antes do envio.</p>
-      <button class="link-button" id="review" type="button">← Revisar respostas</button>
+      <button class="link-button" id="review" type="button">Revisar respostas</button>
     </section>
   </main>
-  <footer class="shell footer"><span>Voice Control · Escola Politécnica da Universidade de São Paulo · 2026</span><span>Projeto acadêmico · Uso restrito à equipe</span></footer>
+  <footer class="shell footer"><span>Voice Control | Escola Politécnica da Universidade de São Paulo | 2026</span><span>Projeto acadêmico | Uso restrito à equipe</span></footer>
   <script src="config.js"></script>
   <script src="app.js" defer></script>
 </body></html>
