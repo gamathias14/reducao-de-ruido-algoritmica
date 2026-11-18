@@ -20,6 +20,80 @@
   // Tokens somente no fragmento (#), fora do HTTP request e de logs do servidor.
   const invite = new URLSearchParams(location.hash.slice(1)).get("convite") || "";
   const participantIndex = (id) => CFG.people.findIndex(p => p.id === id);
+  function setupParticipantDropdown(){
+    const root=$("participant-select"), trigger=$("participant-trigger");
+    const list=$("participant-options"), field=$("participant");
+    const selected=$("participant-selected");
+    const options=[...list.querySelectorAll('[role="option"]')];
+    let active=0;
+    function sync(){
+      const person=CFG.people.find(p=>p.id===field.value);
+      selected.textContent=person ? person.name : "Selecione seu nome";
+      selected.classList.toggle("vc-select-placeholder",!person);
+      options.forEach((option,i)=>{
+        option.setAttribute("aria-selected",String(option.dataset.value===field.value));
+        option.classList.toggle("is-active",!list.hidden&&i===active);
+      });
+    }
+    function move(index){
+      active=(index+options.length)%options.length;
+      trigger.setAttribute("aria-activedescendant",options[active].id);
+      sync();
+      options[active].scrollIntoView({block:"nearest"});
+    }
+    function close(focus=false){
+      if(list.hidden)return;
+      list.hidden=true;
+      trigger.setAttribute("aria-expanded","false");
+      trigger.removeAttribute("aria-activedescendant");
+      sync();
+      if(focus)trigger.focus();
+    }
+    function open(){
+      if(!list.hidden)return;
+      active=Math.max(0,options.findIndex(o=>o.dataset.value===field.value));
+      list.hidden=false;
+      trigger.setAttribute("aria-expanded","true");
+      move(active);
+    }
+    function choose(value){
+      if(!CFG.people.some(p=>p.id===value))return;
+      field.value=value;
+      field.dispatchEvent(new Event("change",{bubbles:true}));
+      close(true);
+    }
+    trigger.addEventListener("click",()=>list.hidden?open():close());
+    trigger.addEventListener("keydown",event=>{
+      if(["ArrowDown","ArrowUp","Home","End"].includes(event.key)){
+        event.preventDefault();
+        if(list.hidden){open();return;}
+        const index=event.key==="Home"?0:event.key==="End"?options.length-1:active+(event.key==="ArrowDown"?1:-1);
+        move(index);
+      }else if(event.key==="Escape"&&!list.hidden){
+        event.preventDefault();close(true);
+      }else if(["Enter"," "].includes(event.key)&&!list.hidden){
+        event.preventDefault();choose(options[active].dataset.value);
+      }else if(event.key==="Tab"&&!list.hidden){close();}
+      else if(event.key.length===1&&/^[a-z]$/i.test(event.key)){
+        const found=options.findIndex(o=>o.textContent.trim().toLowerCase().startsWith(event.key.toLowerCase()));
+        if(found!==-1){event.preventDefault();open();move(found);}
+      }
+    });
+    options.forEach(option=>{
+      option.addEventListener("click",()=>choose(option.dataset.value));
+      option.addEventListener("keydown",event=>{
+        if(event.key==="Escape"){event.preventDefault();close(true);}
+      });
+    });
+    document.addEventListener("pointerdown",event=>{if(!root.contains(event.target))close();});
+    window.addEventListener("blur",()=>close());
+    field.addEventListener("change",()=>{
+      active=Math.max(0,options.findIndex(o=>o.dataset.value===field.value));
+      sync();
+    });
+    sync();
+    return {select:choose,close,open};
+  }
 
   const esc = (s) => String(s || "").replace(/[&<>"']/g, ch => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -278,21 +352,48 @@
     renderPlayers();renderQuestions();enableNext();
     view("test");
   }
+  function introError(message,focusElement){
+    $("begin-help").textContent=message;
+    $("begin-help").classList.add("error");
+    status(message,"error");
+    if(focusElement)focusElement.focus({preventScroll:true});
+  }
   async function begin(){
+    if($("begin").disabled)return;
     const p=$("participant").value,consent=$("consent").checked;
-    if(!CFG.people.some(x=>x.id===p)||!consent)return;
+    if(!CFG.people.some(x=>x.id===p)){
+      introError("Selecione seu nome no menu acima para começar.",$("participant-trigger"));return;
+    }
+    if(!consent){
+      introError("Marque o consentimento de participação antes de começar.",$("consent"));return;
+    }
+    if(CFG.backend.enabled && CFG.backend.url && !invite){
+      introError("Convite ausente: abra o link individual completo, enviado pelo responsável. O endereço público não autoriza a reprodução.",$("access-notice"));
+      return;
+    }
+    const invitedPerson=userParams.get("participante");
+    if(invite && invitedPerson && invitedPerson!==p){
+      introError("Este convite está vinculado a "+(CFG.people.find(x=>x.id===invitedPerson)?.name||"outro participante")+". Selecione o nome correspondente ao seu link.",$("participant-trigger"));
+      return;
+    }
     participant=p;
     if(CFG.backend.enabled && CFG.backend.url) {
       $("begin").disabled=true;
-      status("Validando convite e preparando os áudios privados…");
+      $("begin").textContent="Validando acesso…";
+      status("Validando seu convite e preparando os áudios privados…");
       try {await preparePrivateMedia();}
       catch(error) {
-        status("Não foi possível abrir os áudios privados: "+error.message,"error");
-        $("begin").disabled=false;
+        const msg=error.message.includes("HTTP 401") ? "Convite inválido ou revogado. Solicite um novo link individual." :
+          error.message.includes("HTTP 403") ? "Este convite não corresponde ao participante selecionado." :
+          "Não foi possível validar o convite: "+error.message;
+        introError(msg);
         return;
+      }finally{
+        $("begin").disabled=false;
+        $("begin").textContent=loadLocal(p)?"Retomar avaliação →":"Começar avaliação →";
       }
-      $("begin").disabled=false;
     }
+    $("begin-help").classList.remove("error");
     const prior=loadLocal(participant);
     state=prior||fresh(participant);
     if(prior&&prior.receipt) {
@@ -404,14 +505,30 @@
     }finally{clearTimeout(timeout);submitting=false;}
   }
   function initialize(){
+    const dropdown=setupParticipantDropdown();
     const pFromURL=userParams.get("participante");
+    const notice=$("access-notice");
     if(CFG.people.some(x=>x.id===pFromURL)){
-      $("participant").value=pFromURL;
+      dropdown.select(pFromURL);
+      $("participant-help").textContent="Participante identificado no seu link individual.";
+    }
+    if(CFG.backend.enabled && CFG.backend.url && !invite){
+      notice.hidden=false;
+      notice.innerHTML="<strong>Você abriu o endereço público sem convite.</strong> Para iniciar, abra o link individual completo que foi preparado para você, incluindo a parte após #convite=. O arquivo de links no ASUS deve ser aberto no navegador; visualizar esse arquivo no Notepad não autentica a página. Se estiver em outro computador, solicite seu link ao responsável pelo teste.";
+      notice.setAttribute("tabindex","-1");
+    }else{
+      notice.hidden=true;
     }
     const toggle=()=>{
       const p=$("participant").value;
-      $("begin").disabled=!CFG.people.some(x=>x.id===p) || !$("consent").checked;
+      const valid=CFG.people.some(x=>x.id===p);
       $("begin").textContent=loadLocal(p)?"Retomar avaliação →":"Começar avaliação →";
+      const help=$("begin-help");
+      help.classList.remove("error");
+      help.textContent=!valid ? "Selecione seu nome no menu para começar." :
+        !$("consent").checked ? "Marque o consentimento para continuar." :
+        !invite && CFG.backend.enabled ? "Você precisa abrir seu link individual de convite no navegador." :
+        "Tudo pronto: clique em Começar avaliação.";
     };
     $("participant").addEventListener("change",toggle);
     $("consent").addEventListener("change",toggle);
