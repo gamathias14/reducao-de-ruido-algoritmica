@@ -8,9 +8,9 @@ Instrumento interno de pesquisa exploratória para Augusto, Gabriel e Lucas, com
 
 - `index.html`: instruções, consentimento, seletor de participante, formulário e finalização.
 - `assets/voice-control.svg`: SVG oficial colorido reaproveitado do projeto.
-- `styles.css`: identidade própria, controles de áudio, barra de progresso e scrollbars personalizados.
+- `styles.css`: identidade própria, controles de áudio, barra de progresso, scrollbars e dropdown de participantes totalmente personalizados. A ilustração principal mostra somente o logotipo SVG do Voice Control, sem ondas decorativas.
 - `config.js`: contrato do instrumento, três cenas, quatro escolhas por cena e backend **habilitado** no projeto exclusivo do TCC.
-- `app.js`: reprodução A/B/C, ordem balanceada para três avaliadores, validação, salvamento local, exportação JSON e envio remoto com confirmação estrita.
+- `app.js`: reprodução A/B/C, ordem balanceada para três avaliadores, dropdown próprio acessível por teclado/mouse, validações explícitas de nome/consentimento/convite, salvamento local, exportação JSON e envio remoto com confirmação estrita.
 - `testes/e2e-browser.mjs`: teste automatizado com respostas SIMULADAS em perfil isolado do Chrome.
 
 ### Perguntas por trecho
@@ -36,6 +36,14 @@ O backend Supabase Edge Function, a migração SQL e os manifestos contendo nome
 `project/continuacao_tcc_20261117/validacao_w261_20261117/captura_20261117_165235/backend_supabase/`
 
 O arquivo MKV original e as cópias locais dos trechos permanecem no ASUS, em `AUDICAO_LOCAL`. Os nove WAVs também estão em bucket **privado** no projeto Supabase exclusivo `voice-control-ptc3528-perceptual` (região `sa-east-1`); suas cópias remotas foram validadas por SHA-256. O manifesto que relaciona os métodos aos nomes opacos permanece exclusivamente no ASUS. URLs de áudio assinadas com prazo de uma hora são emitidas após validação do convite individual. O servidor de convites e respostas está implantado; a rota temporária de upload devolve HTTP 410.
+
+## Início da avaliação e convites individuais
+
+O endereço GitHub Pages sem fragmento de convite **não dá acesso** aos áudios. A interface agora exibe um aviso sobre isso imediatamente e permite clicar em **Começar avaliação** para exibir validações específicas (nome, consentimento ou convite), em vez de apenas desativar o botão silenciosamente. O link personalizado inclui `?participante=<nome>#convite=<token>`; a pessoa é identificada automaticamente, mas precisa marcar o consentimento. Selecionar outro nome com convite de outra pessoa é rejeitado antes da escuta.
+
+Para o próprio Augusto, **abrir o arquivo `LINKS_PRIVADOS_W261.txt` no Notepad não abre seu convite no navegador**: é preciso acessar o link individual completo indicado no arquivo. Uma forma de abrir diretamente sem exibir o token no terminal é ler localmente `INVITES_PRIVADOS_W261.json` e invocar `Start-Process` com `participants.augusto.url`.
+
+O dropdown personalizado usa opções reais com `role=listbox/option`, `aria-expanded`, `aria-activedescendant`, teclado (`ArrowUp/Down`, `Home/End`, `Enter`, `Escape`) e clique fora. O campo oculto só guarda o identificador e não há `<select>` nativo na interface.
 
 ## Prévia local no ASUS
 

@@ -26,7 +26,6 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-art" aria-hidden="true">
         <img src="assets/voice-control.svg" alt="" width="102" height="102">
-        <div class="hero-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       </div>
       <div><div class="eyebrow"><span class="eyebrow-line"></span> PTC 3528 · Projeto de Formatura</div>
       <h1 id="hero-title">A voz em primeiro plano.</h1>
@@ -39,13 +38,31 @@
       <div class="intro-grid">
         <div class="intro-step"><span>01</span><strong>Ouça A, B e C</strong><p>O mesmo instante em três versões, em ordem balanceada. Use fones e mantenha o volume.</p></div>
         <div class="intro-step"><span>02</span><strong>Responda rapidamente</strong><p>Indique clareza, naturalidade, ruído residual e qual preferiria em uma chamada.</p></div>
-        <div class="intro-step"><span>03</span><strong>Registre sua avaliação</strong><p>Suas respostas ficam salvas no navegador e, quando o serviço estiver disponível, são confirmadas pelo servidor.</p></div>
+        <div class="intro-step"><span>03</span><strong>Registre sua avaliação</strong><p>O progresso fica salvo no navegador. Ao final, envie as respostas e receba um comprovante do servidor.</p></div>
       </div>
       <div class="notice"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3L20 6V12C20 17 16.6 20.5 12 22C7.4 20.5 4 17 4 12V6L12 3Z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg><p><strong>Como interpretar o teste.</strong> Os trechos foram selecionados de uma gravação espontânea, ainda sem confirmação da ocorrência de motocicletas. Os níveis foram aproximados antes da escuta; no trecho 2, a equiparação é incompleta. Esta avaliação é exploratória, com três participantes — não uma prova estatística de superioridade.</p></div>
+      <div id="access-notice" class="access-notice" role="status" aria-live="polite" hidden></div>
       <div class="start-form">
-        <div><label for="participant">Quem está avaliando?</label><select id="participant"><option value="">Selecione seu nome</option><option value="augusto">Augusto</option><option value="gabriel">Gabriel</option><option value="lucas">Lucas</option></select></div>
+        <div class="participant-field">
+          <span id="participant-label" class="field-label">Quem está avaliando?</span>
+          <div class="vc-select" id="participant-select">
+            <input id="participant" type="hidden" value="">
+            <button id="participant-trigger" type="button" class="vc-select-trigger" role="combobox"
+              aria-haspopup="listbox" aria-expanded="false" aria-controls="participant-options"
+              aria-labelledby="participant-label participant-selected" aria-describedby="participant-help">
+              <span id="participant-selected" class="vc-select-placeholder">Selecione seu nome</span>
+              <svg class="vc-chevron" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div id="participant-options" class="vc-select-options" role="listbox" aria-labelledby="participant-label" hidden>
+              <button type="button" id="participant-option-augusto" role="option" data-value="augusto" aria-selected="false" tabindex="-1">Augusto <span class="vc-option-check" aria-hidden="true">✓</span></button>
+              <button type="button" id="participant-option-gabriel" role="option" data-value="gabriel" aria-selected="false" tabindex="-1">Gabriel <span class="vc-option-check" aria-hidden="true">✓</span></button>
+              <button type="button" id="participant-option-lucas" role="option" data-value="lucas" aria-selected="false" tabindex="-1">Lucas <span class="vc-option-check" aria-hidden="true">✓</span></button>
+            </div>
+          </div>
+          <small id="participant-help" class="participant-help">Escolha seu nome para registrar a avaliação corretamente.</small>
+        </div>
         <div class="consent-line"><label><input type="checkbox" id="consent"> <span>Concordo em usar minhas respostas nesta avaliação acadêmica do TCC. Posso interromper a qualquer momento.</span></label></div>
-        <div class="start-actions"><button class="btn primary" id="begin" disabled>Começar avaliação <span aria-hidden="true">→</span></button><span class="hint">Os métodos só serão revelados após o encerramento da coleta.</span></div>
+        <div class="start-actions"><button class="btn primary" id="begin">Começar avaliação <span aria-hidden="true">→</span></button><span class="hint" id="begin-help" role="status" aria-live="polite">Selecione seu nome e aceite o termo para começar.</span></div>
       </div>
     </section>
     <section id="test" class="screen" hidden aria-labelledby="test-title">
